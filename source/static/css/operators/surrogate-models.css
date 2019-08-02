@@ -56,7 +56,9 @@
 
 .surrogate-model-table-container {
     margin-top: 45px;
-    width: 500px;
+    width: 50%;
+    min-width:450px;
+    max-width: 600px;
     padding-left: 10px;
     padding-right: 10px;
     overflow: auto;
