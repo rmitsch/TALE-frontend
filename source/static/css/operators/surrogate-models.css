@@ -53,3 +53,11 @@
 }
 
 /* End: Decision tree CSS. */
+
+.surrogate-model-table-container {
+    margin-top: 45px;
+    width: 500px;
+    padding-left: 10px;
+    padding-right: 10px;
+    overflow: auto;
+}

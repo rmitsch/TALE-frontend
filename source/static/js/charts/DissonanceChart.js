@@ -470,7 +470,6 @@ export default class DissonanceChart extends Chart
     resize()
     {
         let panelDiv = $("#" + this._target);
-        console.log(panelDiv.height(), panelDiv.width(), this._lastPanelSize)
         if (panelDiv.height() !== this._lastPanelSize.height ||
             panelDiv.width() !== this._lastPanelSize.width) {
             this.render();

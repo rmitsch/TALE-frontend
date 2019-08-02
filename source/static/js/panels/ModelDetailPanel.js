@@ -653,9 +653,10 @@ export default class ModelDetailPanel extends Panel
     {
         // We know that the only possible source we want to consider for a highlighting operation is the correponding
         // ModelDetailTable instance, so we can safely ignore all other sources.
-        if (this._charts["table"].name === source) {
-            for (const scatterplot in this._charts["scatterplots"])
-                this._charts["scatterplots"][scatterplot].highlight(id);
-        }
+        if (this._charts["table"] !== null)
+            if (this._charts["table"].name === source) {
+                for (const scatterplot in this._charts["scatterplots"])
+                    this._charts["scatterplots"][scatterplot].highlight(id);
+            }
     }
 }
