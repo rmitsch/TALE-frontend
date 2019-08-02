@@ -377,10 +377,10 @@ export default class DissonanceChart extends Chart
 
         // Create axis labels.
         let xAxisLabel = Utils.spawnChildDiv(
-            this._target, null, "dissonance-chart-x-axis-label", "Metric per record in embedding"
+            this._target, null, "dissonance-chart-x-axis-label", "Per record"
         );
         let yAxisLabel = Utils.spawnChildDiv(
-            this._target, null, "dissonance-chart-y-axis-label", "Embedding quality"
+            this._target, null, "dissonance-chart-y-axis-label", "Per embedding"
         );
 
         return {

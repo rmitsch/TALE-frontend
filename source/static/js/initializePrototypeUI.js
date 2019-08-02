@@ -7,8 +7,17 @@ let menuIDs = ["menu_prototype", "menu_about"];
 
 // Initialize setup UI.
 $(document).ready(function() {
+    // From https://codepen.io/aaroniker/pen/MzoXaZ.
+    // Because only Chrome supports offset-path, feGaussianBlur for now
+    const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+    if(!isChrome) {
+        document.getElementsByClassName('infinityChrome')[0].style.display = "none";
+        document.getElementsByClassName('infinity')[0].style.display = "block";
+    }
+
     let now = new Date();
     console.log("*** DROP *** Starting construction at " + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds() + ".");
+    $("#logField").text("Starting construction at " + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds() + ".");
 
     // -----------------------------------------------------
     // 1. Process GET parameters.
@@ -42,7 +51,8 @@ $(document).ready(function() {
     // 3. Fetch model metadata - both structure and content.
     // -----------------------------------------------------
 
-    console.log("Fetch metadata.");
+    $("#logField").text("Fetching metadata.");
+    console.log("Fetching metadata.");
     $.ajax({
         url: '/get_metadata',
         data: metadataGETParameters,
@@ -65,35 +75,23 @@ $(document).ready(function() {
             // Get information on which hyperparameters and objectives are available.
             // Note: Sequence of calls is important, since /get_metadata_template uses information
             // made available by /get_metadata.
+            $("#logField").text("Compiling and storing DRMetaDataset.");
+            console.log("Compiling and storing DRMetaDataset.");
             $.ajax({
                 url: '/get_metadata_template',
                 type: 'GET',
                 // Compile or load DRMetadatset.
                 success: function(model_metadata) {
-                    let datasetStorageID    = "test"
-                    let dataset             = localStorage.getItem("someVarKey");
-
-                    if (false && typeof dataset !== "undefined") {
-                        console.log("Loaded DRMetaDataset.");
-                        console.log(dataset)
-                    }
-                    else {
-                        console.log("Compiling and storing DRMetaDataset.");
-                        dataset = new DRMetaDataset(
-                            "PrototypeDataset",
-                            model_data_list,
-                            model_metadata,
-                            10
-                        );
-
-                        // Store object in JSON.
-                        // Session.set(datasetStorageID, dataset);
-                        // localStorage.setItem("someVarKey", dataset);
-                    }
-
+                    let dataset = new DRMetaDataset(
+                        "PrototypeDataset",
+                        model_data_list,
+                        model_metadata,
+                        10
+                    );
 
                     // All components inside a panel are automatically linked with dc.js. Panels have to be linked
                     // with each other explicitly, if so desired (since used datasets may differ).
+                    $("#logField").text("Constructing stage.");
                     console.log("Constructing stage.");
                     let prototypeStage = new PrototypeStage(
                         "PrototypeStage",

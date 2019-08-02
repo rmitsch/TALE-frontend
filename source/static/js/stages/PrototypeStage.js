@@ -3,13 +3,13 @@
 // import * as crossfilter from "./static/lib/crossfilter.js";
 // import * as dc from "./static/lib/dc.js";
 
-// Import base class.
 import Stage from './Stage.js'
 import FilterReduceOperator from "../operators/FilterReduceOperator.js";
 import SurrogateModelOperator from "../operators/SurrogateModelOperator.js";
 import DissonanceOperator from "../operators/DissonanceOperator.js";
 import Utils from "../Utils.js";
 import DissonanceDataset from "../data/DissonanceDataset.js";
+import SurrogateModelDataset from "../data/SurrogateModelDataset.js"
 import ModelDetailOperator from "../operators/ModelDetailOperator.js";
 
 /**
@@ -44,7 +44,7 @@ export default class PrototypeStage extends Stage
 
         // Fetch (test) dataset for surrogate model first, then initialize panels.
         let surrModelJSON = fetch(
-            "/get_surrogate_model_data?modeltype=tree&objs=r_nx&depth=4",
+            "/get_surrogate_model_data?modeltype=rules&objs=r_nx&n_bins=5",
             {
                 headers: { "Content-Type": "application/json; charset=utf-8"},
                 method: "GET"
@@ -62,9 +62,14 @@ export default class PrototypeStage extends Stage
         // Fetch data.
         Promise.all([surrModelJSON, dissonanceDataJSON])
             .then(function(values) {
-                scope._datasets["surrogateModel"]   = values[0];
-                // Compile DissonanceDataset.
+                $("#logField").text("Compiling DissonanceDataset");
                 console.log("Compiling DissonanceDataset.");
+
+                scope._datasets["surrogateModel"]   = new SurrogateModelDataset(
+                    "Surrogate Model Dataset",
+                    values[0]
+                );
+                // Compile DissonanceDataset.
                 scope._datasets["dissonance"]       = new DissonanceDataset(
                     "Dissonance Dataset",
                     values[1],
@@ -98,9 +103,11 @@ export default class PrototypeStage extends Stage
                     "GlobalSurrogateModel:DecisionTree",
                     scope,
                     scope._datasets["surrogateModel"],
-                    "Tree",
+                    "Rules",
                     splitBottomDiv.id
                 );
+
+                console.log("after surrogate model")
 
                 // ---------------------------------------------------------
                 // 3. Operator for exploration of inter-model disagreement.

@@ -34,6 +34,7 @@ export default class DissonancePanel extends Panel
     _generateCharts()
     {
         console.log("Generating DissonancePanel...");
+        $("#logField").text("Generating DissonancePanel...");
 
         // Initialize chart.
         this._chart = new DissonanceChart(

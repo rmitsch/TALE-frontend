@@ -39,6 +39,7 @@ export default class FilterReduceChartsPanel extends Panel
     _generateCharts()
     {
         console.log("Generating FilterReduceChartsPanel...");
+        $("#logField").text("Generating FilterReduceChartsPanel...");
 
         // Define style options for charts.
         let histogramStyle = {

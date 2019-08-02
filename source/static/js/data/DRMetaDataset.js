@@ -230,41 +230,6 @@ export default class DRMetaDataset extends Dataset
         }
     }
 
-    /**
-     * Calculates extrema for specified dimensions/groups.
-     * @param attribute
-     * @param prefix
-     * @param dataType "categorical" or "numerical". Distinction is necessary due to diverging structure of histogram
-     * data.
-     */
-    _calculateExtremaForAttribute(attribute, prefix, dataType)
-    {
-        // Calculate extrema for histograms.
-        let modifiedAttribute   = attribute + prefix;
-        let sortedData          = JSON.parse(JSON.stringify(this._cf_groups[modifiedAttribute].all()));
-
-        // Sort data by number of entries in this attribute's histogram.
-        sortedData.sort(function(entryA, entryB) {
-            let countA = dataType === "numerical" ? entryA.value.count : entryA.value;
-            let countB = dataType === "numerical" ? entryB.value.count : entryB.value;
-
-            return countA > countB ? 1 : (countB > countA ? -1 : 0);
-        });
-
-        // Determine extrema.
-        this._cf_extrema[modifiedAttribute] = {
-            min: ((dataType === "numerical") ? sortedData[0].value.count : sortedData[0].value),
-            max: ((dataType === "numerical") ? sortedData[sortedData.length - 1].value.count : sortedData[sortedData.length - 1].value)
-        };
-
-        // Update extrema by padding values (hardcoded to 10%) for x-axis.
-        this._cf_intervals[modifiedAttribute]   = this._cf_extrema[modifiedAttribute].max - this._cf_extrema[modifiedAttribute].min;
-        if (this._axisPaddingRatio > 0) {
-            this._cf_extrema[modifiedAttribute].min -= this._cf_intervals[modifiedAttribute] / this._axisPaddingRatio;
-            this._cf_extrema[modifiedAttribute].max += this._cf_intervals[modifiedAttribute] / this._axisPaddingRatio;
-        }
-    }
-
     _determineExtrema()
     {
         let hyperparameterList  = Utils.unfoldHyperparameterObjectList(this._metadata.hyperparameters);
@@ -349,39 +314,6 @@ export default class DRMetaDataset extends Dataset
     }
 
     /**
-     * Adds fields with binned values to record.
-     * @param record
-     * @param attributes
-     * @param binnedFieldSuffix
-     * @param binCount
-     * @private
-     */
-    _addBinnedValuesToRecord(record, attributes, binnedFieldSuffix, binCount)
-    {
-        for (let i = 0; i < attributes.length; i++) {
-            let attribute   = attributes[i];
-            const binWidth  = this._cf_intervals[attribute] / binCount;
-            const extrema   = this._cf_extrema[attribute];
-
-            let value = record[attribute];
-            if (value <= extrema.min)
-                value = extrema.min;
-            // Note: Removed `- binWidth` 2019-03-26 while fixing wrong bin computation for values in uppermost bin.
-            else if (value >= extrema.max)
-                value = extrema.max;
-
-            // Adjust for extrema.
-            let binnedValue = binWidth !== 0 ? Math.floor((value - extrema.min) / binWidth) * binWidth : 0;
-            binnedValue += extrema.min;
-            if (binnedValue > extrema.max)
-                // Note: Removed `- binWidth` 2019-03-26 while fixing wrong bin computation for values in uppermost bin.
-                binnedValue = extrema.max;
-
-            record[attribute + binnedFieldSuffix] = binnedValue;
-        }
-    }
-
-    /**
      * Initializes singular dimensions w.r.t. histograms.
      */
     _initHistogramDimensionsAndGroups() {
@@ -406,31 +338,27 @@ export default class DRMetaDataset extends Dataset
             ) {
                 // Dimension with rounded values (for histograms).
                 this._cf_dimensions[histogramAttribute] = this._crossfilter.dimension(
-                    function (d) {
-                        return d[histogramAttribute];
-                    }
+                    d => d[histogramAttribute]
                 );
 
                 // Create group for histogram.
                 this._cf_groups[histogramAttribute] = this._generateGroupWithCounts(histogramAttribute);
 
                 // Calculate extrema.
-                this._calculateExtremaForAttribute(attribute, "#histogram", "numerical");
+                this._calculateExtremaForAttribute(attribute + "#histogram", "numerical");
             }
 
             // Else if this is a categorical hyperparameter: Return value itself.
             else {
                 this._cf_dimensions[histogramAttribute] = this._crossfilter.dimension(
-                    function (d) {
-                        return d[attribute];
-                    }
+                    d => d[attribute]
                 );
 
                 // Create group for histogram.
                 this._cf_groups[attribute + "#histogram"] = this._cf_dimensions[attribute + "#histogram"].group().reduceCount();
 
                 // Calculate extrema.
-                this._calculateExtremaForAttribute(attribute, "#histogram", "categorical");
+                this._calculateExtremaForAttribute(attribute + "#histogram", "categorical");
             }
         }
     }

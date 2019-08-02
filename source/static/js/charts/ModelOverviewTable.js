@@ -4,7 +4,7 @@ import Utils from "../Utils.js";
 export default class ModelOverviewTable extends Chart
 {
     /**
-     *
+     * Model overview table used in overview view.
      * @param name
      * @param panel
      * @param attributes

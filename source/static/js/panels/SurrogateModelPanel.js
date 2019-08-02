@@ -38,6 +38,7 @@ export default class SurrogateModelPanel extends Panel
     _generateCharts()
     {
         console.log("Generating SurrogateModelPanel...");
+        $("#logField").text("Generating SurrogateModelPanel...");
 
         // Initialize chart.
         this._chart = new SurrogateModelChart(

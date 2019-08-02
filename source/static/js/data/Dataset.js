@@ -183,4 +183,70 @@ export default class Dataset
             }
         );
     }
+
+    /**
+     * Adds fields with binned values to record.
+     * @param record
+     * @param attributes
+     * @param binnedFieldSuffix
+     * @param binCount
+     * @private
+     */
+    _addBinnedValuesToRecord(record, attributes, binnedFieldSuffix, binCount)
+    {
+        for (let i = 0; i < attributes.length; i++) {
+            let attribute   = attributes[i];
+            const binWidth  = this._cf_intervals[attribute] / binCount;
+            const extrema   = this._cf_extrema[attribute];
+
+            let value = record[attribute];
+            if (value <= extrema.min)
+                value = extrema.min;
+            // Note: Removed `- binWidth` 2019-03-26 while fixing wrong bin computation for values in uppermost bin.
+            else if (value >= extrema.max)
+                value = extrema.max;
+
+            // Adjust for extrema.
+            let binnedValue = binWidth !== 0 ? Math.floor((value - extrema.min) / binWidth) * binWidth : 0;
+            binnedValue += extrema.min;
+            if (binnedValue > extrema.max)
+                // Note: Removed `- binWidth` 2019-03-26 while fixing wrong bin computation for values in uppermost bin.
+                binnedValue = extrema.max;
+
+            record[attribute + binnedFieldSuffix] = binnedValue;
+        }
+    }
+
+    /**
+     * Calculates extrema for specified dimensions/groups.
+     * @param attribute
+     * @param dataType "categorical" or "numerical". Distinction is necessary due to diverging structure of histogram
+     * data.
+     */
+    _calculateExtremaForAttribute(attribute, dataType)
+    {
+        // Calculate extrema for histograms.
+        let sortedData          = JSON.parse(JSON.stringify(this._cf_groups[attribute].all()));
+
+        // Sort data by number of entries in this attribute's histogram.
+        sortedData.sort(function(entryA, entryB) {
+            let countA = dataType === "numerical" ? entryA.value.count : entryA.value;
+            let countB = dataType === "numerical" ? entryB.value.count : entryB.value;
+
+            return countA > countB ? 1 : (countB > countA ? -1 : 0);
+        });
+
+        // Determine extrema.
+        this._cf_extrema[attribute] = {
+            min: ((dataType === "numerical") ? sortedData[0].value.count : sortedData[0].value),
+            max: ((dataType === "numerical") ? sortedData[sortedData.length - 1].value.count : sortedData[sortedData.length - 1].value)
+        };
+
+        // Update extrema by padding values (hardcoded to 10%) for x-axis.
+        this._cf_intervals[attribute]   = this._cf_extrema[attribute].max - this._cf_extrema[attribute].min;
+        if (this._axisPaddingRatio > 0) {
+            this._cf_extrema[attribute].min -= this._cf_intervals[attribute] / this._axisPaddingRatio;
+            this._cf_extrema[attribute].max += this._cf_intervals[attribute] / this._axisPaddingRatio;
+        }
+    }
 }

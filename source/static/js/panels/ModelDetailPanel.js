@@ -61,6 +61,7 @@ export default class ModelDetailPanel extends Panel
     _generateCharts()
     {
         console.log("Generating ModelDetailPanel...");
+        $("#logField").text("Generating ModelDetailPanel...");
 
         // Use operator's target ID as group name.
         let dcGroupName = this._operator._target;
