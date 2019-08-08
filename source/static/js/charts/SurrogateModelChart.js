@@ -25,12 +25,13 @@ export default class SurrogateModelChart extends Chart
 
         this._charts = {};
         this._attributes = {
-            rulesTable: ["rule", "precision", "recall", "support", "interval_start", "interval_end"]
+            rulesTable: ["rule", "precision", "recall", "support", "from", "to"]
         };
         this._divStructure = this._createDivStructure();
 
-        // Construct graph.
+        // Construct table; fill it.
         this.constructCFChart();
+        this._initTableData();
     }
 
     /**
@@ -39,6 +40,25 @@ export default class SurrogateModelChart extends Chart
     constructCFChart()
     {
         this._constructRulesTable();
+    }
+
+    _initTableData()
+    {
+        let records             = this._dataset._cf_dimensions["precision"].top(Infinity);
+        let transformedRecords  = [records.length];
+
+        // Transform records to format accepted by DataTable.
+        for (let i = 0; i < records.length; i++) {
+            let transformedRecord   = [this._attributes.rulesTable.length + 1];
+            transformedRecord[0]    = i;
+            for (let j = 0; j < this._attributes.rulesTable.length; j++) {
+                transformedRecord[j + 1] = records[i][this._attributes.rulesTable[j]];
+            }
+            transformedRecords[i] = transformedRecord;
+        }
+
+        this._charts.rulesTable.rows.add(transformedRecords);
+        this._charts.rulesTable.draw();
     }
 
     /**
@@ -62,19 +82,19 @@ export default class SurrogateModelChart extends Chart
 
         // On hover: Highlight data point on hover in scatterplots & histograms.
         table.on('mouseenter', 'tr', function () {
-            if (instance._charts.rulesTable.row(this).data() !== null)
-                console.log("mouseenter");
+            // if (instance._charts.rulesTable.row(this).data() !== null)
+                // console.log("mouseenter");
             }
         );
         // Clear highlighting on mouseout.
         table.on('mouseout', 'tr', function () {
-            console.log("mouseout");
+            // console.log("mouseout");
         });
 
         // On (double-)click: Open detail view.
         table.on('dblclick', 'td', function (e) {
             // Instruct model detail operator to load data for the selected model.
-            console.log("dblclick");
+            // console.log("dblclick");
         });
 
         // On click: Filter.
@@ -82,8 +102,33 @@ export default class SurrogateModelChart extends Chart
             const row           = instance._charts.rulesTable.row(this);
             const selectedID    = row.data()[0];
 
-            console.log("click");
+            // console.log("click");
         });
+
+        // -------------------------------------
+        // Add divs for column histograms.
+        // -------------------------------------
+
+        console.log("***  +++")
+        const histogramParentDivID = tableID + "-scrollBody";
+        $("#" + tableID).parent().attr("id", histogramParentDivID);
+        let histogramParent = $("#" + histogramParentDivID);
+        console.log(histogramParent)
+
+        console.log("***")
+
+        const rowsWithoutHistograms = new Set(["ID", "rule"]);
+        for (let i = 0; i < this._attributes.rulesTable.length; i++) {
+            const columnTitle = this._attributes.rulesTable[i];
+            if (!rowsWithoutHistograms.has(columnTitle)) {
+                console.log("spawning " + columnTitle + " in " + histogramParentDivID)
+                let histogramDiv = Utils.spawnChildDiv(
+                    histogramParentDivID,
+                    "surrogate-model-table-histogram-" + columnTitle,
+                    "surrogate-model-table-histogram"
+                );
+            }
+        }
     }
 
     /**
@@ -102,50 +147,143 @@ export default class SurrogateModelChart extends Chart
     render()
     {
         this._charts.rulesTable.draw();
-        this._charts.rulesTable.columns.adjust();
-        this._charts.rulesTable.fixedColumns().relayout();
+        let panelDiv = $("#" + this._target);
+
+        // Update sizes.
+        $("#" + this._target + " .dataTables_scrollBody").css(
+            'height', Math.floor(panelDiv.height() - 317) + "px"
+        );
+        this.fitHistograms();
     }
 
     resize()
     {
         console.log("resize");
-        let operatorDiv = $("#" + this._panel._operator._target);
 
-        // Check if panel height has changed.
-        if (
-            operatorDiv.height() !== this._lastPanelSize.height ||
-            operatorDiv.width() !== this._lastPanelSize.width
-        ) {
-            console.log("rendering")
+        let panelDiv = $("#" + this._target);
 
-            this.render();
+        // Update table height.
+        if (panelDiv.height() !== this._lastPanelSize.height) {
+            $("#" + this._target + " .dataTables_scrollBody").css(
+                'height', Math.floor(panelDiv.height() - 317) + "px"
+            );
         }
+
+        // Update histogram size and positioning.
+        if (panelDiv.width() !== this._lastPanelSize.width) {
+            this.fitHistograms();
+        }
+
+        // Store size of panel at time of last render.
+        this._lastPanelSize.width = panelDiv.width();
+        this._lastPanelSize.height = panelDiv.height();
+    }
+
+    /**
+     * Fits histograms to column widths and positions.
+     */
+    fitHistograms()
+    {
+        console.log("fitHistograms")
+        const rowsWithoutHistograms = new Set(["ID", "rule"]);
+        let currX                   = 60 + 36;
+
+        for (let i = 0; i < this._attributes.rulesTable.length; i++) {
+
+            const columnTitle   = this._attributes.rulesTable[i];
+            const colWidth      = $("#surrogate-model-table-header-" + columnTitle).width() + 36;
+
+            if (!rowsWithoutHistograms.has(columnTitle)) {
+                console.log("rendering for ", columnTitle);
+                let histogram = $("#surrogate-model-table-histogram-" + columnTitle);
+                histogram.css("left", currX + "px");
+                histogram.width(colWidth - 5);
+            }
+
+            currX += colWidth;
+            console.log(columnTitle, currX, colWidth)
+        }
+
     }
 
     _createDivStructure()
     {
         let chartDiv = Utils.spawnChildDiv(this._target, null, "surrogate-model-chart");
-        let tableDiv = Utils.spawnChildDiv(this._target, null, "surrogate-model-table-container");
 
+        // -------------------------------------
         // Create table.
+        // -------------------------------------
+
+        let tableDiv    = Utils.spawnChildDiv(this._target, null, "surrogate-model-table-container");
         let table       = document.createElement('table');
         table.id        = Utils.uuidv4();
         table.className = "display";
         $("#" + tableDiv.id).append(table);
 
         // Create table header.
-        let tableHeader = "<thead><tr><th>ID</th>";
+        let tableHeader             = "<thead><tr><th>ID</th>";
         // Append all hyperparameter to table.
         for (let i = 0; i < this._attributes.rulesTable.length; i++) {
-            tableHeader += "<th>" + this._attributes.rulesTable[i] + "</th>";
+            const columnTitle = this._attributes.rulesTable[i];
+            tableHeader += "<th id='surrogate-model-table-header-" + columnTitle + "'>" + columnTitle + "</th>";
         }
         tableHeader += "</tr></thead>";
         $("#" + table.id).append(tableHeader);
 
+
+        // const rowsWithoutHistograms = new Set(["ID", "rule"]);
+        // console.log($(".surrogate-model-table-container").find("th"));
+        // console.log($(".surrogate-model-table-container").find("table")[0]);
+        // let ths                     = $($(".surrogate-model-table-container").find("thead")[0]).find("th");
+        // let histogramDivIDs         = {};
+        //
+        // ths.each(function(index) {
+        //    const columnTitle = $(this).text();
+        //
+        //    console.log("cT:", columnTitle);
+        //
+        //    if (!rowsWithoutHistograms.has(columnTitle)) {
+        //        let div          = document.createElement('div');
+        //        div.id           = "surrogate-model-table-histogram-" + columnTitle;
+        //        div.className    = "surrogate-model-table-histogram";
+        //        histogramDivIDs[columnTitle] = div.id;
+        //        console.log(this);
+        //        console.log($(this)[0]);
+        //
+        //        console.log("appendingx");
+        //        // $(div).appendTo(this);
+        //
+        //        console.log("-------------")
+        //    }
+        // });
+        //
+        // console.log($("#surrogate-model-table-header-precision"));
+        //
+        // -------------------------------------
+        // Create metric chooser.
+        // -------------------------------------
+
+        let metricChooserDiv = Utils.spawnChildDiv(
+            this._target,
+            null,
+            "metric-chooser",
+            "<select>\n" +
+            "  <option value=\"r_nx\">R_nx</option>\n" +
+            "  <option value=\"stress\">Stress</option>\n" +
+            "  <option value=\"classification_accuracy\">RDP</option>\n" +
+            "  <option value=\"runtime\">Runtime</option>\n" +
+            "</select> "
+        );
+
+        // -----------------------
+        // Create histogram divs.
+        // -----------------------
+
         return {
             chartDivID: chartDiv.id,
             tableContainerDivID: tableDiv.id,
-            tableID: table.id
+            tableID: table.id,
+            metricChooserDivID: metricChooserDiv.id
         };
     }
 }

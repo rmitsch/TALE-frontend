@@ -5,7 +5,7 @@ import Dataset from "./Dataset.js";
 /**
  * Wrapper class providing the specified dataset itself plus the corresponding crossfilter context and various utility
  * methods. */
-export default class DRMetaDataset extends Dataset {
+export default class SurrogateModelDataset extends Dataset {
     /**
      *
      * @param name
@@ -36,7 +36,7 @@ export default class DRMetaDataset extends Dataset {
     {
         const attributes = [
             "precision", "precision#histogram", "recall", "recall#histogram", "support", "support#histogram",
-            "interval_start", "interval_end"
+            "from", "to"
         ];
 
         for (let attribute of attributes) {
@@ -53,7 +53,7 @@ export default class DRMetaDataset extends Dataset {
     {
         // Note that histogram dimensions have already been computed in backend.
         const histogramAttributes = [
-            "precision#histogram", "recall#histogram", "support#histogram", "interval_start", "interval_end"
+            "precision#histogram", "recall#histogram", "support#histogram", "from", "to"
         ];
 
         // Create group for histogram.
