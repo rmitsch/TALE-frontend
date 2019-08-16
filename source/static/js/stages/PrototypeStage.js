@@ -206,7 +206,6 @@ export default class PrototypeStage extends Stage
         // rules; also they don't use the same underlying ID structure.
         const isolatedOperators = new Set(["GlobalSurrogateModel:ExplanationRules"]);
 
-        console.log("filtering - source: ", source)
         if (!isolatedOperators.has(source))
             for (let opKey in this._operators) {
                 if (this._operators[opKey]._name !== source)

@@ -2,6 +2,7 @@ import Operator from "./Operator.js";
 import SurrogateModelPanel from "../panels/SurrogateModelPanel.js";
 import SurrogateModelSettingsPanel from "../panels/settings/SurrogateModelSettingsPanel.js";
 import Utils from "../Utils.js";
+import SurrogateModelDataset from "../data/SurrogateModelDataset.js";
 
 
 /**
@@ -81,29 +82,52 @@ export default class SurrogateModelOperator extends Operator
 
     filter(embeddingIDs)
     {
-        let options         = SurrogateModelSettingsPanel.getOptionValues();
-        let objectiveString = options.objectives;
-        let treeDepth       = options.treeDepth;
-        let idString        = "";
-
         // Ignore if no change since last filter() call.
         if (!(Utils.compareSets(embeddingIDs, this._filteredIDs))) {
             this._filteredIDs = embeddingIDs;
-
-            for (let id of embeddingIDs)
-                idString += id + ",";
-            idString = idString.substring(0, idString.length - 1);
-
-            fetch("/get_surrogate_model_data?modeltype=tree&objs=" + objectiveString + "&depth=" + treeDepth + "&ids=" + idString,
-                {
-                    headers: { "Content-Type": "application/json; charset=utf-8"},
-                    method: "GET"
-                })
-                .then(res => res.json())
-                // -------------------------------------------------
-                // 3. Update surrogate model chart with new data.
-                // -------------------------------------------------
-                .then(results => this._panels["Global Surrogate Model"].processSettingsChange(results));
+            this.updateSurrogateModelChart(this._filteredIDs);
         }
+    }
+
+    /**
+     * Updates surrogate model chart after settings or filter change.
+     * @param filteredIDs
+     */
+    updateSurrogateModelChart(filteredIDs)
+    {
+        let instance        = this;
+        let cursorTarget    = $("#" + this._panels["Global Surrogate Model"]._target);
+        let idString        = "";
+        let options         = SurrogateModelSettingsPanel.getOptionValues();
+        // Fall back to current set of filtered embedding IDs, if none specified.
+        filteredIDs         = filteredIDs === undefined ? this._filteredIDs : filteredIDs;
+
+        cursorTarget.css("cursor", "wait");
+
+        for (let id of filteredIDs)
+            idString += id + ",";
+        idString = idString.substring(0, idString.length - 1);
+
+        // Request new dataset, apply changes.
+        fetch(
+            "/get_surrogate_model_data?modeltype=rules&objs=" + options.objective +
+            "&n_bins=5&ids=" + idString,
+            {
+                headers: {"Content-Type": "application/json; charset=utf-8"},
+                method: "GET"
+            }
+        ).then(
+            res => res.json()
+        ).then(
+            function(values)
+            {
+                instance._panels["Global Surrogate Model"].processSettingsChange(
+                    new SurrogateModelDataset(
+                        "Surrogate Model Dataset", values, instance._stage._datasets["modelMetadata"]
+                    )
+                );
+                cursorTarget.css("cursor", "default");
+            }
+        );
     }
 }

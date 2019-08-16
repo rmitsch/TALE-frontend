@@ -176,6 +176,14 @@ export default class SurrogateModelChart extends Chart
     reset(dataset)
     {
         this._dataset = dataset;
+
+        // Clear table and histograms, ingest new data.
+        this._clearChartsAndTable();
+        this._initTableData();
+        for (let columnTitle in this._divStructure.histogramChartsDivIDs) {
+            this._generateHistogram(columnTitle);
+            this._charts[columnTitle + "Histogram"].render();
+        }
     }
 
     /**
@@ -192,6 +200,7 @@ export default class SurrogateModelChart extends Chart
             'height', Math.floor(panelDiv.height() - 317) + "px"
         );
         this.synchHistogramsWidthColumnHeaders();
+        this.updateHistogramPositionsAfterScroll(this._tableScrollPosition);
     }
 
     resize()
@@ -291,27 +300,10 @@ export default class SurrogateModelChart extends Chart
         tableHeader += "</tr></thead>";
         $("#" + table.id).append(tableHeader);
 
-        // -------------------------------------
-        // Create metric chooser.
-        // -------------------------------------
-
-        let metricChooserDiv = Utils.spawnChildDiv(
-            this._target,
-            null,
-            "metric-chooser",
-            "<select id='surrogate-model-metric-selector'>\n" +
-            "  <option value=\"r_nx\">R_nx</option>\n" +
-            "  <option value=\"stress\">Stress</option>\n" +
-            "  <option value=\"classification_accuracy\">RDP</option>\n" +
-            "  <option value=\"runtime\">Runtime</option>\n" +
-            "</select> "
-        );
-
         return {
             chartDivID: chartDiv.id,
             tableContainerDivID: tableDiv.id,
             tableID: table.id,
-            metricChooserDivID: metricChooserDiv.id,
             histogramDivID: histogramDiv.id,
             histogramChartsDivIDs: {}
         };
@@ -333,39 +325,49 @@ export default class SurrogateModelChart extends Chart
 
     _setOnTargetMetricSwitchEventListener()
     {
-        let instance = this;
-
-        // Event listener for change of target metric.
-        $("#surrogate-model-metric-selector").change(function() {
-            // Clear table and charts.
-            instance._clearChartsAndTable();
-
-            // Request explanation rules for this target metric.
-            let surrModelPromise = fetch(
-                "/get_surrogate_model_data?modeltype=rules&objs=" + this.value +
-                "&n_bins=5&ids=" + instance._dataset._drModelMetadata.getFilteredIDString(),
-                {
-                    headers: {"Content-Type": "application/json; charset=utf-8"},
-                    method: "GET"
-                }
-            ).then(res => res.json());
-
-            surrModelPromise.then(function(values) {
-                instance._dataset = new SurrogateModelDataset(
-                    "Surrogate Model Dataset", values, instance._dataset._drModelMetadata
-                );
-                instance._panel._operator._stage._datasets.surrogateModel = instance._dataset;
-
-                // Redraw data.
-                instance._initTableData();
-                for (let columnTitle in instance._divStructure.histogramChartsDivIDs) {
-                    instance._generateHistogram(columnTitle);
-                    instance._charts[columnTitle + "Histogram"].render();
-                }
-                instance.synchHistogramsWidthColumnHeaders();
-                instance.updateHistogramPositionsAfterScroll(instance._tableScrollPosition);
-            });
-        });
+        // let instance        = this;
+        // let cursorTarget    = $("#" + this._panel._target);
+        //
+        // // Event listener for change of target metric.
+        // $("#surrogate-model-metric-selector").change(function() {
+        //     cursorTarget.css("cursor", "wait");
+        //
+        //     // Request explanation rules for this target metric.
+        //     fetch(
+        //         "/get_surrogate_model_data?modeltype=rules&objs=" + this.value +
+        //         "&n_bins=5&ids=" + instance._dataset._drModelMetadata.getFilteredIDString(),
+        //         {
+        //             headers: {"Content-Type": "application/json; charset=utf-8"},
+        //             method: "GET"
+        //         }
+        //     ).then(
+        //         res => res.json()
+        //     ).then(
+        //         function(values)
+        //         {
+        //
+        //             // Clear table and charts.
+        //             instance._clearChartsAndTable();
+        //
+        //             // Create new dataset, update charts & table.
+        //             instance._dataset = new SurrogateModelDataset(
+        //                 "Surrogate Model Dataset", values, instance._dataset._drModelMetadata
+        //             );
+        //             instance._panel._operator._stage._datasets.surrogateModel = instance._dataset;
+        //
+        //             // Redraw data.
+        //             instance._initTableData();
+        //             for (let columnTitle in instance._divStructure.histogramChartsDivIDs) {
+        //                 instance._generateHistogram(columnTitle);
+        //                 instance._charts[columnTitle + "Histogram"].render();
+        //             }
+        //             instance.synchHistogramsWidthColumnHeaders();
+        //             instance.updateHistogramPositionsAfterScroll(instance._tableScrollPosition);
+        //
+        //             cursorTarget.css("cursor", "default");
+        //         }
+        //     );
+        // });
     }
 
     /**
