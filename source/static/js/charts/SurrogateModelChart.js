@@ -1,6 +1,7 @@
 import Chart from "./Chart.js";
 import Utils from "../Utils.js"
 import NumericalHistogram from "./NumericalHistogram.js";
+import SurrogateModelDataset from "../data/SurrogateModelDataset.js";
 
 
 /**
@@ -31,6 +32,7 @@ export default class SurrogateModelChart extends Chart
         this._rowsWithoutHistograms         = new Set(["ID", "rule"]);
         this._originalHistogramPositions    = {};
         this._divStructure                  = this._createDivStructure();
+        this._tableScrollPosition           = 0;
 
         // Construct table; fill it.
         this.constructCFChart();
@@ -38,6 +40,9 @@ export default class SurrogateModelChart extends Chart
 
         // Integrate table with crossfilter group.
         this._registerChartInDC();
+
+        // Define event listener for target metric change.
+        this._setOnTargetMetricSwitchEventListener();
     }
 
     /**
@@ -83,6 +88,7 @@ export default class SurrogateModelChart extends Chart
         });
 
         $(".surrogate-model-table-container .dataTables_scrollBody").on("scroll", function(event) {
+            instance._tableScrollPosition = this.scrollLeft;
             instance.updateHistogramPositionsAfterScroll(this.scrollLeft);
         });
 
@@ -123,43 +129,44 @@ export default class SurrogateModelChart extends Chart
             const columnTitle = this._attributes.rulesTable[i];
             if (!this._rowsWithoutHistograms.has(columnTitle)) {
                 // Generate div.
-                const histogramDiv = Utils.spawnChildDiv(
+                let divStructure = instance._divStructure;
+                divStructure.histogramChartsDivIDs[columnTitle] = Utils.spawnChildDiv(
                     "surrogate-model-histogram-container",
                     "surrogate-model-table-histogram-" + columnTitle,
                     "surrogate-model-table-histogram"
-                );
+                ).id;
 
                 // Generate chart in div.
-                let histogramStyle = {
-                    showAxisLabels: false,
-                    // Use current container dimensions as size for chart.
-                    height: 40,
-                    width: 50,
-                    paddingFactor: 0.15,
-                    excludedColor: "#ccc",
-                    numberOfTicks: {x: "minmax", y: "minmax"},
-                    showTickMarks: true
-                };
-
-                this._charts[columnTitle + "Histogram"] = new NumericalHistogram(
-                    columnTitle + ".histogram",
-                    this._panel,
-                    [columnTitle],
-                    this._dataset,
-                    histogramStyle,
-                    // Place chart in previously generated container div.
-                    histogramDiv.id
-                );
-
-                // Adjustments for histograms that diverge from default behaviour in NumericalHistogram class.
-                let chart = this._charts[columnTitle + "Histogram"]._cf_chart;
-                chart.on("filtered", event => {});
-                chart.margins({top: 5, right: 10, bottom: 16, left: 25})
-
-
+                instance._generateHistogram(columnTitle);
             }
         }
+    }
 
+    _generateHistogram(columnTitle)
+    {
+        this._charts[columnTitle + "Histogram"] = new NumericalHistogram(
+            columnTitle + ".histogram",
+            this._panel,
+            [columnTitle],
+            this._dataset,
+            {
+                showAxisLabels: false,
+                // Use current container dimensions as size for chart.
+                height: 40,
+                width: 50,
+                paddingFactor: 0.15,
+                excludedColor: "#ccc",
+                numberOfTicks: {x: "minmax", y: "minmax"},
+                showTickMarks: true
+            },
+            // Place chart in previously generated container div.
+            this._divStructure.histogramChartsDivIDs[columnTitle]
+        );
+
+        // Adjustments for histograms that diverge from default behaviour in NumericalHistogram class.
+        let chart = this._charts[columnTitle + "Histogram"]._cf_chart;
+        chart.on("filtered", event => {});
+        chart.margins({top: 5, right: 10, bottom: 16, left: 25})
     }
 
     /**
@@ -292,7 +299,7 @@ export default class SurrogateModelChart extends Chart
             this._target,
             null,
             "metric-chooser",
-            "<select>\n" +
+            "<select id='surrogate-model-metric-selector'>\n" +
             "  <option value=\"r_nx\">R_nx</option>\n" +
             "  <option value=\"stress\">Stress</option>\n" +
             "  <option value=\"classification_accuracy\">RDP</option>\n" +
@@ -305,8 +312,60 @@ export default class SurrogateModelChart extends Chart
             tableContainerDivID: tableDiv.id,
             tableID: table.id,
             metricChooserDivID: metricChooserDiv.id,
-            histogramDivID: histogramDiv.id
+            histogramDivID: histogramDiv.id,
+            histogramChartsDivIDs: {}
         };
+    }
+
+    /**
+     * Clears all charts and table.
+     * @private
+     */
+    _clearChartsAndTable()
+    {
+        this._charts.rulesTable.clear();
+        this._charts.rulesTable.redraw();
+
+        for (let columnTitle in this._divStructure.histogramChartsDivIDs) {
+            $("#" + this._divStructure.histogramChartsDivIDs[columnTitle]).empty();
+        }
+    }
+
+    _setOnTargetMetricSwitchEventListener()
+    {
+        let instance = this;
+
+        // Event listener for change of target metric.
+        $("#surrogate-model-metric-selector").change(function() {
+            // Clear table and charts.
+            instance._clearChartsAndTable();
+
+            // Request explanation rules for this target metric.
+            let surrModelPromise = fetch(
+                "/get_surrogate_model_data?modeltype=rules&objs=" + this.value +
+                "&n_bins=5&ids=" + instance._dataset._drModelMetadata.getFilteredIDString(),
+                {
+                    headers: {"Content-Type": "application/json; charset=utf-8"},
+                    method: "GET"
+                }
+            ).then(res => res.json());
+
+            surrModelPromise.then(function(values) {
+                instance._dataset = new SurrogateModelDataset(
+                    "Surrogate Model Dataset", values, instance._dataset._drModelMetadata
+                );
+                instance._panel._operator._stage._datasets.surrogateModel = instance._dataset;
+
+                // Redraw data.
+                instance._initTableData();
+                for (let columnTitle in instance._divStructure.histogramChartsDivIDs) {
+                    instance._generateHistogram(columnTitle);
+                    instance._charts[columnTitle + "Histogram"].render();
+                }
+                instance.synchHistogramsWidthColumnHeaders();
+                instance.updateHistogramPositionsAfterScroll(instance._tableScrollPosition);
+            });
+        });
     }
 
     /**

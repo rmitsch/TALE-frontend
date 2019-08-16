@@ -1,4 +1,3 @@
-import Utils from "../Utils.js";
 import Dataset from "./Dataset.js";
 
 
@@ -12,13 +11,11 @@ export default class SurrogateModelDataset extends Dataset {
      * @param data Array of objects (JSON/array/dict/...) holding data to display. Note: Length of array defines number
      * of panels (one dataset per panel) and has to be equal with length of objects in metadata.
      * @param drModelMetadata Instance of DRMetaDataset containing metadata of DR models.
-     * @param supportedDRModelMeasure DR model measure(s) to consider in data.
      */
-    constructor(name, data, drModelMetadata, supportedDRModelMeasure) {
+    constructor(name, data, drModelMetadata) {
         super(name, data);
 
         this._drModelMetadata   = drModelMetadata;
-        this._measure           = supportedDRModelMeasure;
         this._axisPaddingRatio  = 0;
         this._binCount          = 5;
 

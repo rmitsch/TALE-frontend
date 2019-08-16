@@ -557,6 +557,19 @@ export default class DRMetaDataset extends Dataset
     }
 
     /**
+     * Assembles a string of all currently filtered IDs, concatenated with commas.
+     * @returns {string}
+     */
+    getFilteredIDString()
+    {
+        let idString = "";
+        for (let embedding of this._cf_dimensions.id.top(Infinity))
+            idString += embedding.id + ",";
+
+        return idString.substring(0, idString.length - 1);
+    }
+
+    /**
      * Restores object from instance string using cryo.js.
      * @param instanceString
      */

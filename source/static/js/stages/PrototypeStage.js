@@ -67,8 +67,10 @@ export default class PrototypeStage extends Stage
 
                 scope._datasets["surrogateModel"]   = new SurrogateModelDataset(
                     "Surrogate Model Dataset",
-                    values[0]
+                    values[0],
+                    scope._datasets["modelMetadata"]
                 );
+
                 // Compile DissonanceDataset.
                 scope._datasets["dissonance"]       = new DissonanceDataset(
                     "Dissonance Dataset",
@@ -146,7 +148,7 @@ export default class PrototypeStage extends Stage
                     ["#" + embeddingsTableTarget, "#" + surrTarget, "#" + dissTarget],
                     {
                         direction: "horizontal",
-                        sizes: [35, 40, 25],
+                        sizes: [30, 45, 25],
                         minSize: 0,
                         snapOffset: 0,
                         onDragEnd: function() {
