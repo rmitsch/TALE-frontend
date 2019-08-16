@@ -146,7 +146,7 @@ export default class PrototypeStage extends Stage
                     ["#" + embeddingsTableTarget, "#" + surrTarget, "#" + dissTarget],
                     {
                         direction: "horizontal",
-                        sizes: [35, 30, 35],
+                        sizes: [35, 40, 25],
                         minSize: 0,
                         snapOffset: 0,
                         onDragEnd: function() {

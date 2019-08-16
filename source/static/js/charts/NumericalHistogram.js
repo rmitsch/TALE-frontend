@@ -43,6 +43,7 @@ export default class NumericalHistogram extends Histogram
         let intervals   = this._dataset._cf_intervals;
         let dimensions  = this._dataset._cf_dimensions;
         let key         = this._axes_attributes.x + "#histogram";
+
         // Use padding so that first/last bar are not cut off in chart.
         let dataPadding = intervals[this._axes_attributes.x] * this._style.paddingFactor;
 
@@ -50,12 +51,13 @@ export default class NumericalHistogram extends Histogram
         this._cf_chart
             .height(instance._style.height)
             .width(instance._style.width)
-            .valueAccessor( function(d) { return  d.value.count; } )
+            .valueAccessor( d => d.value.count )
             .elasticY(false)
             .x(d3.scale.linear().domain([
                 extrema[instance._axes_attributes.x].min - dataPadding,
                 extrema[instance._axes_attributes.x].max + dataPadding
             ]))
+            // Add default padding to y-axis.
             .y(d3.scale.linear().domain([0, extrema[key].max]))
             .brushOn(true)
             // Filter on end of brushing action, not meanwhile (performance suffers otherwise).
@@ -90,8 +92,18 @@ export default class NumericalHistogram extends Histogram
         this._updateMouseDownListener();
 
         // Set number of ticks.
-        this._cf_chart.yAxis().ticks(instance._style.numberOfTicks.y);
-        this._cf_chart.xAxis().ticks(instance._style.numberOfTicks.x);
+        if (instance._style.numberOfTicks.y !== "minmax")
+            this._cf_chart.yAxis().ticks(instance._style.numberOfTicks.y);
+        else
+            this._cf_chart.yAxis().tickValues([0, extrema[key].max]);
+
+        if (instance._style.numberOfTicks.x !== "minmax")
+            this._cf_chart.xAxis().ticks(instance._style.numberOfTicks.x);
+        else
+            this._cf_chart.xAxis().tickValues([
+                extrema[instance._axes_attributes.x].min,
+                extrema[instance._axes_attributes.x].max
+            ]);
 
         // Update bin width.
         const binWidth = this._dataset._cf_intervals[this._axes_attributes.x] / this._dataset._binCount;
@@ -101,13 +113,14 @@ export default class NumericalHistogram extends Histogram
     /**
      * Resizes chart to new width.
      * @param newWidth
+     * @param binCount
      */
-    updateWidth(newWidth)
+    updateWidth(newWidth, binCount)
     {
         this._cf_chart.width(newWidth);
         const binWidth = 1 / 10; // this._dataset._cf_intervals[this._axes_attributes.x] / this._dataset._binCount;
         // this._cf_chart.xUnits(dc.units.fp.precision(binWidth));
-        this._cf_chart.xUnits(function() { return 7 } );
+        this._cf_chart.xUnits(function() { return binCount + 1 } );
     }
 
     /**

@@ -35,6 +35,9 @@ export default class SurrogateModelChart extends Chart
         // Construct table; fill it.
         this.constructCFChart();
         this._initTableData();
+
+        // Integrate table with crossfilter group.
+        this._registerChartInDC();
     }
 
     /**
@@ -47,13 +50,13 @@ export default class SurrogateModelChart extends Chart
 
     _initTableData()
     {
-        let records             = this._dataset._cf_dimensions["precision"].top(Infinity);
+        let records             = this._dataset._cf_dimensions.id.top(Infinity);
         let transformedRecords  = [records.length];
 
         // Transform records to format accepted by DataTable.
         for (let i = 0; i < records.length; i++) {
             let transformedRecord   = [this._attributes.rulesTable.length + 1];
-            transformedRecord[0]    = i;
+            transformedRecord[0]    = records[i].id;
             for (let j = 0; j < this._attributes.rulesTable.length; j++) {
                 transformedRecord[j + 1] = records[i][this._attributes.rulesTable[j]];
             }
@@ -130,14 +133,11 @@ export default class SurrogateModelChart extends Chart
                 let histogramStyle = {
                     showAxisLabels: false,
                     // Use current container dimensions as size for chart.
-                    height: 50,
+                    height: 40,
                     width: 50,
-                    paddingFactor: 0,
+                    paddingFactor: 0.15,
                     excludedColor: "#ccc",
-                    numberOfTicks: {
-                        x: 5,
-                        y: 0
-                    },
+                    numberOfTicks: {x: "minmax", y: "minmax"},
                     showTickMarks: true
                 };
 
@@ -150,8 +150,16 @@ export default class SurrogateModelChart extends Chart
                     // Place chart in previously generated container div.
                     histogramDiv.id
                 );
+
+                // Adjustments for histograms that diverge from default behaviour in NumericalHistogram class.
+                let chart = this._charts[columnTitle + "Histogram"]._cf_chart;
+                chart.on("filtered", event => {});
+                chart.margins({top: 5, right: 10, bottom: 16, left: 25})
+
+
             }
         }
+
     }
 
     /**
@@ -181,8 +189,6 @@ export default class SurrogateModelChart extends Chart
 
     resize()
     {
-        console.log("resize");
-
         let panelDiv = $("#" + this._target);
 
         // Update table height.
@@ -207,7 +213,7 @@ export default class SurrogateModelChart extends Chart
      */
     synchHistogramsWidthColumnHeaders()
     {
-        let currX = 80;
+        let currX = 75;
 
         $("#surrogate-model-histogram-container").width($("#" + this._divStructure.tableContainerDivID).width());
 
@@ -222,7 +228,7 @@ export default class SurrogateModelChart extends Chart
                 histogramDiv.css({left: currX});
 
                 this._originalHistogramPositions[columnTitle] = currX;
-                this._charts[columnTitle + "Histogram"].updateWidth(colWidth);
+                this._charts[columnTitle + "Histogram"].updateWidth(colWidth, 5);
                 this._charts[columnTitle + "Histogram"].render();
             }
 
@@ -301,5 +307,65 @@ export default class SurrogateModelChart extends Chart
             metricChooserDivID: metricChooserDiv.id,
             histogramDivID: histogramDiv.id
         };
+    }
+
+    /**
+     * Implement methods necessary for dc.js hook and integrate it into it's chart registry.
+     */
+    _registerChartInDC()
+    {
+        // --------------------------------
+        // 1. Implement necessary elements
+        // of dc.js' interface for charts.
+        // --------------------------------
+
+        let instance = this;
+
+        this._charts.rulesTable.render = function() {
+            // Redraw chart.
+            instance._charts.rulesTable.draw();
+        };
+
+        this._charts.rulesTable.redraw = function() {
+            // Update filtered IDs.
+
+            let records = instance._dataset.cf_dimensions.id.top(Infinity);
+            instance._filteredIDs = new Set();
+            for (let i = 0; i < records.length; i++) {
+                instance._filteredIDs.add(records[i].id)
+            }
+
+            // Filter table data using an ugly hack 'cause DataTable.js can't do obvious things.
+            // Add filter only if it doesn't exist yet.
+            if (!this._filterHasBeenSet)
+                $.fn.dataTableExt.afnFiltering.push(
+                    // oSettings holds information that can be used to differ between different tables -
+                    // might be necessary once several tables use different filters.
+                    function (oSettings, aData, iDataIndex) {
+                        // Check oSettings to see if we have to apply this filter. Otherwise ignore (i. e. return true
+                        // for all elements).
+                        return oSettings.sTableId === instance._divStructure.tableID ?
+                            instance._filteredIDs.has(+aData[0]) :
+                            true;
+                    }
+                );
+
+            // Redraw chart.
+            instance._charts.rulesTable.draw();
+        };
+
+        this._charts.rulesTable.filterAll    = function() {
+            // Reset brush.
+            instance._charts.rulesTable.draw();
+        };
+
+        // --------------------------------
+        // 2. Register table in dc.js'
+        // registry.
+        // --------------------------------
+
+        // Use operators ID as group ID (all panels in operator use the same dataset and therefore should be notified if
+        // filter conditions change).
+        dc.chartRegistry.register(this._charts.rulesTable, this._panel._operator._target);
     }
 }

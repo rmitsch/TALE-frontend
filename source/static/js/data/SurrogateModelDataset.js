@@ -23,6 +23,9 @@ export default class SurrogateModelDataset extends Dataset {
         this._binCount          = 5;
 
         // Set up containers for crossfilter data.
+        for (let i = 0; i < this._data.length; i++)
+            this._data[i]["id"] = i;
+
         this._crossfilter       = crossfilter(this._data);
 
         // Initialize crossfilter data.
@@ -34,7 +37,7 @@ export default class SurrogateModelDataset extends Dataset {
     {
         const attributes = [
             "precision", "precision#histogram", "recall", "recall#histogram", "support", "support#histogram",
-            "from", "to", "from#histogram", "to#histogram"
+            "from", "to", "from#histogram", "to#histogram", "id"
         ];
 
         for (let attribute of attributes) {
@@ -51,8 +54,7 @@ export default class SurrogateModelDataset extends Dataset {
     {
         // Note that histogram dimensions have already been computed in backend.
         const histogramAttributes = [
-            "precision#histogram", "recall#histogram", "support#histogram", "from", "to", "from#histogram",
-            "to#histogram"
+            "precision#histogram", "recall#histogram", "support#histogram", "from#histogram", "to#histogram"
         ];
 
         // Create group for histogram.

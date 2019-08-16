@@ -79,7 +79,7 @@
 .surrogate-model-chart-container table.dataTable thead .sorting,
 .surrogate-model-chart-container table.dataTable thead .sorting_asc,
 .surrogate-model-chart-container table.dataTable thead .sorting_desc {
-    height: 80px;
+    height: 65px;
     vertical-align: bottom;
     background-position: 100% 87%;
     min-width: 40px;
@@ -91,7 +91,7 @@
 }
 
 #surrogate-model-histogram-container {
-    height: 60px;
+    height: 45px;
     overflow: hidden;
     position: absolute;
     top: 35px;
