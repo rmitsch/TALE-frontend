@@ -100,14 +100,12 @@ export default class PrototypeStage extends Stage
                 // ---------------------------------------------------------
 
                 scope._operators["SurrogateModel"] = new SurrogateModelOperator(
-                    "GlobalSurrogateModel:DecisionTree",
+                    "GlobalSurrogateModel:ExplanationRules",
                     scope,
                     scope._datasets["surrogateModel"],
                     "Rules",
                     splitBottomDiv.id
                 );
-
-                console.log("after surrogate model")
 
                 // ---------------------------------------------------------
                 // 3. Operator for exploration of inter-model disagreement.
@@ -200,10 +198,18 @@ export default class PrototypeStage extends Stage
 
     filter(source, embeddingIDs)
     {
-        for (let opKey in this._operators) {
-            if (this._operators[opKey]._name !== source)
-                this._operators[opKey].filter(embeddingIDs);
-        }
+        // Temporary (?) workaround for operators that are _not_ supposed to propagate their filter changes to the base
+        // dataset of embeddings across different dc chart groups.
+        // E. g.: Explanation rules - we don't automatically won't to exclude embeddings just because we excluded filter
+        // rules; also they don't use the same underlying ID structure.
+        const isolatedOperators = new Set(["GlobalSurrogateModel:ExplanationRules"]);
+
+        console.log("filtering - source: ", source)
+        if (!isolatedOperators.has(source))
+            for (let opKey in this._operators) {
+                if (this._operators[opKey]._name !== source)
+                    this._operators[opKey].filter(embeddingIDs);
+            }
     }
 
     get shiftDown()

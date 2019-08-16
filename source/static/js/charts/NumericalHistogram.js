@@ -99,6 +99,18 @@ export default class NumericalHistogram extends Histogram
     }
 
     /**
+     * Resizes chart to new width.
+     * @param newWidth
+     */
+    updateWidth(newWidth)
+    {
+        this._cf_chart.width(newWidth);
+        const binWidth = 1 / 10; // this._dataset._cf_intervals[this._axes_attributes.x] / this._dataset._binCount;
+        // this._cf_chart.xUnits(dc.units.fp.precision(binWidth));
+        this._cf_chart.xUnits(function() { return 7 } );
+    }
+
+    /**
      * Updates mousedown listener w.r.t. value of _suppressNativeClickPropagation.
      * @private
      */

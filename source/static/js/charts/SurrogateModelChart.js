@@ -1,5 +1,6 @@
 import Chart from "./Chart.js";
 import Utils from "../Utils.js"
+import NumericalHistogram from "./NumericalHistogram.js";
 
 
 /**
@@ -27,7 +28,9 @@ export default class SurrogateModelChart extends Chart
         this._attributes = {
             rulesTable: ["rule", "precision", "recall", "support", "from", "to"]
         };
-        this._divStructure = this._createDivStructure();
+        this._rowsWithoutHistograms         = new Set(["ID", "rule"]);
+        this._originalHistogramPositions    = {};
+        this._divStructure                  = this._createDivStructure();
 
         // Construct table; fill it.
         this.constructCFChart();
@@ -67,7 +70,8 @@ export default class SurrogateModelChart extends Chart
      */
     _constructRulesTable()
     {
-        const tableID = this._divStructure.tableID;
+        let instance    = this;
+        const tableID   = this._divStructure.tableID;
 
         this._charts.rulesTable = $("#" + tableID).DataTable({
             scrollX: true,
@@ -75,7 +79,10 @@ export default class SurrogateModelChart extends Chart
             fixedColumns: false
         });
 
-        let instance    = this;
+        $(".surrogate-model-table-container .dataTables_scrollBody").on("scroll", function(event) {
+            instance.updateHistogramPositionsAfterScroll(this.scrollLeft);
+        });
+
         const table     = $("#" + tableID + " tbody");
         const stage     = instance._panel._operator._stage;
         // stage.addKeyEventListener(this, SurrogateModelChart.processKeyEvent);
@@ -109,23 +116,39 @@ export default class SurrogateModelChart extends Chart
         // Add divs for column histograms.
         // -------------------------------------
 
-        console.log("***  +++")
-        const histogramParentDivID = tableID + "-scrollBody";
-        $("#" + tableID).parent().attr("id", histogramParentDivID);
-        let histogramParent = $("#" + histogramParentDivID);
-        console.log(histogramParent)
-
-        console.log("***")
-
-        const rowsWithoutHistograms = new Set(["ID", "rule"]);
         for (let i = 0; i < this._attributes.rulesTable.length; i++) {
             const columnTitle = this._attributes.rulesTable[i];
-            if (!rowsWithoutHistograms.has(columnTitle)) {
-                console.log("spawning " + columnTitle + " in " + histogramParentDivID)
-                let histogramDiv = Utils.spawnChildDiv(
-                    histogramParentDivID,
+            if (!this._rowsWithoutHistograms.has(columnTitle)) {
+                // Generate div.
+                const histogramDiv = Utils.spawnChildDiv(
+                    "surrogate-model-histogram-container",
                     "surrogate-model-table-histogram-" + columnTitle,
                     "surrogate-model-table-histogram"
+                );
+
+                // Generate chart in div.
+                let histogramStyle = {
+                    showAxisLabels: false,
+                    // Use current container dimensions as size for chart.
+                    height: 50,
+                    width: 50,
+                    paddingFactor: 0,
+                    excludedColor: "#ccc",
+                    numberOfTicks: {
+                        x: 5,
+                        y: 0
+                    },
+                    showTickMarks: true
+                };
+
+                this._charts[columnTitle + "Histogram"] = new NumericalHistogram(
+                    columnTitle + ".histogram",
+                    this._panel,
+                    [columnTitle],
+                    this._dataset,
+                    histogramStyle,
+                    // Place chart in previously generated container div.
+                    histogramDiv.id
                 );
             }
         }
@@ -153,7 +176,7 @@ export default class SurrogateModelChart extends Chart
         $("#" + this._target + " .dataTables_scrollBody").css(
             'height', Math.floor(panelDiv.height() - 317) + "px"
         );
-        this.fitHistograms();
+        this.synchHistogramsWidthColumnHeaders();
     }
 
     resize()
@@ -171,7 +194,7 @@ export default class SurrogateModelChart extends Chart
 
         // Update histogram size and positioning.
         if (panelDiv.width() !== this._lastPanelSize.width) {
-            this.fitHistograms();
+            this.synchHistogramsWidthColumnHeaders();
         }
 
         // Store size of panel at time of last render.
@@ -182,33 +205,58 @@ export default class SurrogateModelChart extends Chart
     /**
      * Fits histograms to column widths and positions.
      */
-    fitHistograms()
+    synchHistogramsWidthColumnHeaders()
     {
-        console.log("fitHistograms")
-        const rowsWithoutHistograms = new Set(["ID", "rule"]);
-        let currX                   = 60 + 36;
+        let currX = 80;
+
+        $("#surrogate-model-histogram-container").width($("#" + this._divStructure.tableContainerDivID).width());
 
         for (let i = 0; i < this._attributes.rulesTable.length; i++) {
-
             const columnTitle   = this._attributes.rulesTable[i];
             const colWidth      = $("#surrogate-model-table-header-" + columnTitle).width() + 36;
 
-            if (!rowsWithoutHistograms.has(columnTitle)) {
-                console.log("rendering for ", columnTitle);
-                let histogram = $("#surrogate-model-table-histogram-" + columnTitle);
-                histogram.css("left", currX + "px");
-                histogram.width(colWidth - 5);
+            if (!this._rowsWithoutHistograms.has(columnTitle)) {
+                let histogramDiv = $("#surrogate-model-table-histogram-" + columnTitle);
+
+                histogramDiv.width(colWidth);
+                histogramDiv.css({left: currX});
+
+                this._originalHistogramPositions[columnTitle] = currX;
+                this._charts[columnTitle + "Histogram"].updateWidth(colWidth);
+                this._charts[columnTitle + "Histogram"].render();
             }
 
             currX += colWidth;
-            console.log(columnTitle, currX, colWidth)
         }
+    }
 
+    /**
+     * Update histogram positions after scrolling table.
+     * @param scrollLeft
+     */
+    updateHistogramPositionsAfterScroll(scrollLeft)
+    {
+        if (!isNaN(scrollLeft) && scrollLeft !== 0) {
+            for (let i = 0; i < this._attributes.rulesTable.length; i++) {
+                const columnTitle   = this._attributes.rulesTable[i];
+
+                if (!this._rowsWithoutHistograms.has(columnTitle)) {
+                    let histogramDiv = $("#surrogate-model-table-histogram-" + columnTitle);
+                    histogramDiv.css({left: this._originalHistogramPositions[columnTitle] - scrollLeft});
+                }
+            }
+        }
     }
 
     _createDivStructure()
     {
         let chartDiv = Utils.spawnChildDiv(this._target, null, "surrogate-model-chart");
+
+        // -------------------------------------
+        // Create histogram div.
+        // -------------------------------------
+
+        let histogramDiv = Utils.spawnChildDiv(this._target, "surrogate-model-histogram-container");
 
         // -------------------------------------
         // Create table.
@@ -230,35 +278,6 @@ export default class SurrogateModelChart extends Chart
         tableHeader += "</tr></thead>";
         $("#" + table.id).append(tableHeader);
 
-
-        // const rowsWithoutHistograms = new Set(["ID", "rule"]);
-        // console.log($(".surrogate-model-table-container").find("th"));
-        // console.log($(".surrogate-model-table-container").find("table")[0]);
-        // let ths                     = $($(".surrogate-model-table-container").find("thead")[0]).find("th");
-        // let histogramDivIDs         = {};
-        //
-        // ths.each(function(index) {
-        //    const columnTitle = $(this).text();
-        //
-        //    console.log("cT:", columnTitle);
-        //
-        //    if (!rowsWithoutHistograms.has(columnTitle)) {
-        //        let div          = document.createElement('div');
-        //        div.id           = "surrogate-model-table-histogram-" + columnTitle;
-        //        div.className    = "surrogate-model-table-histogram";
-        //        histogramDivIDs[columnTitle] = div.id;
-        //        console.log(this);
-        //        console.log($(this)[0]);
-        //
-        //        console.log("appendingx");
-        //        // $(div).appendTo(this);
-        //
-        //        console.log("-------------")
-        //    }
-        // });
-        //
-        // console.log($("#surrogate-model-table-header-precision"));
-        //
         // -------------------------------------
         // Create metric chooser.
         // -------------------------------------
@@ -275,15 +294,12 @@ export default class SurrogateModelChart extends Chart
             "</select> "
         );
 
-        // -----------------------
-        // Create histogram divs.
-        // -----------------------
-
         return {
             chartDivID: chartDiv.id,
             tableContainerDivID: tableDiv.id,
             tableID: table.id,
-            metricChooserDivID: metricChooserDiv.id
+            metricChooserDivID: metricChooserDiv.id,
+            histogramDivID: histogramDiv.id
         };
     }
 }

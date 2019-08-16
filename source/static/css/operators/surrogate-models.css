@@ -67,7 +67,7 @@
 }
 
 .surrogate-model-table-container .dataTables_filter {
-    margin-bottom: 34px;
+    margin-bottom: 0px;
 }
 
 .surrogate-model-chart-container .metric-chooser {
@@ -86,15 +86,20 @@
     position: relative;
 }
 
-.surrogate-model-table-histogram {
-    position: absolute;
-    height: 50px;
-    top: 70px;
-    left: 10px;
-    background-color: #00cc33;
-}
-
 .surrogate-model-chart-container .chart {
     height: 100%;
 }
 
+#surrogate-model-histogram-container {
+    height: 60px;
+    overflow: hidden;
+    position: absolute;
+    top: 35px;
+    z-index: 1;
+    margin-left: 10px;
+}
+
+.surrogate-model-table-histogram {
+    height: 50px;
+    position: absolute;
+}

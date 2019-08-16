@@ -28,15 +28,13 @@ export default class SurrogateModelDataset extends Dataset {
         // Initialize crossfilter data.
         this._initSingularDimensionsAndGroups();
         this._initHistogramDimensionsAndGroups();
-
-        console.log(this._crossfilter.all())
     }
 
     _initSingularDimensionsAndGroups()
     {
         const attributes = [
             "precision", "precision#histogram", "recall", "recall#histogram", "support", "support#histogram",
-            "from", "to"
+            "from", "to", "from#histogram", "to#histogram"
         ];
 
         for (let attribute of attributes) {
@@ -53,7 +51,8 @@ export default class SurrogateModelDataset extends Dataset {
     {
         // Note that histogram dimensions have already been computed in backend.
         const histogramAttributes = [
-            "precision#histogram", "recall#histogram", "support#histogram", "from", "to"
+            "precision#histogram", "recall#histogram", "support#histogram", "from", "to", "from#histogram",
+            "to#histogram"
         ];
 
         // Create group for histogram.
@@ -91,5 +90,25 @@ export default class SurrogateModelDataset extends Dataset {
                 return { items: new Set(), count: 0, ids: new Set() };
             }
         );
+    }
+
+    get crossfilter()
+    {
+        return this._crossfilter;
+    }
+
+    get cf_dimensions()
+    {
+        return this._cf_dimensions;
+    }
+
+    get cf_extrema()
+    {
+        return this._cf_extrema;
+    }
+
+    get cf_groups()
+    {
+        return this._cf_groups;
     }
 }
