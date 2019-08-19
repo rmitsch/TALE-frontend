@@ -105,9 +105,11 @@ export default class ModelDetailPanel extends Panel
         // -----------------------------------
 
         // Left pane.
-        let parameterPane = Utils.spawnChildDiv(this._target, "model-detail-parameter-pane", "split split-horizontal");
+        let parameterPane       = Utils.spawnChildDiv(this._target, "model-detail-parameter-pane", "split split-horizontal");
+        // Center pane.
+        let samplePane          = Utils.spawnChildDiv(this._target, "model-detail-sample-pane", "split split-horizontal");
         // Right pane.
-        let samplePane = Utils.spawnChildDiv(this._target, "model-detail-sample-pane", "split split-horizontal");
+        let dimRedAnalyticsPane = Utils.spawnChildDiv(this._target, "model-detail-dimred-pane", "split split-horizontal");
 
         // 1. Upper-left pane - hyperparameters and objectives for current DR model.
         let attributePane = Utils.spawnChildDiv(
@@ -128,7 +130,7 @@ export default class ModelDetailPanel extends Panel
             </div>`
         );
 
-        // 3. Upper-right pane - all records in scatterplot (SPLOM? -> What to do with higher-dim. projections?).
+        // 3. Upper-center pane - all records in scatterplot.
         let scatterplotPane = Utils.spawnChildDiv(
             samplePane.id, null, "model-detail-pane split-vertical",
             `<div class='model-details-block reduced-padding'>
@@ -136,7 +138,7 @@ export default class ModelDetailPanel extends Panel
             </div>`
         );
 
-        // 4. Bottom-right pane - detailed information to currently selected record.
+        // 4. Bottom-center pane - detailed information to currently selected record.
         let recordPane = Utils.spawnChildDiv(
             samplePane.id, null, "model-detail-pane split-vertical",
             `<div class='model-details-block' id='model-details-block-record-table'>
@@ -144,44 +146,71 @@ export default class ModelDetailPanel extends Panel
             </div>`
         );
 
+        // 5. Upper-right pane - Shepard diagram.
+        let shepardPane = Utils.spawnChildDiv(
+            dimRedAnalyticsPane.id, null, "model-detail-pane split-vertical",
+            `<div class='model-details-block' id='model-details-block-shepard-diagram'>
+                <div class='model-details-title'>Shepard Diagram</span>
+            </div>`
+        );
+
+        // 6. Lower-right pane - Coranking matrix.
+        let corankingPane = Utils.spawnChildDiv(
+            dimRedAnalyticsPane.id, null, "model-detail-pane split-vertical",
+            `<div class='model-details-block' id='model-details-block-coranking-matrix'>
+                <div class='model-details-title'>Coranking Matrix</span>
+            </div>`
+        );
+
         // -----------------------------------
         // 2. Configure splitting.
         // -----------------------------------
 
-        // Split left and right pane.
-        this._splits["middle"] = Split(["#" + parameterPane.id, "#" + samplePane.id], {
+        // Split left, center and right pane.
+        this._lastSplitPositions["all"] = [20, 60, 20];
+        this._splits["all"] = Split(["#" + parameterPane.id, "#" + samplePane.id, "#" + dimRedAnalyticsPane.id], {
             direction: "horizontal",
-            sizes: [25, 75],
+            sizes: this._lastSplitPositions["all"],
             onDragEnd: function() {
                 instance.resize();
             }
         });
-        this._lastSplitPositions["middle"] = [25, 75];
 
         // Split upper-left and bottom-left pane.
+        this._lastSplitPositions["left"] = [40, 60];
         this._splits["left"] = Split(["#" + attributePane.id, "#" + explainerPane.id], {
             direction: "vertical",
-            sizes: [40, 60],
+            sizes: this._lastSplitPositions["left"],
             onDragEnd: function() {
                 instance.resize();
             }
         });
-        this._lastSplitPositions["left"] = [40, 60];
+
+        // Split upper-center and bottom-center pane.
+        this._lastSplitPositions["middle"] = [50, 50];
+        this._splits["middle"] = Split(["#" + scatterplotPane.id, "#" + recordPane.id], {
+            direction: "vertical",
+            sizes: this._lastSplitPositions["middle"],
+            onDragEnd: function() {
+                instance.resize();
+            }
+        });
 
         // Split upper-right and bottom-right pane.
-        this._splits["right"] = Split(["#" + scatterplotPane.id, "#" + recordPane.id], {
+        this._lastSplitPositions["right"] = [50, 50];
+        this._splits["right"] = Split(["#" + shepardPane.id, "#" + corankingPane.id], {
             direction: "vertical",
-            sizes: [50, 50],
+            sizes: this._lastSplitPositions["right"],
             onDragEnd: function() {
                 instance.resize();
             }
         });
-        this._lastSplitPositions["right"] = [50, 50];
 
         // Return all panes' IDs.
         return {
             parameterPaneID: parameterPane.id,
             samplePaneID: samplePane.id,
+            dimRedAnalyticsPaneID: dimRedAnalyticsPane.id,
             attributePane: {
                 id: attributePane.id,
                 hyperparameterContentID: "model-details-block-hyperparameter-content",
@@ -192,7 +221,9 @@ export default class ModelDetailPanel extends Panel
             recordPane: {
                 id: recordPane.id,
                 tableID: "model-details-block-record-table"
-            }
+            },
+            shepardPaneID: shepardPane.id,
+            corankingPaneID: corankingPane.id
         };
     }
 
@@ -635,12 +666,12 @@ export default class ModelDetailPanel extends Panel
                     if (pos === "left") {
                         this._redrawAttributeInfluenceHeatmap();
                     }
-                    if (pos === "middle") {
+                    if (pos === "all") {
                         this._redrawAttributeSparklines(false);
                         this._redrawAttributeInfluenceHeatmap();
                         this._redrawRecordScatterplots();
                     }
-                    if (pos === "right") {
+                    if (pos === "middle") {
                         this._redrawRecordScatterplots();
                         this._updateTableHeight();
                     }
