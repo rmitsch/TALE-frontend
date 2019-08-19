@@ -38,9 +38,7 @@ export default class SurrogateModelDataset extends Dataset {
         ];
 
         for (let attribute of attributes) {
-            this._cf_dimensions[attribute] = this._crossfilter.dimension(
-                function(d) { return d[attribute]; }
-            );
+            this._cf_dimensions[attribute] = this._crossfilter.dimension(d => d[attribute]);
 
             // Find extrema.
             this._calculateSingularExtremaByAttribute(attribute);

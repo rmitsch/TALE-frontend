@@ -20,19 +20,19 @@ export default class ModelDetailDataset extends Dataset
         super(name, modelDataJSON);
 
         // Update internal state.
-        this._modelID                   = modelID;
-        this._drMetaDataset             = drMetaDataset;
-        this._binCount                  = drMetaDataset._binCount;
-        this._low_dim_projection        = ModelDetailDataset._preprocessLowDimProjectionData(
+        this._modelID                       = modelID;
+        this._drMetaDataset                 = drMetaDataset;
+        this._binCount                      = drMetaDataset._binCount;
+        this._low_dim_projection            = ModelDetailDataset._preprocessLowDimProjectionData(
             modelDataJSON.low_dim_projection, modelDataJSON.original_dataset
         );
 
-        this._allModelMetadata                  = modelDataJSON.model_metadata;
-        this._explanations                      = modelDataJSON.explanations;
-        this._preprocessedExplanationData      = ModelDetailDataset._preprocessExplainerData(
+        this._allModelMetadata              = modelDataJSON.model_metadata;
+        this._explanations                  = modelDataJSON.explanations;
+        this._preprocessedExplanationData   = ModelDetailDataset._preprocessExplainerData(
             this._explanations, modelDataJSON.explanation_columns
         );
-        this._sampleDissonances         = modelDataJSON.sample_dissonances;
+        this._sampleDissonances             = modelDataJSON.sample_dissonances;
 
         // Gather attributes available for original record.
         this._originalRecordAttributes  = [];
@@ -40,6 +40,7 @@ export default class ModelDetailDataset extends Dataset
             // if (key !== "record_name")
             this._originalRecordAttributes.push(key);
         }
+        this._attributeDataTypes = modelDataJSON.attribute_data_types;;
 
         //--------------------------------------
         // Initialize crossfilter datasets.
@@ -55,7 +56,7 @@ export default class ModelDetailDataset extends Dataset
      */
     _initCrossfilterData()
     {
-        for (let cf_dataset_name of ["low_dim_projection", "lime"]) {
+        for (let cf_dataset_name of ["low_dim_projection", "explainer"]) {
             this._crossfilterData[cf_dataset_name] = {
                 crossfilter: null,
                 dimensions: {},
@@ -67,18 +68,18 @@ export default class ModelDetailDataset extends Dataset
 
         // Create crossfilter instance for low-dimensional projection (LDP).
         this._crossfilterData["low_dim_projection"].crossfilter = crossfilter(this._low_dim_projection);
-        // Create crossfilter instance for LIME heatmap.
-        this._crossfilterData["lime"].crossfilter               = crossfilter(this._preprocessedExplanationData);
+        // Create crossfilter instance for explainer heatmap.
+        this._crossfilterData["explainer"].crossfilter          = crossfilter(this._preprocessedExplanationData);
 
         // Initialize dimensions and groups for crossfilter datasets.
-        this._configureLowDimProjectionCrossfilter();
+        this._configureCoreCrossfilter();
         this._configureExplanationsCrossfilter();
     }
 
     /**
      * Preprocesses SHAP data to fit data pattern expected by crossfilter.js.
      * @param explanations
-     * * @param explanationColumns
+     * @param explanationColumns
      * @returns {Array}
      * @private
      */
@@ -100,21 +101,19 @@ export default class ModelDetailDataset extends Dataset
     }
 
     /**
-     * Configures dimensions and groups for LIME crossfilter used in heatmap.
+     * Configures dimensions and groups for explanations crossfilter used in heatmap.
      * @private
      */
     _configureExplanationsCrossfilter()
     {
         // Keep in mind that heatmap cells/labels have to be linked to rule data, incl. comparator;
         // while heatmap only shows rule weight.
-        let config = this._crossfilterData.lime;
+        let config = this._crossfilterData.explainer;
 
         // Initialize dimensions.
-        config.dimensions["weight"] = config.crossfilter.dimension(
-            function(d) { return +d.weight; }
-        );
-        config.dimensions["objective:hyperparameter"] = config.crossfilter.dimension(
-            function(d) { return [d.objective, d.hyperparameter]; }
+        config.dimensions["weight"]                     = config.crossfilter.dimension(d => +d.weight);
+        config.dimensions["objective:hyperparameter"]   = config.crossfilter.dimension(
+            d => [d.objective, d.hyperparameter]
         );
 
         // Initialize group returning rule weight.
@@ -154,7 +153,7 @@ export default class ModelDetailDataset extends Dataset
 
             // Append data from original records.
             for (let key in originalData[0]) {
-                newCoordinateObject["orig_" + key] = originalData[i][key];
+                newCoordinateObject[key] = originalData[i][key];
             }
 
             processedCoordinateObjects.push(newCoordinateObject)
@@ -164,15 +163,15 @@ export default class ModelDetailDataset extends Dataset
     }
 
     /**
-     * Initializes all crossfilter-specific data used for low-dimensional projection/coordinates.
+     * Initializes all crossfilter-specific data used for low-dimensional projection/coordinates
+     * and attributes.
      * @private
      */
-    _configureLowDimProjectionCrossfilter()
+    _configureCoreCrossfilter()
     {
-        // Create singular dimensions, determine extrema.
+        // Create dimensions/groups, determine extrema.
         this._initSingularDimensionsAndGroups();
-
-        // Init binary dimensions and groups for scatterplot(s).
+        this._initHistogramDimensionsAndGroups();
         this._initBinaryDimensionsAndGroups();
     }
 
@@ -183,25 +182,46 @@ export default class ModelDetailDataset extends Dataset
 
     _initSingularDimensionsAndGroups()
     {
-        let config          = this._crossfilterData["low_dim_projection"];
+        let config          = this._crossfilterData.low_dim_projection;
         let cf              = config.crossfilter;
-        let numDimensions   = this._allModelMetadata[this._modelID].n_components;
 
-        // Create singular dimensions.
-        for (let i = 0; i < Math.max(numDimensions, 2); i++) {
-            config.dimensions[i] = cf.dimension(
-                function(d) { return d[i]; }
-            );
-            // Calculate extrema.
-            let extremaInfo = this._calculateSingularExtremaByDimension(config.dimensions[i], i);
-            config.extrema[i] = extremaInfo.extrema;
-            config.intervals[i] = extremaInfo.interval;
+        // Create dimensions/groups for attribute data.
+        for (let attribute in this._attributeDataTypes) {
+            if (this._attributeDataTypes[attribute]["supertype"] !== "categorical") {
+                this._cf_dimensions[attribute] = cf.dimension(d => d[attribute]);
+                this._calculateSingularExtremaByAttribute(attribute);
+            }
+        }
+
+        // Create dimensions/groups for projection data.
+        for (let i = 0; i < Math.max(this._allModelMetadata[this._modelID].n_components, 2); i++) {
+            config.dimensions[i]  = cf.dimension(d => d[i]);
+            const extremaInfo     = this._calculateSingularExtremaByDimension(config.dimensions[i], i);
+            config.extrema[i]     = extremaInfo.extrema;
+            config.intervals[i]   = extremaInfo.interval;
         }
 
         // Create ID dimension.
-        config.dimensions["id"] = cf.dimension(
-            function(d) { return d.id; }
-        );
+        config.dimensions["id"] = cf.dimension(d => d.id);
+    }
+
+    _initHistogramDimensionsAndGroups()
+    {
+        let config  = this._crossfilterData.low_dim_projection;
+        let cf      = config.crossfilter;
+
+        for (let attribute in this._attributeDataTypes) {
+            if (this._attributeDataTypes[attribute]["supertype"] !== "categorical") {
+                const histogramAttribute = attribute + "#histogram";
+
+                // Create dimension and group for histogram.
+                this._cf_dimensions[histogramAttribute] = cf.dimension(d => d[histogramAttribute]);
+                this._cf_groups[histogramAttribute]     = this._generateGroupWithCounts(histogramAttribute);
+
+                // Calculate extrema.
+                this._calculateExtremaForAttribute(histogramAttribute, "numerical");
+            }
+        }
     }
 
     _initBinaryDimensionsAndGroups(includeGroups = true)
@@ -327,5 +347,56 @@ export default class ModelDetailDataset extends Dataset
     get crossfilterData()
     {
         return this._crossfilterData;
+    }
+
+    /**
+     * Generates crossfilter group with information on number of elements.
+     * @param attribute
+     * @returns Newly generated group.
+     * @private
+     */
+    _generateGroupWithCounts(attribute)
+    {
+        return this._cf_dimensions[attribute].group().reduce(
+            function(elements, item) {
+                elements.items.add(item);
+                elements.ids.add(item.id);
+                elements.count++;
+                return elements;
+            },
+            function(elements, item) {
+                elements.items.delete(item);
+                elements.ids.delete(item.id);
+                elements.count--;
+                return elements;
+            },
+            function() {
+                return { items: new Set(), count: 0, ids: new Set() };
+            }
+        );
+    }
+
+    get cf_dimensions()
+    {
+        return this._cf_dimensions;
+    }
+
+    get cf_extrema()
+    {
+        return this._cf_extrema;
+    }
+
+    get cf_groups()
+    {
+        return this._cf_groups;
+    }
+
+    /**
+     * Returns currently filtered record IDs as set.
+     * @returns {Set<any>}
+     */
+    get currentlyFilteredIDs()
+    {
+        return new Set(this._crossfilterData.low_dim_projection.dimensions.id.top(Infinity).map(record => record.id));
     }
 }

@@ -6,9 +6,8 @@ import SurrogateModelDataset from "../data/SurrogateModelDataset.js";
 
 /**
  * Creates chart for surrogate model.
- * Supported so far: Decision tree.
- * Code for tree: https://bl.ocks.org/ajschumacher/65eda1df2b0dd2cf616f.
- * Alternative: http://bl.ocks.org/pprett/3813537.
+ * Note: Should be renamed into SurrogateModelTable. Potentially could be refactored into class implementing
+ * jquery's DataTable with scented histograms as scented widgets.
  */
 export default class SurrogateModelChart extends Chart
 {
@@ -30,7 +29,7 @@ export default class SurrogateModelChart extends Chart
             rulesTable: ["rule", "precision", "recall", "support", "from", "to"]
         };
         this._rowsWithoutHistograms         = new Set(["ID", "rule"]);
-        this._originalHistogramPositions    = {};
+        this._preScrollHistogramPositions    = {};
         this._divStructure                  = this._createDivStructure();
         this._tableScrollPosition           = 0;
 
@@ -40,9 +39,6 @@ export default class SurrogateModelChart extends Chart
 
         // Integrate table with crossfilter group.
         this._registerChartInDC();
-
-        // Define event listener for target metric change.
-        this._setOnTargetMetricSwitchEventListener();
     }
 
     /**
@@ -164,9 +160,9 @@ export default class SurrogateModelChart extends Chart
         );
 
         // Adjustments for histograms that diverge from default behaviour in NumericalHistogram class.
-        let chart = this._charts[columnTitle + "Histogram"]._cf_chart;
-        chart.on("filtered", event => {});
-        chart.margins({top: 5, right: 10, bottom: 16, left: 25})
+        this._charts[columnTitle + "Histogram"]._cf_chart
+            .on("filtered", event => {})
+            .margins({top: 5, right: 10, bottom: 16, left: 25})
     }
 
     /**
@@ -243,7 +239,7 @@ export default class SurrogateModelChart extends Chart
                 histogramDiv.width(colWidth);
                 histogramDiv.css({left: currX});
 
-                this._originalHistogramPositions[columnTitle] = currX;
+                this._preScrollHistogramPositions[columnTitle] = currX;
                 this._charts[columnTitle + "Histogram"].updateWidth(colWidth, 5);
                 this._charts[columnTitle + "Histogram"].render();
             }
@@ -264,7 +260,7 @@ export default class SurrogateModelChart extends Chart
 
                 if (!this._rowsWithoutHistograms.has(columnTitle)) {
                     let histogramDiv = $("#surrogate-model-table-histogram-" + columnTitle);
-                    histogramDiv.css({left: this._originalHistogramPositions[columnTitle] - scrollLeft});
+                    histogramDiv.css({left: this._preScrollHistogramPositions[columnTitle] - scrollLeft});
                 }
             }
         }
@@ -323,53 +319,6 @@ export default class SurrogateModelChart extends Chart
         }
     }
 
-    _setOnTargetMetricSwitchEventListener()
-    {
-        // let instance        = this;
-        // let cursorTarget    = $("#" + this._panel._target);
-        //
-        // // Event listener for change of target metric.
-        // $("#surrogate-model-metric-selector").change(function() {
-        //     cursorTarget.css("cursor", "wait");
-        //
-        //     // Request explanation rules for this target metric.
-        //     fetch(
-        //         "/get_surrogate_model_data?modeltype=rules&objs=" + this.value +
-        //         "&n_bins=5&ids=" + instance._dataset._drModelMetadata.getFilteredIDString(),
-        //         {
-        //             headers: {"Content-Type": "application/json; charset=utf-8"},
-        //             method: "GET"
-        //         }
-        //     ).then(
-        //         res => res.json()
-        //     ).then(
-        //         function(values)
-        //         {
-        //
-        //             // Clear table and charts.
-        //             instance._clearChartsAndTable();
-        //
-        //             // Create new dataset, update charts & table.
-        //             instance._dataset = new SurrogateModelDataset(
-        //                 "Surrogate Model Dataset", values, instance._dataset._drModelMetadata
-        //             );
-        //             instance._panel._operator._stage._datasets.surrogateModel = instance._dataset;
-        //
-        //             // Redraw data.
-        //             instance._initTableData();
-        //             for (let columnTitle in instance._divStructure.histogramChartsDivIDs) {
-        //                 instance._generateHistogram(columnTitle);
-        //                 instance._charts[columnTitle + "Histogram"].render();
-        //             }
-        //             instance.synchHistogramsWidthColumnHeaders();
-        //             instance.updateHistogramPositionsAfterScroll(instance._tableScrollPosition);
-        //
-        //             cursorTarget.css("cursor", "default");
-        //         }
-        //     );
-        // });
-    }
-
     /**
      * Implement methods necessary for dc.js hook and integrate it into it's chart registry.
      */
@@ -389,7 +338,6 @@ export default class SurrogateModelChart extends Chart
 
         this._charts.rulesTable.redraw = function() {
             // Update filtered IDs.
-
             let records = instance._dataset.cf_dimensions.id.top(Infinity);
             instance._filteredIDs = new Set();
             for (let i = 0; i < records.length; i++) {

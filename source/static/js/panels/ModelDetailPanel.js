@@ -30,7 +30,7 @@ export default class ModelDetailPanel extends Panel
         // Create div structure for child nodes.
         this._divStructure = this._createDivStructure();
 
-        // Dictionary for lookup of LIME rules.
+        // Dictionary for lookup of explainer rules.
         this._explanationRuleLookup = {};
 
         // Generate charts.
@@ -69,9 +69,9 @@ export default class ModelDetailPanel extends Panel
         // Initialize table.
         this._charts["table"] = null;
 
-        // Initialize LIME heatmap.
-        this._charts["limeHeatmap"] = dc.heatMap(
-            "#" + this._divStructure.limePaneID,
+        // Initialize explainer heatmap.
+        this._charts["explainerHeatmap"] = dc.heatMap(
+            "#" + this._divStructure.explainerPaneID,
             dcGroupName
         );
     }
@@ -119,12 +119,12 @@ export default class ModelDetailPanel extends Panel
                 <div id="model-details-block-objective-content"></div>
             </div>`
         );
-        // 2. Bottom-left pane - explanation of hyperparameter importance for this DR model utilizing LIME.
-        let limePane = Utils.spawnChildDiv(
+        // 2. Bottom-left pane - explanation of hyperparameter importance for this DR model.
+        let explainerPane = Utils.spawnChildDiv(
             parameterPane.id, null, "model-detail-pane split-vertical",
             `<div class='model-details-block'>
                 <div class='model-details-title'>Local Hyperparameter Relevance</div>
-                <div id="model-details-lime-pane"</div>
+                <div id="model-details-explainer-pane"</div>
             </div>`
         );
 
@@ -159,7 +159,7 @@ export default class ModelDetailPanel extends Panel
         this._lastSplitPositions["middle"] = [25, 75];
 
         // Split upper-left and bottom-left pane.
-        this._splits["left"] = Split(["#" + attributePane.id, "#" + limePane.id], {
+        this._splits["left"] = Split(["#" + attributePane.id, "#" + explainerPane.id], {
             direction: "vertical",
             sizes: [40, 60],
             onDragEnd: function() {
@@ -187,7 +187,7 @@ export default class ModelDetailPanel extends Panel
                 hyperparameterContentID: "model-details-block-hyperparameter-content",
                 objectiveContentID: "model-details-block-objective-content",
             },
-            limePaneID: "model-details-lime-pane",
+            explainerPaneID: "model-details-explainer-pane",
             scatterplotPaneID: scatterplotPane.id,
             recordPane: {
                 id: recordPane.id,
@@ -217,7 +217,7 @@ export default class ModelDetailPanel extends Panel
         this._reconstructTable();
 
         // -------------------------------------------------------
-        // 4. Draw LIME matrix.
+        // 4. Draw explainer matrix.
         // -------------------------------------------------------
 
         this._redrawAttributeInfluenceHeatmap();
@@ -230,7 +230,7 @@ export default class ModelDetailPanel extends Panel
     _redrawAttributeInfluenceHeatmap()
     {
         let scope       = this;
-        let cfConfig    = this._data.crossfilterData["lime"];
+        let cfConfig    = this._data.crossfilterData["explainer"];
         const attribute = "objective:hyperparameter";
 
         // Determine color scheme, color domain.
@@ -243,10 +243,10 @@ export default class ModelDetailPanel extends Panel
         // let colorDomain = ModelDetailPanel._calculateColorDomain(cfConfig.extrema["weight"], colorScheme);
         let colorDomain = ModelDetailPanel._calculateColorDomain({min: -1, max: 1}, colorScheme);
 
-        const limePane = $("#model-details-lime-pane");
-        this._charts["limeHeatmap"]
-            .height(limePane.height() + 45)
-            .width(limePane.width())
+        const explainerPane = $("#model-details-explainer-pane");
+        this._charts["explainerHeatmap"]
+            .height(explainerPane.height() + 45)
+            .width(explainerPane.width())
             .dimension(cfConfig.dimensions[attribute])
             .group(cfConfig.groups[attribute])
             .colorAccessor(d => d.value)
@@ -276,7 +276,7 @@ export default class ModelDetailPanel extends Panel
                         return "rotate(-50 "+ x + " " + y + ")"
                     });
             });
-        this._charts["limeHeatmap"].render();
+        this._charts["explainerHeatmap"].render();
     }
 
     _reconstructTable()
@@ -314,7 +314,7 @@ export default class ModelDetailPanel extends Panel
         this._charts["scatterplots"]    = {};
         const numDimensions             = this._data._allModelMetadata[this._data._modelID].n_components;
         let numPlotsInRow               = Math.max(numDimensions - 1, 1);
-        const scatterplotWidth          = chartContainerDiv.width() / numPlotsInRow - 15;
+        const scatterplotWidth          = chartContainerDiv.width() / numPlotsInRow - 25;
         const scatterplotHeight         = chartContainerDiv.height() / numPlotsInRow - 10;
 
         // Generate all combinations of dimension indices.
@@ -381,7 +381,7 @@ export default class ModelDetailPanel extends Panel
 
         let scatterplot = dc.scatterPlot(
             "#" + scatterplotContainer.id,
-            this._target,
+            this._operator._target,
             drMetaDataset,
             null,
             null,
@@ -585,7 +585,7 @@ export default class ModelDetailPanel extends Panel
         let data        = this._data;
         let stageDiv    = $("#" + this._operator._stage._target);
 
-        // Update LIME rule lookup.
+        // Update explainer rule lookup.
         this._updateExplanationRuleLookup();
 
         // Show modal.
@@ -653,10 +653,22 @@ export default class ModelDetailPanel extends Panel
     {
         // We know that the only possible source we want to consider for a highlighting operation is the correponding
         // ModelDetailTable instance, so we can safely ignore all other sources.
-        if (this._charts["table"] !== null)
+        if (this._charts["table"] !== null) {
             if (this._charts["table"].name === source) {
                 for (const scatterplot in this._charts["scatterplots"])
                     this._charts["scatterplots"][scatterplot].highlight(id);
             }
+        }
+    }
+
+     /**
+      * Updates filter in scatterplots after selection in other charts (histograms, Shepard diagram, coranking matrix).
+      * @param recordIDs Set of recordIDs.
+      */
+    updateFilteredRecordBuffer(recordIDs)
+    {
+        for (let scatterplotID in this._charts.scatterplots) {
+            this._charts.scatterplots[scatterplotID].identifyFilteredRecords(d => recordIDs.has(d[2]));
+        }
     }
 }

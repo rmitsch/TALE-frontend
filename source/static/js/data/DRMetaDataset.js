@@ -394,7 +394,7 @@ export default class DRMetaDataset extends Dataset
                 ) {
                     // Create combined dimension (for scatterplot).
                     this._cf_dimensions[combinedKey] = this._crossfilter.dimension(
-                        function(d) { return [d[processedAttribute1], d[obj + "#ssp"], d["id"]]; }
+                        d => [d[processedAttribute1], d[obj + "#ssp"], d["id"]]
                     );
 
                     // Mirror dimension to transposed key.

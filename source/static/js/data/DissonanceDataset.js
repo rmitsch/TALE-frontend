@@ -114,9 +114,7 @@ export default class DissonanceDataset extends Dataset
         let attributes = ["sample_id", "model_id", "measure", this._supportedDRModelMeasure];
 
         for (let attribute of attributes) {
-            this._cf_dimensions[attribute] = this._crossfilter.dimension(
-                function(d) { return d[attribute]; }
-            );
+            this._cf_dimensions[attribute] = this._crossfilter.dimension(d => d[attribute]);
 
             // Find extrema.
             this._calculateSingularExtremaByAttribute(attribute);

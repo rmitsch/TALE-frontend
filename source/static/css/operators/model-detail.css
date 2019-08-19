@@ -27,7 +27,7 @@
 
 .model-detail-scatterplot-row {
     display: block;
-    width: calc(100% - 10px);
+    width: calc(100% - 0px);
     padding-left: 10px;
     padding-bottom: 5px;
 }
@@ -71,7 +71,7 @@
     font-size: 14px;
 }
 
-#model-details-lime-pane {
+#model-details-explainer-pane {
     height: calc(100% - 50px);
     width: calc(100% - 0px);
 }
@@ -100,4 +100,33 @@ table.attributeTable th {
 
 table.attributeTable tr:nth-child(even) {
     background-color: #f2f2f2;
+}
+
+.model-detail-table table.dataTable thead .sorting,
+.model-detail-table table.dataTable thead .sorting_asc,
+.model-detail-table table.dataTable thead .sorting_desc {
+    height: 65px;
+    vertical-align: bottom;
+    background-position: 100% 87%;
+    min-width: 40px;
+    position: relative;
+}
+
+.model-detail-chart-container .chart {
+    height: 100%;
+}
+
+#model-detail-histogram-container {
+    height: 45px;
+    width: 100%;
+    overflow: hidden;
+    position: absolute;
+    top: 35px;
+    z-index: 1;
+    margin-left: 10px;
+}
+
+.model-detail-table-histogram {
+    height: 50px;
+    position: absolute;
 }

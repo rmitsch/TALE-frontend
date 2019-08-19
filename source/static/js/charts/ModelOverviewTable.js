@@ -64,12 +64,12 @@ export default class ModelOverviewTable extends Chart
 
         // Transform records to format accepted by DataTable.
         for (let i = 0; i < records.length; i++) {
-            let transformedRecord   = [this._attributes.length + 1];
+            transformedRecords[i]   = [this._attributes.length + 1];
+            let transformedRecord   = transformedRecords[i];
             transformedRecord[0]    = records[i].id;
             for (let j = 0; j < this._attributes.length; j++) {
                 transformedRecord[j + 1] = records[i][this._attributes[j]];
             }
-            transformedRecords[i] = transformedRecord;
         }
 
         this._cf_chart.rows.add(transformedRecords);
