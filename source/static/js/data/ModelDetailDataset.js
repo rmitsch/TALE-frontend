@@ -123,8 +123,8 @@ export default class ModelDetailDataset extends Dataset
             config.dimensions[attribute] = cf.dimension(d => d[attribute]);
             // Calculate extrema.
             const extremaInfo = this._calculateSingularExtremaByDimension(config.dimensions[attribute], attribute);
-            config.extrema["weight"] = extremaInfo.extrema;
-            config.intervals["weight"] = extremaInfo.interval;
+            config.extrema[attribute] = extremaInfo.extrema;
+            config.intervals[attribute] = extremaInfo.interval;
         }
 
         // 2. Create pairwise dimensions and groups for scatterplots/heatmaps.

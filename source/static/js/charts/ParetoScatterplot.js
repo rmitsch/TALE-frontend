@@ -95,7 +95,7 @@ export default class ParetoScatterplot extends Scatterplot
     constructCFChart()
     {
         // Use operator's target ID as group name.
-        this._cf_chart = dc.scatterPlot(
+        this._cf_chart = dc.paretoScatterPlot(
             "#" + this._target,
             this._panel._operator._target,
             this._dataset,

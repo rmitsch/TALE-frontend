@@ -130,3 +130,8 @@ table.attributeTable tr:nth-child(even) {
     height: 50px;
     position: absolute;
 }
+
+#shepard-diagram {
+    width: 100%;
+    height: 100%;
+}

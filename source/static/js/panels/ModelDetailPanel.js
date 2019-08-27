@@ -77,10 +77,10 @@ export default class ModelDetailPanel extends Panel
         );
 
         // Initialize co-ranking matrix.
-        this._charts["corankingMatrix"] = dc.heatMap(
-            "#" + this._divStructure.corankingPaneID,
-            dcGroupName
-        );
+        // this._charts["corankingMatrix"] = dc.heatMap(
+        //     "#" + this._divStructure.corankingPaneID,
+        //     dcGroupName
+        // );
     }
 
     /**
@@ -150,7 +150,7 @@ export default class ModelDetailPanel extends Panel
         let recordPane = Utils.spawnChildDiv(
             samplePane.id, null, "model-detail-pane split-vertical",
             `<div class='model-details-block' id='model-details-block-record-table'>
-                <div class='model-details-title'>Selected Sample(s)</span>
+                <div class='model-details-title'>Selected Sample(s)</div>
             </div>`
         );
 
@@ -158,7 +158,7 @@ export default class ModelDetailPanel extends Panel
         let shepardPane = Utils.spawnChildDiv(
             dimRedAnalyticsPane.id, null, "model-detail-pane split-vertical",
             `<div class='model-details-block' id='model-details-block-shepard-diagram'>
-                <div class='model-details-title'>Shepard Diagram</span>
+                <div class='model-details-title'>Shepard Diagram</div>
                 <div id="shepard-diagram"></div>
             </div>`
         );
@@ -167,7 +167,7 @@ export default class ModelDetailPanel extends Panel
         let corankingPane = Utils.spawnChildDiv(
             dimRedAnalyticsPane.id, null, "model-detail-pane split-vertical",
             `<div class='model-details-block' id='model-details-block-coranking-matrix'>
-                <div class='model-details-title'>Co-ranking Matrix</span>
+                <div class='model-details-title'>Co-ranking Matrix</div>
                 <div id="coranking-matrix"></div>
             </div>`
         );
@@ -255,7 +255,7 @@ export default class ModelDetailPanel extends Panel
         // 3. Draw scatterplot/hex heatmap for Shepard diagram.
         // -------------------------------------------------------
 
-        this._redrawShepardDiagram();
+        // this._redrawShepardDiagram();
 
         // -------------------------------------------------------
         // 4. todo Draw heatmap for co-ranking matrix.
@@ -298,7 +298,7 @@ export default class ModelDetailPanel extends Panel
 
         const explainerPane = $("#model-details-explainer-pane");
         this._charts["explainerHeatmap"]
-            .height(explainerPane.height() + 45)
+            .height(explainerPane.height() + 35)
             .width(explainerPane.width())
             .dimension(cfConfig.dimensions[attribute])
             .group(cfConfig.groups[attribute])
@@ -406,7 +406,7 @@ export default class ModelDetailPanel extends Panel
     _redrawShepardDiagram()
     {
         // Fetch divs containing attribute sparklines.
-        let chartContainerDiv = $("#" + this._divStructure.shepardPaneID);
+        let chartContainerDiv = $("#shepard-diagram");
 
         // -------------------------------------------------------
         // 1. Reset existing chart container.
@@ -419,13 +419,81 @@ export default class ModelDetailPanel extends Panel
         // 2. Append new chart containers, draw scatterplots.
         // -------------------------------------------------------
 
-        this._charts["shepardDiagram"]  = new HexagonalHeatmap(
-            "Shepard Diagram", this, this._dataset, {}, "hexagonal-heatmap"
-        );
+        this._charts.shepardDiagram = this._generateShepardDiagram();
+        this._charts.shepardDiagram.render();
+        // this._charts["shepardDiagram"]  = new HexagonalHeatmap(
+        //     "Shepard Diagram", this, this._dataset, {}, "hexagonal-heatmap"
+        // );
 
         // for (let scatterplotPos in this._charts.scatterplots) {
-        //     this._setFilterHandler(this._charts.scatterplots[scatterplotPos], scatterplotPos);
+        this._setFilterHandler(this._charts.shepardDiagram, null);
         // }
+    }
+
+    /**
+     * Generates Shepard diagram as a variant of a binned scatterplot.
+     * @private
+     * @returns {dc.paretoScatterPlot} Generated scatter plot-based heatmap.
+     */
+    _generateShepardDiagram()
+    {
+        let cf_config           = this._data.crossfilterData.pairwiseDisplacement;
+        const containerDiv      = $("#shepard-diagram");
+        const xAttr             = "high_dim_distance";
+        const yAttr             = "low_dim_distance";
+        const key               = xAttr + ":" + yAttr;
+        let drMetaDataset       = this._operator._drMetaDataset;
+        const dataPadding       = {
+            x: cf_config.intervals[xAttr] * 0.1,
+            y: cf_config.intervals[yAttr] * 0.1
+        };
+        const chartSize         = {
+            width: containerDiv.width(), height: containerDiv.height() * 0.9
+        };
+
+        console.log(cf_config);
+
+        let shepardDiagram = dc.paretoScatterPlot(
+            "#shepard-diagram",
+            this._operator._target,
+            drMetaDataset,
+            null,
+            null,
+            false
+        );
+
+        // Configure scatterplot.
+        shepardDiagram
+            .height(chartSize.height)
+            .width(chartSize.width)
+            .useCanvas(true)
+            .x(d3.scale.linear().domain([
+                cf_config.extrema[xAttr].min - dataPadding.x,
+                cf_config.extrema[xAttr].max + dataPadding.x
+            ]))
+            .y(d3.scale.linear().domain([
+                cf_config.extrema[yAttr].min - dataPadding.y,
+                cf_config.extrema[yAttr].max + dataPadding.y
+            ]))
+            .renderHorizontalGridLines(true)
+            .renderVerticalGridLines(true)
+            .dimension(cf_config.dimensions[key])
+            .group(cf_config.groups[key])
+            .keyAccessor(d => d.key[0])
+            .valueAccessor(d => d.key[1])
+            .existenceAccessor(d => d.value.count > 0)
+            .excludedSize(1)
+            .excludedOpacity(0.7)
+            .excludedColor("#ccc")
+            .symbolSize(1)
+            .filterOnBrushEnd(true)
+            .mouseZoomable(false)
+            .margins({top: 0, right: 5, bottom: 5, left: 5});
+
+        shepardDiagram.yAxis().ticks(5);
+        shepardDiagram.xAxis().ticks(5);
+
+        return shepardDiagram;
     }
 
     /**
@@ -434,7 +502,7 @@ export default class ModelDetailPanel extends Panel
      * crossfilter dimensions and groups and to generate unique div IDs.
      * @param scatterplotSize Size of scatterplot. Has .height and .width.
      * @param parentDivID
-     * @returns {dc.scatterPlot} Generated scatter plt.
+     * @returns {dc.paretoScatterPlot} Generated scatter plt.
      * @private
      */
     _generateScatterplot(currIndices, scatterplotSize, parentDivID)
@@ -457,7 +525,7 @@ export default class ModelDetailPanel extends Panel
         );
         $("#" + scatterplotContainer.id).css('left', (i * (scatterplotSize.width + 10)) + 'px');
 
-        let scatterplot = dc.scatterPlot(
+        let scatterplot = dc.paretoScatterPlot(
             "#" + scatterplotContainer.id,
             this._operator._target,
             drMetaDataset,
@@ -466,7 +534,7 @@ export default class ModelDetailPanel extends Panel
             false
         );
 
-        // Render scatterplot.
+        // Configure scatterplot.
         scatterplot
             .height(scatterplotSize.height)
             .width(scatterplotSize.width)
@@ -483,15 +551,9 @@ export default class ModelDetailPanel extends Panel
             .renderVerticalGridLines(true)
             .dimension(cf_config.dimensions[key])
             .group(cf_config.groups[key])
-            .keyAccessor(function(d) {
-                return d.key[0];
-             })
-            .valueAccessor(function(d) {
-                return d.key[1];
-             })
-            .existenceAccessor(function(d) {
-                return d.value.count > 0;
-            })
+            .keyAccessor(d => d.key[0])
+            .valueAccessor(d => d.key[1])
+            .existenceAccessor(d => d.value.count > 0)
             .excludedSize(1)
             .excludedOpacity(0.7)
             .excludedColor("#ccc")
@@ -519,8 +581,10 @@ export default class ModelDetailPanel extends Panel
         chart.filterHandler(function (dimension, filters) {
             if (filters.length === 0) {
                 dimension.filter(null);
-                for (let scatterplotPos in scatterplots)
-                    scatterplots[scatterplotPos].identifyFilteredRecords(d => true);
+
+                if (pos !== null)
+                    for (let scatterplotPos in scatterplots)
+                        scatterplots[scatterplotPos].identifyFilteredRecords(d => true);
             }
 
             else {
@@ -550,10 +614,11 @@ export default class ModelDetailPanel extends Panel
                 }
                 dimension.filterFunction(d => filteredIDs.has(d[2]));
 
-                for (let scatterplotPos in scatterplots) {
-                    if (pos !== scatterplotPos)
-                        scatterplots[scatterplotPos].identifyFilteredRecords(d => filteredIDs.has(d[2]));
-                }
+                if (pos !== null)
+                    for (let scatterplotPos in scatterplots) {
+                        if (pos !== scatterplotPos)
+                            scatterplots[scatterplotPos].identifyFilteredRecords(d => filteredIDs.has(d[2]));
+                    }
             }
 
             return filters;
