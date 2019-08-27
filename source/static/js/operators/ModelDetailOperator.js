@@ -50,8 +50,9 @@ export default class ModelDetailOperator extends Operator
     /**
      * Loads data and constructs dataset from specified DR model ID.
      * @param modelID
+     * @param onLoaded
      */
-    loadData(modelID)
+    loadData(modelID, onLoaded = null)
     {
         this._modelID   = modelID;
         let scope       = this;
@@ -77,6 +78,10 @@ export default class ModelDetailOperator extends Operator
 
             // Prompt panel to update data and to re-render.
             scope._panels["Model Details"].update();
+
+            // Use callback, if defined.
+            if (onLoaded !== null)
+                onLoaded();
         });
     }
 

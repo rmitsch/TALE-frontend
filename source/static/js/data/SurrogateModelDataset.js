@@ -55,38 +55,11 @@ export default class SurrogateModelDataset extends Dataset {
         // Create group for histogram.
         for (let histogramAttribute of histogramAttributes) {
             // Create group for histogram.
-            this._cf_groups[histogramAttribute] = this._generateGroupWithCounts(histogramAttribute);
+            this._cf_groups[histogramAttribute] = this._generateGroupWithCountsWithoutExtrema(histogramAttribute);
 
             // Calculate extrema.
             this._calculateExtremaForAttribute(histogramAttribute, "numerical");
         }
-    }
-
-    /**
-     * Generates crossfilter group with information on number of elements..
-     * @param attribute
-     * @returns Newly generated group.
-     * @private
-     */
-    _generateGroupWithCounts(attribute)
-    {
-        return this._cf_dimensions[attribute].group().reduce(
-            function(elements, item) {
-                elements.items.add(item);
-                elements.ids.add(item.id);
-                elements.count++;
-                return elements;
-            },
-            function(elements, item) {
-                elements.items.delete(item);
-                elements.ids.delete(item.id);
-                elements.count--;
-                return elements;
-            },
-            function() {
-                return { items: new Set(), count: 0, ids: new Set() };
-            }
-        );
     }
 
     get crossfilter()

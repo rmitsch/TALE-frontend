@@ -33,6 +33,8 @@ export default class ModelDetailDataset extends Dataset
             this._explanations, modelDataJSON.explanation_columns
         );
         this._sampleDissonances             = modelDataJSON.sample_dissonances;
+        this._pairwiseDisplacementData      = modelDataJSON.pairwise_displacement_data;
+        console.log(this._pairwiseDisplacementData);
 
         // Gather attributes available for original record.
         this._originalRecordAttributes  = [];
@@ -216,7 +218,7 @@ export default class ModelDetailDataset extends Dataset
 
                 // Create dimension and group for histogram.
                 this._cf_dimensions[histogramAttribute] = cf.dimension(d => d[histogramAttribute]);
-                this._cf_groups[histogramAttribute]     = this._generateGroupWithCounts(histogramAttribute);
+                this._cf_groups[histogramAttribute]     = this._generateGroupWithCountsWithoutExtrema(histogramAttribute);
 
                 // Calculate extrema.
                 this._calculateExtremaForAttribute(histogramAttribute, "numerical");
@@ -347,33 +349,6 @@ export default class ModelDetailDataset extends Dataset
     get crossfilterData()
     {
         return this._crossfilterData;
-    }
-
-    /**
-     * Generates crossfilter group with information on number of elements.
-     * @param attribute
-     * @returns Newly generated group.
-     * @private
-     */
-    _generateGroupWithCounts(attribute)
-    {
-        return this._cf_dimensions[attribute].group().reduce(
-            function(elements, item) {
-                elements.items.add(item);
-                elements.ids.add(item.id);
-                elements.count++;
-                return elements;
-            },
-            function(elements, item) {
-                elements.items.delete(item);
-                elements.ids.delete(item.id);
-                elements.count--;
-                return elements;
-            },
-            function() {
-                return { items: new Set(), count: 0, ids: new Set() };
-            }
-        );
     }
 
     get cf_dimensions()
