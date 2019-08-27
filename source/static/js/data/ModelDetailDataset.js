@@ -140,9 +140,6 @@ export default class ModelDetailDataset extends Dataset
             // Create pairwise groups.
             config.groups[key] = Dataset._generateGroupWithCountsWithoutExtremaForArbitraryDimension(config.dimensions[key]);
         }
-
-        // todo render charts for pw-displacement plots; embed necessary UI elements (title? metric switch?).
-        //  performance at detail view opening might be improved, but is ok for now.
     }
 
     /**

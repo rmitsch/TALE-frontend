@@ -34,7 +34,6 @@ export default class Scatterplot extends Chart
         // Store binning preference.
         this._useBinning = useBinning;
 
-
         // Construct graph.
         this.constructCFChart();
     }

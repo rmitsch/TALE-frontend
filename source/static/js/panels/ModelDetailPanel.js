@@ -2,6 +2,7 @@ import Panel from "./Panel.js";
 import Utils from "../Utils.js";
 import DRMetaDataset from "../data/DRMetaDataset.js";
 import ModelDetailTable from "../charts/ModelDetailTable.js";
+import HexagonalHeatmap from "../charts/HexagonalHeatmap.js";
 
 
 /**
@@ -74,6 +75,12 @@ export default class ModelDetailPanel extends Panel
             "#" + this._divStructure.explainerPaneID,
             dcGroupName
         );
+
+        // Initialize co-ranking matrix.
+        this._charts["corankingMatrix"] = dc.heatMap(
+            "#" + this._divStructure.corankingPaneID,
+            dcGroupName
+        );
     }
 
     /**
@@ -121,6 +128,7 @@ export default class ModelDetailPanel extends Panel
                 <div id="model-details-block-objective-content"></div>
             </div>`
         );
+
         // 2. Bottom-left pane - explanation of hyperparameter importance for this DR model.
         let explainerPane = Utils.spawnChildDiv(
             parameterPane.id, null, "model-detail-pane split-vertical",
@@ -151,6 +159,7 @@ export default class ModelDetailPanel extends Panel
             dimRedAnalyticsPane.id, null, "model-detail-pane split-vertical",
             `<div class='model-details-block' id='model-details-block-shepard-diagram'>
                 <div class='model-details-title'>Shepard Diagram</span>
+                <div id="shepard-diagram"></div>
             </div>`
         );
 
@@ -158,7 +167,8 @@ export default class ModelDetailPanel extends Panel
         let corankingPane = Utils.spawnChildDiv(
             dimRedAnalyticsPane.id, null, "model-detail-pane split-vertical",
             `<div class='model-details-block' id='model-details-block-coranking-matrix'>
-                <div class='model-details-title'>Coranking Matrix</span>
+                <div class='model-details-title'>Co-ranking Matrix</span>
+                <div id="coranking-matrix"></div>
             </div>`
         );
 
@@ -242,13 +252,25 @@ export default class ModelDetailPanel extends Panel
         this._redrawRecordScatterplots();
 
         // -------------------------------------------------------
-        // 3. Update table.
+        // 3. Draw scatterplot/hex heatmap for Shepard diagram.
+        // -------------------------------------------------------
+
+        this._redrawShepardDiagram();
+
+        // -------------------------------------------------------
+        // 4. todo Draw heatmap for co-ranking matrix.
+        // -------------------------------------------------------
+
+
+
+        // -------------------------------------------------------
+        // 5. Update table.
         // -------------------------------------------------------
 
         this._reconstructTable();
 
         // -------------------------------------------------------
-        // 4. Draw explainer matrix.
+        // 6. Draw explainer matrix.
         // -------------------------------------------------------
 
         this._redrawAttributeInfluenceHeatmap();
@@ -379,6 +401,31 @@ export default class ModelDetailPanel extends Panel
         for (let scatterplotPos in this._charts.scatterplots) {
             this._setFilterHandler(this._charts.scatterplots[scatterplotPos], scatterplotPos);
         }
+    }
+
+    _redrawShepardDiagram()
+    {
+        // Fetch divs containing attribute sparklines.
+        let chartContainerDiv = $("#" + this._divStructure.shepardPaneID);
+
+        // -------------------------------------------------------
+        // 1. Reset existing chart container.
+        // -------------------------------------------------------
+
+        // Reset chart container.
+        chartContainerDiv.empty();
+
+        // -------------------------------------------------------
+        // 2. Append new chart containers, draw scatterplots.
+        // -------------------------------------------------------
+
+        this._charts["shepardDiagram"]  = new HexagonalHeatmap(
+            "Shepard Diagram", this, this._dataset, {}, "hexagonal-heatmap"
+        );
+
+        // for (let scatterplotPos in this._charts.scatterplots) {
+        //     this._setFilterHandler(this._charts.scatterplots[scatterplotPos], scatterplotPos);
+        // }
     }
 
     /**

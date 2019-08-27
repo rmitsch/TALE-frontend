@@ -18,7 +18,7 @@
 
 .model-details-title {
     margin-bottom: 10px;
-    display: none;
+    font-size: 16px;
 }
 
 .model-detail-scatterplot, .model-detail-scatterplot-placeholder {
