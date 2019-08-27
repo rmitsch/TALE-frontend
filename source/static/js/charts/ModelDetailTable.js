@@ -21,6 +21,8 @@ export default class ModelDetailTable extends Chart
         // ----------------------------------------
 
         super(name, panel, attributes, dataset, style, parentDivID);
+
+        // Pre-process attribute data.
         this._preprocessAttributes();
 
         // Update involved CSS classes.
@@ -100,7 +102,8 @@ export default class ModelDetailTable extends Chart
 
             transformedRecord[0]    = records[i].id;
             for (let j = 0; j < this._attributes.length; j++) {
-                transformedRecord[j + 1] = records[i][this._attributes[j]];
+                const currAttr = this._attributes[j];
+                transformedRecord[j + 1] = records[i][currAttr];
             }
             transformedRecords[i] = transformedRecord;
         }

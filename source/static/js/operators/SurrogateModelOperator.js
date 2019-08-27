@@ -96,7 +96,7 @@ export default class SurrogateModelOperator extends Operator
     updateSurrogateModelChart(filteredIDs)
     {
         let instance        = this;
-        let cursorTarget    = $("#" + this._panels["Global Surrogate Model"]._target);
+        let cursorTarget    = $("html");
         let idString        = "";
         let options         = SurrogateModelSettingsPanel.getOptionValues();
         // Fall back to current set of filtered embedding IDs, if none specified.
