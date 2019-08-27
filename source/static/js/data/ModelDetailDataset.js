@@ -34,7 +34,6 @@ export default class ModelDetailDataset extends Dataset
         );
         this._sampleDissonances             = modelDataJSON.sample_dissonances;
         this._pairwiseDisplacementData      = modelDataJSON.pairwise_displacement_data;
-        console.log(this._pairwiseDisplacementData);
 
         // Gather attributes available for original record.
         this._originalRecordAttributes  = [];
@@ -58,7 +57,7 @@ export default class ModelDetailDataset extends Dataset
      */
     _initCrossfilterData()
     {
-        for (let cf_dataset_name of ["low_dim_projection", "explainer"]) {
+        for (let cf_dataset_name of ["low_dim_projection", "explainer", "pairwiseDisplacement"]) {
             this._crossfilterData[cf_dataset_name] = {
                 crossfilter: null,
                 dimensions: {},
@@ -68,14 +67,18 @@ export default class ModelDetailDataset extends Dataset
             }
         }
 
-        // Create crossfilter instance for low-dimensional projection (LDP).
-        this._crossfilterData["low_dim_projection"].crossfilter = crossfilter(this._low_dim_projection);
-        // Create crossfilter instance for explainer heatmap.
-        this._crossfilterData["explainer"].crossfilter          = crossfilter(this._preprocessedExplanationData);
+        // Create crossfilter instance for...
+        // ...low-dimensional projection (LDP).
+        this._crossfilterData["low_dim_projection"].crossfilter     = crossfilter(this._low_dim_projection);
+        // ...explainer heatmap.
+        this._crossfilterData["explainer"].crossfilter              = crossfilter(this._preprocessedExplanationData);
+        // ...pairwise displacement data.
+        this._crossfilterData["pairwiseDisplacement"].crossfilter = crossfilter(this._pairwiseDisplacementData);
 
         // Initialize dimensions and groups for crossfilter datasets.
         this._configureCoreCrossfilter();
         this._configureExplanationsCrossfilter();
+        this._configurePairwiseDisplacementCrossfilter();
     }
 
     /**
@@ -103,6 +106,46 @@ export default class ModelDetailDataset extends Dataset
     }
 
     /**
+     * Configures dimensions and groups for pairwise displacement crossfilter used in Shepard diagram and co-ranking
+     * matrix.
+     * @private
+     */
+    _configurePairwiseDisplacementCrossfilter()
+    {
+        let config  = this._crossfilterData.pairwiseDisplacement;
+        let cf      = config.crossfilter;
+
+        // 1. Create singular dimensions.
+        for (let attribute of [
+            "source", "neighbour", "high_dim_distance", "low_dim_distance", "high_dim_neighbour_rank",
+            "low_dim_neighbour_rank", "metric"
+        ]) {
+            config.dimensions[attribute] = cf.dimension(d => d[attribute]);
+            // Calculate extrema.
+            const extremaInfo = this._calculateSingularExtremaByDimension(config.dimensions[attribute], attribute);
+            config.extrema["weight"] = extremaInfo.extrema;
+            config.intervals["weight"] = extremaInfo.interval;
+        }
+
+        // 2. Create pairwise dimensions and groups for scatterplots/heatmaps.
+        for (const combinedAttributes of [
+            ["high_dim_distance", "low_dim_distance"],
+            ["high_dim_neighbour_rank", "low_dim_neighbour_rank"]
+        ]) {
+            const key = combinedAttributes[0] + ":" + combinedAttributes[1];
+            // Create pairwise dimensions.
+            config.dimensions[key] = config.crossfilter.dimension(
+                d => [d[combinedAttributes[0]], d[combinedAttributes[1]]]
+            );
+            // Create pairwise groups.
+            config.groups[key] = Dataset._generateGroupWithCountsWithoutExtremaForArbitraryDimension(config.dimensions[key]);
+        }
+
+        // todo render charts for pw-displacement plots; embed necessary UI elements (title? metric switch?).
+        //  performance at detail view opening might be improved, but is ok for now.
+    }
+
+    /**
      * Configures dimensions and groups for explanations crossfilter used in heatmap.
      * @private
      */
@@ -120,7 +163,7 @@ export default class ModelDetailDataset extends Dataset
 
         // Initialize group returning rule weight.
         config.groups["objective:hyperparameter"] = config.dimensions["objective:hyperparameter"].group().reduceSum(
-            function(d) { return +d.weight; }
+            d => +d.weight
         );
 
         // Calculate extrema.

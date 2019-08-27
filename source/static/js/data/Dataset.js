@@ -153,7 +153,18 @@ export default class Dataset
      */
     _generateGroupWithCountsWithoutExtrema(attribute)
     {
-        return this._cf_dimensions[attribute].group().reduce(
+        return Dataset._generateGroupWithCountsWithoutExtremaForArbitraryDimension(this._cf_dimensions[attribute]);
+    }
+
+    /**
+     * Generates crossfilter group with information on number of elements without determining extrema.
+     * @param dimension
+     * @returns Newly generated group.
+     * @private
+     */
+    static _generateGroupWithCountsWithoutExtremaForArbitraryDimension(dimension)
+    {
+        return dimension.group().reduce(
             function(elements, item) {
                 elements.items.add(item);
                 elements.ids.add(item.id);
