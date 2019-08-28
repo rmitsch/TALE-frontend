@@ -135,6 +135,7 @@ table.attributeTable tr:nth-child(even) {
     width: 100%;
     height: calc(100% - 30px);
     padding-left: 20px;
+    padding-bottom: 10px;
 }
 
 .hexagonal-heatmap {

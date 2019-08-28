@@ -1,7 +1,6 @@
 import Utils from "../Utils.js";
 import DRMetaDataset from "../data/DRMetaDataset.js";
 import Chart from "./Chart.js";
-import HexHeatmap from "./Heatmap.js";
 
 /**
  * Hexagonal heatmap.
@@ -45,7 +44,7 @@ export default class HexagonalHeatmap extends Chart
         let attrs       = this._attributes;
         const target    = $("#" + this._target);
         const radius    = 5;
-        const margin    = {top: radius + 5, right: radius + 5, bottom: radius + 5, left: radius + 5};
+        const margin    = {top: radius + 5, right: radius + 5, bottom: radius + 20, left: radius + 10};
         const width     = target.width() - margin.left - margin.right;
         const height    = target.height() - margin.top - margin.bottom;
 
@@ -86,10 +85,6 @@ export default class HexagonalHeatmap extends Chart
         // Find cell content extrema.
         const maxElemCount = Math.max(...bins.map(bin => bin.length));
 
-        let max = 0;
-        for (let bin of bins)
-            max = Math.max(bin.length, max);
-
         // --------------------------------------
         // 3. Append/reset SVG to container div.
         // --------------------------------------
@@ -123,6 +118,48 @@ export default class HexagonalHeatmap extends Chart
             .attr("d", hexbin.hexagon())
             .attr("transform", d => "translate(" + d.x + "," + d.y + ")")
             .style("fill", d => colors(Math.log10(d.length)));
+
+        // Add axes.
+        let xAxisScale = d3.scale
+            .linear()
+            .domain([0, extrema[attrs[0]].max])
+            .range([0, target.width()]);
+        let yAxisScale = d3.scale
+            .linear()
+            .domain([0, extrema[attrs[1]].max])
+            .range([0, target.height()]);
+        let xAxis = d3.svg
+            .axis()
+            .scale(xAxisScale)
+            .ticks(2)
+            .orient("bottom");
+        let yAxis = d3.svg
+            .axis()
+            .scale(yAxisScale)
+            .ticks(2)
+            .orient("left");
+        const axisStyle = {
+            'stroke': 'black',
+            'fill': 'none',
+            'stroke-width': '1px',
+            "shape-rendering": "crispEdges",
+            "font": "10px sans-serif",
+            "font-weight": "normal"
+        };
+
+        svg
+            .append("g")
+            .attr("class", "shepard-diagram-x-axis")
+            .attr("transform", "translate(0," + (target.height() - 20) + ")")
+            .style(axisStyle)
+            .call(xAxis);
+        svg
+            .append("g")
+            .attr("class", "shepard-diagram-y-axis")
+            .style(axisStyle)
+            .call(yAxis);
+
+
     }
 
     resize()
