@@ -133,5 +133,17 @@ table.attributeTable tr:nth-child(even) {
 
 #shepard-diagram {
     width: 100%;
+    height: calc(100% - 30px);
+    padding-left: 20px;
+}
+
+.hexagonal-heatmap {
+    width: 100%;
     height: 100%;
+}
+
+.hexagons {
+    fill: none;
+    stroke: #000;
+    border: none;
 }

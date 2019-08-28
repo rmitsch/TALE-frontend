@@ -1,13 +1,14 @@
-import Scatterplot from "./Scatterplot.js";
 import Utils from "../Utils.js";
 import DRMetaDataset from "../data/DRMetaDataset.js";
+import Chart from "./Chart.js";
+import HexHeatmap from "./Heatmap.js";
 
 /**
- * Hexagonal heatmap, without all the other extra stuff included in ParetoScatterplot, like correlation bars and
- * scatterplot options. Also looser coupled to data.
- * Ideally this should be a mix-in or at least totally flexibly coupled; time constraints enforce this approach.
+ * Hexagonal heatmap.
+ * Note: Functionality for integration with crossfilter.js should be mixin, lack of time enforces this half-baked
+ * approach.
  */
-export default class HexagonalHeatmap extends Scatterplot
+export default class HexagonalHeatmap extends Chart
 {
     /**
      * Instantiates new HexagonalHeatmap.
@@ -15,19 +16,23 @@ export default class HexagonalHeatmap extends Scatterplot
      * @param panel
      * @param dataset Expects dataset of Type as list of dicts with a set of properties including id, x, y. Other
      * properties are not mandatory.
+     * @param attributes List of length 2, containing identifiers of attributes to use for x- respectively y-axis.
      * @param style Various style settings (chart width/height, colors, ...). Arbitrary format, has to be parsed indivdually
      * by concrete classes.
      * @param parentDivID
      */
-    constructor(name, panel, dataset, style, parentDivID)
+    constructor(name, panel, attributes, dataset, style, parentDivID)
     {
-        super(name, panel, ["x", "y"], dataset, style, parentDivID, true);
+        super(name, panel, attributes, dataset, style, parentDivID);
 
         // Used to store max. value in heatmap cell - important for setting color of cells.
         this._maxCellValue = null;
 
         // Update involved CSS classes.
         $("#" + this._target).addClass("hexagonal-heatmap");
+
+        // Construct heatmap.
+        this.constructCFChart();
     }
 
     render()
@@ -36,6 +41,91 @@ export default class HexagonalHeatmap extends Scatterplot
     }
 
     constructCFChart()
+    {
+        let attrs       = this._attributes;
+        const target    = $("#" + this._target);
+        const radius    = 5;
+        const margin    = {top: radius + 5, right: radius + 5, bottom: radius + 5, left: radius + 5};
+        const width     = target.width() - margin.left - margin.right;
+        const height    = target.height() - margin.top - margin.bottom;
+
+        // --------------------------------------
+        // 1. Filter and transform records.
+        // --------------------------------------
+
+        let extrema = {
+            [attrs[0]]: {max: -Infinity, min: 0},
+            [attrs[1]]: {max: -Infinity, min: 0}
+        };
+
+        let records = [];
+        for (const record of this._dataset) {
+            // todo Filtering of records w.r.t. to detail view scatterplots.
+            records.push([record[attrs[0]], record[attrs[1]]]);
+
+            for (let attr of attrs) {
+                if (extrema[attr].max < record[attr])
+                    extrema[attr].max = record[attr];
+            }
+        }
+        let normalizedRecords = records.map(record => ([
+            width * record[0] / extrema[attrs[0]].max,
+            height * record[1] / extrema[attrs[1]].max
+        ]));
+
+        // --------------------------------------
+        // 2. Bin records.
+        // --------------------------------------
+
+        // Bin records.
+        let hexbin = d3.hexbin()
+            .extent([[-margin.left, -margin.top], [width + margin.right, height + margin.bottom]])
+            .radius(radius);
+        let bins = hexbin(normalizedRecords);
+
+        // Find cell content extrema.
+        const maxElemCount = Math.max(...bins.map(bin => bin.length));
+
+        let max = 0;
+        for (let bin of bins)
+            max = Math.max(bin.length, max);
+
+        // --------------------------------------
+        // 3. Append/reset SVG to container div.
+        // --------------------------------------
+
+        // Define color range.
+        let colors = d3
+            .scaleLinear()
+            .domain([0, Math.log10(maxElemCount)])
+            .range(["#fff7fb", "#1f77b4"]);
+
+        // Draw heatmap.
+        let svg = d3.select("#" + this._target).select("svg");
+        if (!svg.empty())
+            svg.remove();
+        // Append SVG.
+        svg = d3.select("#" + this._target).append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        // --------------------------------------
+        // 4. Draw heatmap.
+        // --------------------------------------
+
+        svg.append("g")
+            .attr("class", "hexagons")
+            .selectAll("path")
+            .data(bins)
+            .enter().append("path")
+            .attr("d", hexbin.hexagon())
+            .attr("transform", d => "translate(" + d.x + "," + d.y + ")")
+            .style("fill", d => colors(Math.log10(d.length)));
+    }
+
+    resize()
     {
 
     }

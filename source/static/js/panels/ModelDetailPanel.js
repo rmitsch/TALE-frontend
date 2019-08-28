@@ -255,7 +255,7 @@ export default class ModelDetailPanel extends Panel
         // 3. Draw scatterplot/hex heatmap for Shepard diagram.
         // -------------------------------------------------------
 
-        // this._redrawShepardDiagram();
+        this._redrawShepardDiagram();
 
         // -------------------------------------------------------
         // 4. todo Draw heatmap for co-ranking matrix.
@@ -419,14 +419,20 @@ export default class ModelDetailPanel extends Panel
         // 2. Append new chart containers, draw scatterplots.
         // -------------------------------------------------------
 
-        this._charts.shepardDiagram = this._generateShepardDiagram();
-        this._charts.shepardDiagram.render();
-        // this._charts["shepardDiagram"]  = new HexagonalHeatmap(
-        //     "Shepard Diagram", this, this._dataset, {}, "hexagonal-heatmap"
-        // );
+        // this._charts.shepardDiagram = this._generateShepardDiagram();
+        // this._charts.shepardDiagram.render();
+
+        this._charts["shepardDiagram"]  = new HexagonalHeatmap(
+            "Shepard Diagram",
+            this,
+            ["high_dim_distance", "low_dim_distance"],
+            this._operator._dataset._pairwiseDisplacementData,
+            {},
+            "shepard-diagram"
+        );
 
         // for (let scatterplotPos in this._charts.scatterplots) {
-        this._setFilterHandler(this._charts.shepardDiagram, null);
+        // this._setFilterHandler(this._charts.shepardDiagram, null);
         // }
     }
 

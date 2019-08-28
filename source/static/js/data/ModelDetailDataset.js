@@ -78,7 +78,7 @@ export default class ModelDetailDataset extends Dataset
         // Initialize dimensions and groups for crossfilter datasets.
         this._configureCoreCrossfilter();
         this._configureExplanationsCrossfilter();
-        this._configurePairwiseDisplacementCrossfilter();
+        // this._configurePairwiseDisplacementCrossfilter();
     }
 
     /**
