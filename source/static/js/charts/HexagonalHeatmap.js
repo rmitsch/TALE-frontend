@@ -41,12 +41,21 @@ export default class HexagonalHeatmap extends Chart
 
     constructCFChart()
     {
-        let attrs       = this._attributes;
-        const target    = $("#" + this._target);
-        const radius    = 5;
-        const margin    = {top: radius + 5, right: radius + 5, bottom: radius + 20, left: radius + 10};
-        const width     = target.width() - margin.left - margin.right;
-        const height    = target.height() - margin.top - margin.bottom;
+        // --------------------------------------
+        // 0. Prepare div structure and
+        // constants.
+        // --------------------------------------
+
+        let chartDiv        = Utils.spawnChildDiv(this._target, null, "model-detail-hexagonal-heatmap-chart");
+        let axesDiv         = Utils.spawnChildDiv(this._target, null, "model-detail-hexagonal-heatmap-axes");
+
+        let attrs           = this._attributes;
+        const targetElem    = $("#" + this._target);
+        const chartElem     = $("#" + chartDiv.id);
+        const radius        = 5;
+        const margin        = {top: radius, right: radius + 5, bottom: radius + 5, left: radius};
+        const chartWidth    = chartElem.width() - margin.left - margin.right;
+        const chartHeight   = chartElem.height() - margin.top - margin.bottom;
 
         // --------------------------------------
         // 1. Filter and transform records.
@@ -68,8 +77,8 @@ export default class HexagonalHeatmap extends Chart
             }
         }
         let normalizedRecords = records.map(record => ([
-            width * record[0] / extrema[attrs[0]].max,
-            height * record[1] / extrema[attrs[1]].max
+            chartWidth * record[0] / extrema[attrs[0]].max,
+            chartHeight * record[1] / extrema[attrs[1]].max
         ]));
 
         // --------------------------------------
@@ -78,7 +87,7 @@ export default class HexagonalHeatmap extends Chart
 
         // Bin records.
         let hexbin = d3.hexbin()
-            .extent([[-margin.left, -margin.top], [width + margin.right, height + margin.bottom]])
+            .extent([[-margin.left, -margin.top], [chartWidth + margin.right, chartHeight + margin.bottom]])
             .radius(radius);
         let bins = hexbin(normalizedRecords);
 
@@ -96,13 +105,13 @@ export default class HexagonalHeatmap extends Chart
             .range(["#fff7fb", "#1f77b4"]);
 
         // Draw heatmap.
-        let svg = d3.select("#" + this._target).select("svg");
+        let svg = d3.select("#" + chartDiv.id).select("svg");
         if (!svg.empty())
             svg.remove();
         // Append SVG.
-        svg = d3.select("#" + this._target).append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
+        svg = d3.select("#" + chartDiv.id).append("svg")
+            .attr("width", chartWidth + margin.left + margin.right)
+            .attr("height", chartHeight + margin.top + margin.bottom)
             .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -119,24 +128,30 @@ export default class HexagonalHeatmap extends Chart
             .attr("transform", d => "translate(" + d.x + "," + d.y + ")")
             .style("fill", d => colors(Math.log10(d.length)));
 
-        // Add axes.
+        // --------------------------------------
+        // 5. Draw axes.
+        // --------------------------------------
+
+        const targetDivHeight   = targetElem.height();
+        const targetDivWidth    = targetElem.width();
+
         let xAxisScale = d3.scale
             .linear()
             .domain([0, extrema[attrs[0]].max])
-            .range([0, target.width()]);
+            .range([0, targetDivWidth - 20]);
         let yAxisScale = d3.scale
             .linear()
             .domain([0, extrema[attrs[1]].max])
-            .range([0, target.height()]);
+            .range([targetDivHeight - 20, 0]);
         let xAxis = d3.svg
             .axis()
             .scale(xAxisScale)
-            .ticks(2)
+            .ticks(3)
             .orient("bottom");
         let yAxis = d3.svg
             .axis()
             .scale(yAxisScale)
-            .ticks(2)
+            .ticks(3)
             .orient("left");
         const axisStyle = {
             'stroke': 'black',
@@ -147,15 +162,21 @@ export default class HexagonalHeatmap extends Chart
             "font-weight": "normal"
         };
 
-        svg
+        let svgAxes = d3.select("#" + axesDiv.id)
+            .append("svg")
+            .attr("width", targetDivWidth)
+            .attr("height", targetDivHeight);
+
+        svgAxes
             .append("g")
             .attr("class", "shepard-diagram-x-axis")
-            .attr("transform", "translate(0," + (target.height() - 20) + ")")
+            .attr("transform", "translate(20, " + (targetDivHeight - 20) + ")")
             .style(axisStyle)
             .call(xAxis);
-        svg
+        svgAxes
             .append("g")
             .attr("class", "shepard-diagram-y-axis")
+            .attr("transform", "translate(20, 0)")
             .style(axisStyle)
             .call(yAxis);
 
