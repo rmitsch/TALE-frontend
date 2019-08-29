@@ -75,3 +75,9 @@ datalist#filter-reduce-tickmarks option {
 .settings-subsection {
     margin-top: 20px;
 }
+
+#model-detail-settings-icon {
+    margin-top: 0px;
+    position: relative;
+    top: 3px;
+}

@@ -1,0 +1,94 @@
+import SettingsPanel from "./SettingsPanel.js";
+import Utils from "../../Utils.js";
+
+/**
+ * Class for model detail settings panel.
+ */
+export default class DissonanceSettingsPanel extends SettingsPanel
+{
+    /**
+     * Constructs new settings panel for model detail operator.
+     * @param name
+     * @param operator
+     * @param parentDivID
+     * @param panel
+     * @param iconID
+     */
+    constructor(name, operator, panel, parentDivID, iconID, callback)
+    {
+        super(name, operator, parentDivID, iconID);
+        this._panel = panel;
+    }
+
+    _createDivStructure()
+    {
+        let settingsHTML    = "";
+        let scope           = this;
+
+        // -----------------------------------
+        // 1. Generate HTML for setting
+        //    options.
+        // -----------------------------------
+
+        settingsHTML += "<div class='settings-section-header'>Shepard Diagram</div>"
+
+        // Add <select> for selection of sorting order.
+        settingsHTML += "<div class='setting-option'>";
+        settingsHTML += "<span>Distance metric</span>";
+        settingsHTML += "<select id='model-details-settings-shepard-distancemetric-select'>" +
+            "  <option value='cosine'>Cosine</option>" +
+            "  <option value='euclidean'>Euclidean</option>" +
+        "</select>";
+        settingsHTML += "</div>";
+
+        settingsHTML += "<div class='settings-section-header'>Co-ranking Matrix</div>"
+
+        settingsHTML += "<div class='setting-option'>";
+        settingsHTML += "<span>Distance metric</span>";
+        settingsHTML += "<select id='model-details-settings-coranking-distancemetric-select'>" +
+            "  <option value='cosine'>Cosine</option>" +
+            "  <option value='euclidean'>Euclidean</option>" +
+        "</select>";
+        settingsHTML += "</div>";
+
+        // -----------------------------------
+        // 2. Create title and options container.
+        // -----------------------------------
+
+        // Note: Listener for table icon is added by FilterReduceOperator, since it requires information about the table
+        // panel.
+        $("#" + this._target).html(
+            "<div class='settings-content'>" + settingsHTML + "</div>" +
+            "<button class='pure-button pure-button-primary settings-update-button' id='" + scope._applyChangesButtonID + "'>Apply changes</button>"
+        );
+
+        return {
+            content: this._target
+        };
+    }
+
+    _applyOptionChanges()
+    {
+        this._panel.processSettingsChange({
+            distanceMetricShepard: $("#model-details-settings-shepard-distancemetric-select").val(),
+            distanceMetricCoranking: $("#model-details-settings-coranking-distancemetric-select").val()
+        });
+    }
+
+    processSettingsChange(delta)
+    {
+        // Do nothing (alt.: Show that settings have been propagated/updated).
+    }
+
+    /**
+     * Returns current values for supported options.
+     * @returns {{distanceMetricCoranking: *, distanceMetricShepard: *}}
+     */
+    get optionValues()
+    {
+        return {
+            distanceMetricShepard: $("#model-details-settings-shepard-distancemetric-select").val(),
+            distanceMetricCoranking: $("#model-details-settings-coranking-distancemetric-select").val()
+        }
+    }
+}

@@ -414,4 +414,15 @@ export default class ModelDetailDataset extends Dataset
     {
         return new Set(this._crossfilterData.low_dim_projection.dimensions.id.top(Infinity).map(record => record.id));
     }
+
+    /**
+     * Returns currently filtered records as set.
+     * @returns {Set<any>}
+     */
+    get currentlyFilteredPairwiseDisplacmentRecords()
+    {
+        const currentlyFilteredIDs = this.currentlyFilteredIDs;
+        return new Set(this._crossfilterData.low_dim_projection.dimensions.id.top(Infinity).map(record => record.id));
+
+    }
 }

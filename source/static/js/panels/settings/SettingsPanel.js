@@ -35,7 +35,8 @@ export default class SettingsPanel extends Panel
         this._divStructure = this._createDivStructure();
 
         // Set click listener.
-        this._setClickListener(iconID);
+        if (iconID !== null)
+            this.setClickListener(iconID);
 
         // Make class abstract.
         if (new.target === SettingsPanel) {
@@ -46,9 +47,8 @@ export default class SettingsPanel extends Panel
     /**
      * Sets click listener for activation and updating charts.
      * @param iconID
-     * @private
      */
-    _setClickListener(iconID)
+    setClickListener(iconID)
     {
         let scope   = this;
         const stage = $("#" + this._operator._stage._target);

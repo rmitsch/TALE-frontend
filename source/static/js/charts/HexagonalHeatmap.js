@@ -4,6 +4,7 @@ import Chart from "./Chart.js";
 
 /**
  * Hexagonal heatmap.
+ * Currently to be re-created in case of a filter change, no iterative delta processing supported.
  * Note: Functionality for integration with crossfilter.js should be mixin, lack of time enforces this half-baked
  * approach.
  */
@@ -58,7 +59,7 @@ export default class HexagonalHeatmap extends Chart
         const chartHeight   = chartElem.height() - margin.top - margin.bottom;
 
         // --------------------------------------
-        // 1. Filter and transform records.
+        // 1. Transform records.
         // --------------------------------------
 
         let extrema = {
@@ -68,9 +69,7 @@ export default class HexagonalHeatmap extends Chart
 
         let records = [];
         for (const record of this._dataset) {
-            // todo Filtering of records w.r.t. to detail view scatterplots.
             records.push([record[attrs[0]], record[attrs[1]]]);
-
             for (let attr of attrs) {
                 if (extrema[attr].max < record[attr])
                     extrema[attr].max = record[attr];
@@ -101,7 +100,7 @@ export default class HexagonalHeatmap extends Chart
         // Define color range.
         let colors = d3
             .scaleLinear()
-            .domain([0, Math.log10(maxElemCount)])
+            .domain([0, Math.log2(maxElemCount)])
             .range(["#fff7fb", "#1f77b4"]);
 
         // Draw heatmap.
@@ -126,7 +125,7 @@ export default class HexagonalHeatmap extends Chart
             .enter().append("path")
             .attr("d", hexbin.hexagon())
             .attr("transform", d => "translate(" + d.x + "," + d.y + ")")
-            .style("fill", d => colors(Math.log10(d.length)));
+            .style("fill", d => colors(Math.log2(d.length)));
 
         // --------------------------------------
         // 5. Draw axes.

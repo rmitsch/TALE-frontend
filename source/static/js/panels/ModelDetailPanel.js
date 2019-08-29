@@ -3,6 +3,7 @@ import Utils from "../Utils.js";
 import DRMetaDataset from "../data/DRMetaDataset.js";
 import ModelDetailTable from "../charts/ModelDetailTable.js";
 import HexagonalHeatmap from "../charts/HexagonalHeatmap.js";
+import ModelDetailSettingsPanel from "./settings/ModelDetailSettingsPanel.js";
 
 
 /**
@@ -25,11 +26,21 @@ export default class ModelDetailPanel extends Panel
         this._lastSplitPositions    = {};
         this._splits                = {};
 
+        // Initialize (empty) set of filtered record IDs.
+        this._filteredRecordIDs     = new Set();
+
         // Update involved CSS classes.
         $("#" + this._target).addClass("model-detail-panel");
 
+        // Generate settings panel.
+        this._settingsPanel = new ModelDetailSettingsPanel(
+            "Model Detail View: Settings", this._operator, this, null, null
+        );
+        // Remember settings to decide when to redraw which charts.
+        this._optionValues  = this._settingsPanel.optionValues;
+
         // Create div structure for child nodes.
-        this._divStructure = this._createDivStructure();
+        this._divStructure  = this._createDivStructure();
 
         // Dictionary for lookup of explainer rules.
         this._explanationRuleLookup = {};
@@ -252,7 +263,7 @@ export default class ModelDetailPanel extends Panel
         this._redrawRecordScatterplots();
 
         // -------------------------------------------------------
-        // 3. Draw scatterplot/hex heatmap for Shepard diagram.
+        // 3. Draw Shepard diagram.
         // -------------------------------------------------------
 
         this._redrawShepardDiagram();
@@ -419,87 +430,22 @@ export default class ModelDetailPanel extends Panel
         // 2. Append new chart containers, draw scatterplots.
         // -------------------------------------------------------
 
-        // this._charts.shepardDiagram = this._generateShepardDiagram();
-        // this._charts.shepardDiagram.render();
-
         this._charts["shepardDiagram"]  = new HexagonalHeatmap(
             "Shepard Diagram",
             this,
             ["high_dim_distance", "low_dim_distance"],
-            this._operator._dataset._pairwiseDisplacementData,
+            this._operator._dataset._pairwiseDisplacementData.filter(
+                record =>
+                    // Make sure that dataset to be drawn includes only...
+                    // ...filtered IDs.
+                    this._filteredRecordIDs.has(record.source) &&
+                    this._filteredRecordIDs.has(record.neighbour) &&
+                    // ...pairings with the chosen distance metric.
+                    record.metric === this._settingsPanel.optionValues.distanceMetricShepard
+            ),
             {},
             "shepard-diagram"
         );
-
-        // for (let scatterplotPos in this._charts.scatterplots) {
-        // this._setFilterHandler(this._charts.shepardDiagram, null);
-        // }
-    }
-
-    /**
-     * Generates Shepard diagram as a variant of a binned scatterplot.
-     * @private
-     * @returns {dc.paretoScatterPlot} Generated scatter plot-based heatmap.
-     */
-    _generateShepardDiagram()
-    {
-        let cf_config           = this._data.crossfilterData.pairwiseDisplacement;
-        const containerDiv      = $("#shepard-diagram");
-        const xAttr             = "high_dim_distance";
-        const yAttr             = "low_dim_distance";
-        const key               = xAttr + ":" + yAttr;
-        let drMetaDataset       = this._operator._drMetaDataset;
-        const dataPadding       = {
-            x: cf_config.intervals[xAttr] * 0.1,
-            y: cf_config.intervals[yAttr] * 0.1
-        };
-        const chartSize         = {
-            width: containerDiv.width(), height: containerDiv.height() * 0.9
-        };
-
-        console.log(cf_config);
-
-        let shepardDiagram = dc.paretoScatterPlot(
-            "#shepard-diagram",
-            this._operator._target,
-            drMetaDataset,
-            null,
-            null,
-            false
-        );
-
-        // Configure scatterplot.
-        shepardDiagram
-            .height(chartSize.height)
-            .width(chartSize.width)
-            .useCanvas(true)
-            .x(d3.scale.linear().domain([
-                cf_config.extrema[xAttr].min - dataPadding.x,
-                cf_config.extrema[xAttr].max + dataPadding.x
-            ]))
-            .y(d3.scale.linear().domain([
-                cf_config.extrema[yAttr].min - dataPadding.y,
-                cf_config.extrema[yAttr].max + dataPadding.y
-            ]))
-            .renderHorizontalGridLines(true)
-            .renderVerticalGridLines(true)
-            .dimension(cf_config.dimensions[key])
-            .group(cf_config.groups[key])
-            .keyAccessor(d => d.key[0])
-            .valueAccessor(d => d.key[1])
-            .existenceAccessor(d => d.value.count > 0)
-            .excludedSize(1)
-            .excludedOpacity(0.7)
-            .excludedColor("#ccc")
-            .symbolSize(1)
-            .filterOnBrushEnd(true)
-            .mouseZoomable(false)
-            .margins({top: 0, right: 5, bottom: 5, left: 5});
-
-        shepardDiagram.yAxis().ticks(5);
-        shepardDiagram.xAxis().ticks(5);
-
-        return shepardDiagram;
     }
 
     /**
@@ -721,8 +667,16 @@ export default class ModelDetailPanel extends Panel
 
     }
 
-    processSettingsChange(delta)
+    processSettingsChange(optionValues)
     {
+        if (optionValues.distanceMetricShepard !== this._optionValues.distanceMetricShepard) {
+            $("html").css("cursor", "wait");
+            this._redrawShepardDiagram();
+            $("html").css("cursor", "default");
+        }
+
+        // Remember last option state.
+        this._optionValues = optionValues;
     }
 
     /**
@@ -734,16 +688,27 @@ export default class ModelDetailPanel extends Panel
         let data        = this._data;
         let stageDiv    = $("#" + this._operator._stage._target);
 
+        // Get initial data points.
+        this._filteredRecordIDs = this._data.currentlyFilteredIDs;
+
         // Update explainer rule lookup.
         this._updateExplanationRuleLookup();
 
+        // dissonance-info-settings-icon
         // Show modal.
         $("#" + this._target).dialog({
-            title: "Model Details for Model with ID #" + data._modelID,
+            title: "Model Details for Model with ID #" +
+                data._modelID +
+                "<a id='model-detail-settings-icon' href='#'>" +
+                "    <img src='./static/img/icon_settings_white.png' class='info-icon' alt='Settings' width='20px'>" +
+                "</a>",
             width: stageDiv.width() / 1.25,
             height: stageDiv.height() / 1.25,
             resizeStop: (event, ui) => this.resize()
         });
+
+        // Set click listener.
+        this._settingsPanel.setClickListener("model-detail-settings-icon");
 
         // Render charts.
         this.render();
@@ -762,17 +727,18 @@ export default class ModelDetailPanel extends Panel
         // Check modal.
         const panelDiv = $("#" + this._target);
 
+        // Panel size has been changed - redraw everything.
         if (panelDiv.width() !== this._lastPanelSize.width || panelDiv.height() !== this._lastPanelSize.height) {
-            // Update charts here if splits have been changed.
-
             this._lastPanelSize = {width: panelDiv.width(), height: panelDiv.height()};
 
             this._redrawAttributeSparklines(false);
             this._redrawAttributeInfluenceHeatmap();
             this._redrawRecordScatterplots();
+            this._redrawShepardDiagram();
             this._updateTableHeight();
         }
 
+        // Split positions have been changed.
         else {
             // Check splits.
             for (const pos in this._splits) {
@@ -781,17 +747,25 @@ export default class ModelDetailPanel extends Panel
                 if (new_sizes[0] !== this._lastSplitPositions[pos][0] || new_sizes[1] !== this._lastSplitPositions[pos][1]) {
                     this._lastSplitPositions[pos] = new_sizes;
 
-                    if (pos === "left") {
-                        this._redrawAttributeInfluenceHeatmap();
-                    }
-                    if (pos === "all") {
-                        this._redrawAttributeSparklines(false);
-                        this._redrawAttributeInfluenceHeatmap();
-                        this._redrawRecordScatterplots();
-                    }
-                    if (pos === "middle") {
-                        this._redrawRecordScatterplots();
-                        this._updateTableHeight();
+                    switch (pos) {
+                        case "all":
+                            this._redrawAttributeSparklines(false);
+                            this._redrawAttributeInfluenceHeatmap();
+                            this._redrawRecordScatterplots();
+                            this._redrawShepardDiagram();
+                            break;
+                        case "left":
+                            this._redrawAttributeInfluenceHeatmap();
+                            break;
+                        case "middle":
+                            this._redrawRecordScatterplots();
+                            this._updateTableHeight();
+                            break;
+                        case "right":
+                            this._redrawShepardDiagram();
+                            break;
+                        default:
+                            break;
                     }
                 }
             }
@@ -816,6 +790,9 @@ export default class ModelDetailPanel extends Panel
       */
     updateFilteredRecordBuffer(recordIDs)
     {
+        this._filteredRecordIDs = recordIDs;
+
+        // todo consider shepard diagram and coranking matrix here
         for (let scatterplotID in this._charts.scatterplots) {
             this._charts.scatterplots[scatterplotID].identifyFilteredRecords(d => recordIDs.has(d[2]));
         }
