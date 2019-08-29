@@ -184,35 +184,62 @@ export default class HexagonalHeatmap extends Chart
         // 6. Add brush.
         // --------------------------------------
 
+        this._addBrush(svg, xAxisScale, yAxisScale, colors);
+    }
+
+    _addBrush(svg, xAxisScale, yAxisScale, colors)
+    {
+        let instance = this;
+
         let brush = d3.svg
              .brush()
              .x(xAxisScale)
              .y(yAxisScale)
              .on("brushend", updateAfterBrush);
 
-        function updateAfterBrush() {
-            const extent = brush.extent();
+        /**
+         * Checks whether value is contained in extent of brush.
+         * @param brushExtent
+         * @param x
+         * @param y
+         * @returns {boolean}
+         */
+        function valuesInBrush(brushExtent, x, y)
+        {
+            return (
+                x >= brushExtent[0][0] &&
+                x <= brushExtent[1][0] &&
+                y >= brushExtent[0][1] &&
+                y <= brushExtent[1][1]
+            );
+        }
 
-            // Color hexagons w.r.t. brush extent.
-            svg
-                .selectAll("path")
-                .style("fill", function(d) {
-                    const highDimValue  = xAxisScale.invert(d.x);
-                    const lowDimValue   = yAxisScale.invert(d.y);
+        function updateAfterBrush()
+        {
+            const extent    = brush.extent();
+            let paths       = svg.selectAll("path");
 
-                    if (
-                        highDimValue >= extent[0][0] &&
-                        highDimValue <= extent[1][0] &&
-                        lowDimValue >= extent[0][1] &&
-                        lowDimValue <= extent[1][1]
-                    )
-                        return colors(Math.log2(d.length));
-                    else
-                        return "#ccc";
-                });
+            // If extent is one point only: Reset.
+            if (extent[0][0] === extent[1][0] && extent[0][1] === extent[1][1]) {
+                paths.style("fill", d => colors(Math.log2(d.length)));
+                let filteredRecords = instance._dataset.flatMap(record => [record.source, record.neighbour]);
+            }
 
-            // Update selection of filtered points.
-            
+            // Color hexagons, filter records w.r.t. brush extent.
+            else {
+                paths
+                    .style("fill", d => valuesInBrush(
+                        extent, xAxisScale.invert(d.x), yAxisScale.invert(d.y)
+                    ) ? colors(Math.log2(d.length)) : "#ccc");
+
+                // Update selection of filtered points.
+                let filteredRecordIDs = new Set(
+                    instance._dataset
+                        .filter(record => valuesInBrush(extent, record.high_dim_distance, record.low_dim_distance))
+                        .flatMap(record => [record.source, record.neighbour])
+                );
+            }
+            // todo propagate filteredRecordIDs to other charts (and vice versa).
         }
 
         svg
