@@ -167,3 +167,10 @@ table.attributeTable tr:nth-child(even) {
     height: 100%;
     z-index: -1;
 }
+
+.model-detail-hexagonal-heatmap-chart .brush .extent {
+    stroke: #fff;
+    fill: #2b2b2b;
+    fill-opacity: .15;
+    shape-rendering: crispEdges;
+}

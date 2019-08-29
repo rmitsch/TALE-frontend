@@ -112,7 +112,8 @@ export default class HexagonalHeatmap extends Chart
             .attr("width", chartWidth + margin.left + margin.right)
             .attr("height", chartHeight + margin.top + margin.bottom)
             .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+            .style("stroke", "none");
 
         // --------------------------------------
         // 4. Draw heatmap.
@@ -179,7 +180,46 @@ export default class HexagonalHeatmap extends Chart
             .style(axisStyle)
             .call(yAxis);
 
+        // --------------------------------------
+        // 6. Add brush.
+        // --------------------------------------
 
+        let brush = d3.svg
+             .brush()
+             .x(xAxisScale)
+             .y(yAxisScale)
+             .on("brushend", updateAfterBrush);
+
+        function updateAfterBrush() {
+            const extent = brush.extent();
+
+            // Color hexagons w.r.t. brush extent.
+            svg
+                .selectAll("path")
+                .style("fill", function(d) {
+                    const highDimValue  = xAxisScale.invert(d.x);
+                    const lowDimValue   = yAxisScale.invert(d.y);
+
+                    if (
+                        highDimValue >= extent[0][0] &&
+                        highDimValue <= extent[1][0] &&
+                        lowDimValue >= extent[0][1] &&
+                        lowDimValue <= extent[1][1]
+                    )
+                        return colors(Math.log2(d.length));
+                    else
+                        return "#ccc";
+                });
+
+            // Update selection of filtered points.
+            
+        }
+
+        svg
+            .append("g")
+            .attr("class", "brush")
+            .attr("transform", "translate(-5, -5)")
+            .call(brush);
     }
 
     resize()
