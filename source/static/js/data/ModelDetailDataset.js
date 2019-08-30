@@ -245,6 +245,14 @@ export default class ModelDetailDataset extends Dataset
 
         // Create ID dimension.
         config.dimensions["id"] = cf.dimension(d => d.id);
+        // Workaround for coordination of multiple charts w/o crossfilter instance: Use multiple ID dimensions - one per
+        // chart w/o crossfilter.
+        // Alternative: Central management instance (i. e. fake crossfilter) to coordinate one filter per chart.
+        // Note that this could also be achieved by using the dimensions related to the chart's actual dimensions,
+        // in this case HD and LD distances. This would require information on which value ranges a bin contains though,
+        // so in this case it's easier to reflect the state of selection in the Shepard diagram via a duplicate ID
+        // dimension.
+        config.dimensions["idShepardDiagram"] = cf.dimension(d => d.id);
     }
 
     _initHistogramDimensionsAndGroups()
@@ -416,13 +424,28 @@ export default class ModelDetailDataset extends Dataset
     }
 
     /**
-     * Returns currently filtered records as set.
-     * @returns {Set<any>}
+     * Returns IDs of currently filtered records as set.
+     * @param distanceMetric
+     * @param filteredIDs
+     * @returns {*} List of currently filtered pairwise displacement records.
      */
-    get currentlyFilteredPairwiseDisplacmentRecords()
+    getCurrentlyFilteredPairwiseDisplacmentRecordIDs(distanceMetric, filteredIDs)
     {
-        const currentlyFilteredIDs = this.currentlyFilteredIDs;
-        return new Set(this._crossfilterData.low_dim_projection.dimensions.id.top(Infinity).map(record => record.id));
+        if (filteredIDs === null)
+            filteredIDs = this.currentlyFilteredIDs;
 
+        return new Set(
+            this._pairwiseDisplacementData
+                .filter(
+                    record =>
+                        // Make sure that dataset to be drawn includes only...
+                        // ...filtered IDs.
+                        filteredIDs.has(record.source) &&
+                        filteredIDs.has(record.neighbour) &&
+                        // ...pairings with the chosen distance metric.
+                        record.metric === distanceMetric
+                )
+                .flatMap(record => [record.source, record.neighbour])
+        );
     }
 }

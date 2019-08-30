@@ -416,14 +416,11 @@ export default class ModelDetailPanel extends Panel
 
     _redrawShepardDiagram()
     {
-        // Fetch divs containing attribute sparklines.
-        let chartContainerDiv = $("#shepard-diagram");
-
         // -------------------------------------------------------
         // 1. Reset existing chart container.
         // -------------------------------------------------------
 
-        // Reset chart container.
+        let chartContainerDiv = $("#shepard-diagram");
         chartContainerDiv.empty();
 
         // -------------------------------------------------------
@@ -435,17 +432,35 @@ export default class ModelDetailPanel extends Panel
             this,
             ["high_dim_distance", "low_dim_distance"],
             this._operator._dataset._pairwiseDisplacementData.filter(
-                record =>
-                    // Make sure that dataset to be drawn includes only...
-                    // ...filtered IDs.
-                    this._filteredRecordIDs.has(record.source) &&
-                    this._filteredRecordIDs.has(record.neighbour) &&
-                    // ...pairings with the chosen distance metric.
-                    record.metric === this._settingsPanel.optionValues.distanceMetricShepard
+                record => record.metric === this.currentShepardDiagramDistanceMetric
+            ),
+            this._operator._dataset.getCurrentlyFilteredPairwiseDisplacmentRecordIDs(
+                this.currentShepardDiagramDistanceMetric,
+                this._filteredRecordIDs
             ),
             {},
-            "shepard-diagram"
+            "shepard-diagram",
+            this._operator._target,
+            this._operator._dataset._crossfilterData.low_dim_projection.dimensions.idShepardDiagram
         );
+    }
+
+    /**
+     * Gets currently selected distance metric for Shepard diagram.
+     * @returns {*}
+     */
+    get currentShepardDiagramDistanceMetric()
+    {
+        return this._settingsPanel.optionValues.distanceMetricShepard;
+    }
+
+    /**
+     * Gets currently selected distance metric for co-ranking matrix.
+     * @returns {*}
+     */
+    get currentCorankingMatrixDistanceMetric()
+    {
+        return this._settingsPanel.optionValues.distanceMetricCoranking;
     }
 
     /**
@@ -669,6 +684,8 @@ export default class ModelDetailPanel extends Panel
 
     processSettingsChange(optionValues)
     {
+        this._filteredRecordIDs = this._data.currentlyFilteredIDs;
+
         if (optionValues.distanceMetricShepard !== this._optionValues.distanceMetricShepard) {
             $("html").css("cursor", "wait");
             this._redrawShepardDiagram();
@@ -786,15 +803,22 @@ export default class ModelDetailPanel extends Panel
 
      /**
       * Updates filter in scatterplots after selection in other charts (histograms, Shepard diagram, coranking matrix).
+      * @param source
       * @param recordIDs Set of recordIDs.
       */
-    updateFilteredRecordBuffer(recordIDs)
+    updateFilteredRecordBuffer(source, recordIDs)
     {
         this._filteredRecordIDs = recordIDs;
+        const ids               = this._operator._dataset.currentlyFilteredIDs;
 
-        // todo consider shepard diagram and coranking matrix here
+        // Update CF state.
+        if (source === this._charts.shepardDiagram._name)
+            this._charts.table._cf_chart.redraw();
+
+        // Scatterplots never use updateFilteredRecordBuffer, so we can unconditionally update them.
         for (let scatterplotID in this._charts.scatterplots) {
-            this._charts.scatterplots[scatterplotID].identifyFilteredRecords(d => recordIDs.has(d[2]));
+            this._charts.scatterplots[scatterplotID].identifyFilteredRecords(d => ids.has(d[2]));
+            this._charts.scatterplots[scatterplotID].render();
         }
     }
 }

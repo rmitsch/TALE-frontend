@@ -219,11 +219,7 @@ export default class ModelDetailTable extends Chart
 
         this._cf_chart.redraw       = function() {
             // Update filtered IDs.
-            let records = instance._dimension.top(Infinity);
-            instance._filteredIDs = new Set();
-            for (let i = 0; i < records.length; i++) {
-                instance._filteredIDs.add(records[i].id)
-            }
+            instance._filteredIDs   = new Set(instance._dimension.top(Infinity).map(record => record.id));
 
             // Filter table data using an ugly hack 'cause DataTable.js can't do obvious things.
             // Add filter only if it doesn't exist yet.
@@ -240,8 +236,10 @@ export default class ModelDetailTable extends Chart
                     }
                 );
 
-            // Redraw chart.
+            // Redraw table & charts.
             instance._cf_chart.draw();
+            for (const chartName in instance._charts)
+                instance._charts[chartName].render();
         };
 
         this._cf_chart.filterAll    = function() {
@@ -340,8 +338,9 @@ export default class ModelDetailTable extends Chart
        // Adjustments for histograms that diverge from default behaviour in NumericalHistogram class.
        this._charts[columnTitle + "Histogram"]._cf_chart
            .on("filtered", event => {
-               instance._panel.updateFilteredRecordBuffer(instance._dataset.currentlyFilteredIDs);
+               instance._panel.updateFilteredRecordBuffer(instance._name, instance._dataset.currentlyFilteredIDs);
            })
+           .transitionDuration(0)
            .margins({top: 5, right: 10, bottom: 16, left: 25})
     }
 }
