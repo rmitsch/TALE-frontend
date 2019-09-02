@@ -156,6 +156,7 @@ export default class DissonanceChart extends Chart
      */
     _computeColorsForCell(d)
     {
+        // todo Compute colorDomain outside of function.
         const colorDomain = this._colors.domain(
             [0, Math.log10(this._numFilteredRecords)]
         );

@@ -408,10 +408,6 @@ export default class ModelDetailPanel extends Panel
                 this._charts.scatterplots[i + ":" + j] = scatterplot;
             }
         }
-
-        for (let scatterplotPos in this._charts.scatterplots) {
-            this._setFilterHandler(this._charts.scatterplots[scatterplotPos], scatterplotPos);
-        }
     }
 
     _redrawShepardDiagram()
@@ -469,7 +465,7 @@ export default class ModelDetailPanel extends Panel
      * crossfilter dimensions and groups and to generate unique div IDs.
      * @param scatterplotSize Size of scatterplot. Has .height and .width.
      * @param parentDivID
-     * @returns {dc.paretoScatterPlot} Generated scatter plt.
+     * @returns {dc.scatterPlot} Generated scatter plt.
      * @private
      */
     _generateScatterplot(currIndices, scatterplotSize, parentDivID)
@@ -479,7 +475,6 @@ export default class ModelDetailPanel extends Panel
         const i                 = currIndices[0];
         const j                 = currIndices[1];
         const key               = i + ":" + j;
-        let drMetaDataset       = this._operator._drMetaDataset;
         const dataPadding       = {
             x: cf_config.intervals[i] * 0.1,
             y: numDimensions > 1 ? cf_config.intervals[j] * 0.1 : 0.1
@@ -492,20 +487,11 @@ export default class ModelDetailPanel extends Panel
         );
         $("#" + scatterplotContainer.id).css('left', (i * (scatterplotSize.width + 10)) + 'px');
 
-        let scatterplot = dc.paretoScatterPlot(
-            "#" + scatterplotContainer.id,
-            this._operator._target,
-            drMetaDataset,
-            null,
-            null,
-            false
-        );
-
+        let scatterplot = dc.scatterPlot("#" + scatterplotContainer.id, this._operator._target);
         // Configure scatterplot.
         scatterplot
             .height(scatterplotSize.height)
             .width(scatterplotSize.width)
-            .useCanvas(true)
             .x(d3.scale.linear().domain([
                 cf_config.extrema[i].min - dataPadding.x,
                 cf_config.extrema[i].max + dataPadding.x
@@ -524,72 +510,39 @@ export default class ModelDetailPanel extends Panel
             .excludedSize(1)
             .excludedOpacity(0.7)
             .excludedColor("#ccc")
-            .symbolSize(2)
+            .symbolSize(4)
             .filterOnBrushEnd(true)
-            .mouseZoomable(true)
+            .mouseZoomable(false)
+            .transitionDuration(0)
             .margins({top: 5, right: 0, bottom: 2, left: 0});
 
+        // Define color map.
+        const attr              = this._optionValues.scatterplotColorCoding;
+        if (attr === "none")
+            scatterplot.colors(d => "#1f77b4");
+        else {
+            const extrema   = this._data._cf_extrema[attr];
+            const colors    = d3
+                .scaleLinear()
+                .domain([
+                    extrema.min,
+                    this._optionValues.scatterplotColorCodingUseLog ? Math.log(extrema.max) : extrema.max
+                ])
+                .range(["#fff7fb", "#1f77b4"]);
+
+            scatterplot.colorAccessor(
+                d => d.value.items.reduce((sum, record) => sum + parseFloat(record[attr]), 0) / d.value.items.length
+            );
+            scatterplot.colors(
+                d => this._optionValues.scatterplotColorCodingUseLog ? colors(Math.log(d)) : colors(d)
+            );
+        }
+
+        scatterplot.render();
         scatterplot.yAxis().ticks(5);
         scatterplot.xAxis().ticks(5);
 
         return scatterplot;
-    }
-
-    /**
-     * Sets chart's filter handler.
-     * @param chart
-     * @param pos
-     * @private
-     */
-    _setFilterHandler(chart, pos)
-    {
-        let scatterplots = this._charts.scatterplots;
-
-        chart.filterHandler(function (dimension, filters) {
-            if (filters.length === 0) {
-                dimension.filter(null);
-
-                if (pos !== null)
-                    for (let scatterplotPos in scatterplots)
-                        scatterplots[scatterplotPos].identifyFilteredRecords(d => true);
-            }
-
-            else {
-                let res = chart.identifyFilteredRecords(
-                    function (d) {
-                        for (let i = 0; i < filters.length; i++) {
-                            let filter = filters[i];
-                            if (filter.isFiltered && filter.isFiltered(d)) {
-                                return true;
-                            }
-                            else if (filter <= d && filter >= d) {
-                                return true;
-                            }
-                        }
-                        return false;
-                    }
-                );
-
-                let filteredIDs = new Set();
-                for (const x in res) {
-                    for (const y in res[x]) {
-                        // https://stackoverflow.com/questions/32000865/simplest-way-to-merge-es6-maps-sets
-                        filteredIDs = new Set(function*() {
-                            yield* filteredIDs; yield* res[x][y].ids;
-                        }());
-                    }
-                }
-                dimension.filterFunction(d => filteredIDs.has(d[2]));
-
-                if (pos !== null)
-                    for (let scatterplotPos in scatterplots) {
-                        if (pos !== scatterplotPos)
-                            scatterplots[scatterplotPos].identifyFilteredRecords(d => filteredIDs.has(d[2]));
-                    }
-            }
-
-            return filters;
-        });
     }
 
     /**
@@ -684,16 +637,65 @@ export default class ModelDetailPanel extends Panel
 
     processSettingsChange(optionValues)
     {
+        $("html").css("cursor", "wait");
         this._filteredRecordIDs = this._data.currentlyFilteredIDs;
 
-        if (optionValues.distanceMetricShepard !== this._optionValues.distanceMetricShepard) {
-            $("html").css("cursor", "wait");
+        // Distance metric for Shepard diagram changed - redraw.
+        if (optionValues.distanceMetricShepard !== this._optionValues.distanceMetricShepard)
             this._redrawShepardDiagram();
-            $("html").css("cursor", "default");
-        }
+
+        // Attribute to color-code scatterplots changed - update color scale for all scatterplots.
+        if (
+            optionValues.scatterplotColorCoding !== this._optionValues.scatterplotColorCoding ||
+            optionValues.scatterplotColorCodingUseLog !== this._optionValues.scatterplotColorCodingUseLog
+        )
+            this._updateScatterplotColorScheme(optionValues);
 
         // Remember last option state.
         this._optionValues = optionValues;
+        $("html").css("cursor", "default");
+    }
+
+    /**
+     * Updates color schemes for all scatterplots.
+     * @param optionValues
+     * @param render
+     * @private
+     */
+    _updateScatterplotColorScheme(optionValues, render = true)
+    {
+        const attr      = optionValues.scatterplotColorCoding;
+        const extrema   = this._data._cf_extrema[attr];
+        // Define offset for logarithmic color coding.
+        const logBuffer = 0.000001 - Math.min(extrema.min, 0);
+
+        // Create color schemes.
+        const colors = attr !== "none" ? d3
+            .scaleLinear()
+            .domain([
+                optionValues.scatterplotColorCodingUseLog ? Math.log(extrema.min + logBuffer) : extrema.min,
+                optionValues.scatterplotColorCodingUseLog ? Math.log(extrema.max + logBuffer) : extrema.max
+            ])
+            .range(["#fff7fb", "#1f77b4"]) : null;
+
+        for (let scatterplotID in this._charts.scatterplots) {
+            const scatterplot = this._charts.scatterplots[scatterplotID];
+            if (attr === "none")
+                scatterplot.colors(d => "#1f77b4");
+            else {
+                scatterplot.colorAccessor(
+                    d => d.value.items.reduce(
+                        (sum, record) => sum + parseFloat(record[attr]), 0
+                    ) / d.value.items.length
+                );
+                scatterplot.colors(
+                    d => optionValues.scatterplotColorCodingUseLog ? colors(Math.log(d + logBuffer)) : colors(d)
+                );
+            }
+
+            if (render)
+                scatterplot.render();
+        }
     }
 
     /**
@@ -711,7 +713,6 @@ export default class ModelDetailPanel extends Panel
         // Update explainer rule lookup.
         this._updateExplanationRuleLookup();
 
-        // dissonance-info-settings-icon
         // Show modal.
         $("#" + this._target).dialog({
             title: "Model Details for Model with ID #" +
@@ -726,6 +727,8 @@ export default class ModelDetailPanel extends Panel
 
         // Set click listener.
         this._settingsPanel.setClickListener("model-detail-settings-icon");
+        // Update settings values.
+        this._settingsPanel.scatterplotColorCodingSelectValues = this._data.numericalAttributes;
 
         // Render charts.
         this.render();
@@ -809,7 +812,6 @@ export default class ModelDetailPanel extends Panel
     updateFilteredRecordBuffer(source, recordIDs)
     {
         this._filteredRecordIDs = recordIDs;
-        const ids               = this._operator._dataset.currentlyFilteredIDs;
 
         // Update CF state.
         if (source === this._charts.shepardDiagram._name)
@@ -817,7 +819,6 @@ export default class ModelDetailPanel extends Panel
 
         // Scatterplots never use updateFilteredRecordBuffer, so we can unconditionally update them.
         for (let scatterplotID in this._charts.scatterplots) {
-            this._charts.scatterplots[scatterplotID].identifyFilteredRecords(d => ids.has(d[2]));
             this._charts.scatterplots[scatterplotID].render();
         }
     }

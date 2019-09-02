@@ -189,7 +189,8 @@ export default class ModelDetailTable extends Chart
         let tableHeader = "<thead><tr><th>ID</th>";
         // Append all hyperparameter to table.
         for (let i = 0; i < this._attributes.length; i++) {
-            tableHeader += "<th id='model-detail-table-header-" + this._attributes[i] + "'>" + this._attributes[i] + "</th>";
+            const attr = this._attributes[i];
+            tableHeader += "<th id='model-detail-table-header-" + this._attributes[i] + "'>" + attr + "</th>";
         }
         tableHeader += "</tr></thead>";
         $("#" + table.id).append(tableHeader);
