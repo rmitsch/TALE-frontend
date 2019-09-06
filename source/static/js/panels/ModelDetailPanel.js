@@ -4,6 +4,7 @@ import DRMetaDataset from "../data/DRMetaDataset.js";
 import ModelDetailTable from "../charts/ModelDetailTable.js";
 import HexagonalHeatmap from "../charts/HexagonalHeatmap.js";
 import ModelDetailSettingsPanel from "./settings/ModelDetailSettingsPanel.js";
+import CorankingMatrix from "../charts/CorankingMatrix.js";
 
 
 /**
@@ -272,7 +273,7 @@ export default class ModelDetailPanel extends Panel
         // 4. todo Draw heatmap for co-ranking matrix.
         // -------------------------------------------------------
 
-
+        this._redrawCorankingmatrix();
 
         // -------------------------------------------------------
         // 5. Update table.
@@ -410,6 +411,46 @@ export default class ModelDetailPanel extends Panel
         }
     }
 
+    /**
+     * Redraws co-ranking matrix from scratch.
+     * @private
+     */
+    _redrawCorankingmatrix()
+    {
+        // -------------------------------------------------------
+        // 1. Reset existing chart container.
+        // -------------------------------------------------------
+
+        let chartContainerDiv = $("#coranking-matrix");
+        chartContainerDiv.empty();
+
+        // -------------------------------------------------------
+        // 2. Append new chart containers, draw co-ranking matrix.
+        // -------------------------------------------------------
+
+        // console.log(this._operator._dataset._pairwiseDisplacementData);
+        // this._charts["corankingMatrix"]  = new CorankingMatrix(
+        //     "Co-ranking matrix",
+        //     this,
+        //     ["high_dim_neighbour_rank", "low_dim_neighbour_rank"],
+        //     this._operator._dataset._pairwiseDisplacementData.filter(
+        //         record => record.metric === this.currentShepardDiagramDistanceMetric
+        //     ),
+        //     this._operator._dataset.getCurrentlyFilteredPairwiseDisplacmentRecordIDs(
+        //         this.currentShepardDiagramDistanceMetric,
+        //         this._filteredRecordIDs
+        //     ),
+        //     {},
+        //     "coranking-matrix,
+        //     this._operator._target,
+        //     this._operator._dataset._crossfilterData.low_dim_projection.dimensions.idShepardDiagram
+        // );
+    }
+
+    /**
+     * Redraws Shepard diagram from scratch.
+     * @private
+     */
     _redrawShepardDiagram()
     {
         // -------------------------------------------------------
@@ -420,7 +461,7 @@ export default class ModelDetailPanel extends Panel
         chartContainerDiv.empty();
 
         // -------------------------------------------------------
-        // 2. Append new chart containers, draw scatterplots.
+        // 2. Append new chart containers, draw Shepard diagram.
         // -------------------------------------------------------
 
         this._charts["shepardDiagram"]  = new HexagonalHeatmap(
