@@ -34,6 +34,7 @@ export default class ModelDetailDataset extends Dataset
         );
         this._sampleDissonances             = modelDataJSON.sample_dissonances;
         this._pairwiseDisplacementData      = modelDataJSON.pairwise_displacement_data;
+        this._corankingMatrixData           = modelDataJSON.coranking_matrix_data;
 
         // Gather attributes available for original record.
         this._originalRecordAttributes  = [];
@@ -215,7 +216,8 @@ export default class ModelDetailDataset extends Dataset
         // in this case HD and LD distances. This would require information on which value ranges a bin contains though,
         // so in this case it's easier to reflect the state of selection in the Shepard diagram via a duplicate ID
         // dimension.
-        config.dimensions["idShepardDiagram"] = cf.dimension(d => d.id);
+        config.dimensions["idShepardDiagram"]   = cf.dimension(d => d.id);
+        config.dimensions["idCorankingMatrix"]  = cf.dimension(d => d.id);
     }
 
     _initHistogramDimensionsAndGroups()

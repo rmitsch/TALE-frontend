@@ -48,6 +48,8 @@ export default class HexagonalHeatmap extends ModelDetailHeatmap
             "hexagonal-heatmap"
         );
 
+        // Construct heatmap.
+         this.constructCFChart();
         // Register chart in dc.js crossfilter-based update mechanism.
         dc.chartRegistry.register(this, dcGroupName);
     }
@@ -107,10 +109,10 @@ export default class HexagonalHeatmap extends ModelDetailHeatmap
         // Define color range.
         this._colors = d3
             .scaleLinear()
-            .domain([0, Math.log2(maxElemCount)])
+            .domain([0, (maxElemCount)])
             .range(["#fff7fb", "#1f77b4"]);
 
-        // Draw heatmap.
+        // Generate SVG.
         this._svg = d3.select("#" + chartDiv.id).select("svg");
         if (!this._svg.empty())
             this._svg.remove();
@@ -139,7 +141,8 @@ export default class HexagonalHeatmap extends ModelDetailHeatmap
         // 5. Draw axes.
         // --------------------------------------
 
-        const axesScales = this._drawAxes(targetElem, attrs, extrema, axesDiv);
+        // const axesScales = this._drawAxes(targetElem, attrs, extrema, axesDiv);
+        const axesScales = this._drawAxes(targetElem, attrs, extrema, axesDiv, 25, 20, "shepard-diagram");
 
         // --------------------------------------
         // 6. Add brush.
@@ -148,59 +151,15 @@ export default class HexagonalHeatmap extends ModelDetailHeatmap
         this._addBrush(this._svg, axesScales.xAxisScale, axesScales.yAxisScale, this._colors);
     }
 
-    _drawAxes(targetElem, attrs, extrema, axesDiv)
+    _computeColorForBin(colors, binData)
     {
-        const targetDivHeight   = targetElem.height();
-        const targetDivWidth    = targetElem.width();
+        const filteredDataLength = binData.filter(record =>
+            this._filteredRecordIDs.external.has(record[2]) &&
+            this._filteredRecordIDs.external.has(record[3]) &&
+            this._filteredRecordIDs.internal.has(record[2]) &&
+            this._filteredRecordIDs.internal.has(record[3])
+        ).length;
 
-        let xAxisScale = d3.scale
-            .linear()
-            .domain([0, extrema[attrs[0]].max])
-            .range([0, targetDivWidth - 20]);
-        let yAxisScale = d3.scale
-            .linear()
-            .domain([0, extrema[attrs[1]].max])
-            .range([targetDivHeight - 20, 0]);
-        let xAxis = d3.svg
-            .axis()
-            .scale(xAxisScale)
-            .ticks(3)
-            .orient("bottom");
-        let yAxis = d3.svg
-            .axis()
-            .scale(yAxisScale)
-            .ticks(3)
-            .orient("left");
-        const axisStyle = {
-            'stroke': 'black',
-            'fill': 'none',
-            'stroke-width': '1px',
-            "shape-rendering": "crispEdges",
-            "font": "10px sans-serif",
-            "font-weight": "normal"
-        };
-
-        let svgAxes = d3.select("#" + axesDiv.id)
-            .append("svg")
-            .attr("width", targetDivWidth)
-            .attr("height", targetDivHeight);
-
-        svgAxes
-            .append("g")
-            .attr("class", "shepard-diagram-x-axis")
-            .attr("transform", "translate(20, " + (targetDivHeight - 20) + ")")
-            .style(axisStyle)
-            .call(xAxis);
-        svgAxes
-            .append("g")
-            .attr("class", "shepard-diagram-y-axis")
-            .attr("transform", "translate(20, 0)")
-            .style(axisStyle)
-            .call(yAxis);
-
-        return {
-            xAxisScale: xAxisScale,
-            yAxisScale: yAxisScale
-        }
+        return filteredDataLength > 0 ? colors((filteredDataLength)) : "#ccc";
     }
 }

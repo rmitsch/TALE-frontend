@@ -46,18 +46,15 @@ export default class ModelDetailHeatmap extends Chart
          };
          this._internalCFDimension = internalCFDimension;
 
-         this._parentDivID = parentDivID;
-         this._svg = null;
-         this._colors = null;
-         this._brushExtent = null;
+         this._parentDivID  = parentDivID;
+         this._svg          = null;
+         this._colors       = null;
+         this._brushExtent  = null;
          // Used to store max. value in heatmap cell - important for setting color of cells.
          this._maxCellValue = null;
 
          // Update involved CSS classes.
          $("#" + this._target).addClass(classNameToAdd);
-
-         // Construct heatmap.
-         this.constructCFChart();
     }
 
     _reset()
@@ -96,20 +93,6 @@ export default class ModelDetailHeatmap extends Chart
     }
 
     /**
-     * Draw axes for hex heatmap.
-     * @param targetElem
-     * @param attrs
-     * @param extrema
-     * @param axesDiv
-     * @returns {{xAxisScale: *, yAxisScale: *}}
-     * @private
-     */
-    _drawAxes(targetElem, attrs, extrema, axesDiv)
-    {
-        throw new TypeError("ModelDetailHeatmap._drawAxes(): Abstract method must not be called.");
-    }
-
-    /**
      * Computes color for hex bin w.r.t. set of currently selected records.
      * @param colors
      * @param binData
@@ -118,14 +101,7 @@ export default class ModelDetailHeatmap extends Chart
      */
     _computeColorForBin(colors, binData)
     {
-        const filteredDataLength = binData.filter(record =>
-            this._filteredRecordIDs.external.has(record[2]) &&
-            this._filteredRecordIDs.external.has(record[3]) &&
-            this._filteredRecordIDs.internal.has(record[2]) &&
-            this._filteredRecordIDs.internal.has(record[3])
-        ).length;
-
-        return filteredDataLength > 0 ? colors(Math.log2(filteredDataLength)) : "#ccc";
+        throw new TypeError("ModelDetailHeatmap._computeColorForBin(): Abstract method must not be called.");
     }
 
     /**
@@ -263,6 +239,77 @@ export default class ModelDetailHeatmap extends Chart
                 record[3]
             ]))
         };
+    }
+
+    /**
+     * Draws axes.
+     * @param targetElem
+     * @param attrs
+     * @param extrema
+     * @param axesDiv
+     * @param offsetX
+     * @param offsetY
+     * @param cssClassPrefix
+     * @param nTicksX
+     * @param nTicksY
+     * @returns {{xAxisScale: *, yAxisScale: *}}
+     * @private
+     */
+    _drawAxes(targetElem, attrs, extrema, axesDiv, offsetX, offsetY, cssClassPrefix, nTicksX = 3, nTicksY = 3)
+    {
+        const targetDivHeight   = targetElem.height();
+        const targetDivWidth    = targetElem.width();
+        cssClassPrefix         += "-";
+
+        let xAxisScale = d3.scale
+            .linear()
+            .domain([0, extrema[attrs[0]].max])
+            .range([0, targetDivWidth - offsetX]);
+        let yAxisScale = d3.scale
+            .linear()
+            .domain([0, extrema[attrs[1]].max])
+            .range([targetDivHeight - offsetY, 0]);
+        let xAxis = d3.svg
+            .axis()
+            .scale(xAxisScale)
+            .ticks(nTicksX)
+            .orient("bottom");
+        let yAxis = d3.svg
+            .axis()
+            .scale(yAxisScale)
+            .ticks(nTicksY)
+            .orient("left");
+        const axisStyle = {
+            'stroke': 'black',
+            'fill': 'none',
+            'stroke-width': '1px',
+            "shape-rendering": "crispEdges",
+            "font": "10px sans-serif",
+            "font-weight": "normal"
+        };
+
+        let svgAxes = d3.select("#" + axesDiv.id)
+            .append("svg")
+            .attr("width", targetDivWidth)
+            .attr("height", targetDivHeight);
+
+        svgAxes
+            .append("g")
+            .attr("class", cssClassPrefix + "-x-axis")
+            .attr("transform", "translate(" + offsetX + ", " + (targetDivHeight - offsetY) + ")")
+            .style(axisStyle)
+            .call(xAxis);
+        svgAxes
+            .append("g")
+            .attr("class", cssClassPrefix + "coranking-matrix-y-axis")
+            .attr("transform", "translate(" + offsetX + ", 0)")
+            .style(axisStyle)
+            .call(yAxis);
+
+        return {
+            xAxisScale: xAxisScale,
+            yAxisScale: yAxisScale
+        }
     }
 
     resize()

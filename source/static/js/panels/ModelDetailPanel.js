@@ -87,12 +87,6 @@ export default class ModelDetailPanel extends Panel
             "#" + this._divStructure.explainerPaneID,
             dcGroupName
         );
-
-        // Initialize co-ranking matrix.
-        // this._charts["corankingMatrix"] = dc.heatMap(
-        //     "#" + this._divStructure.corankingPaneID,
-        //     dcGroupName
-        // );
     }
 
     /**
@@ -428,23 +422,25 @@ export default class ModelDetailPanel extends Panel
         // 2. Append new chart containers, draw co-ranking matrix.
         // -------------------------------------------------------
 
-        // console.log(this._operator._dataset._pairwiseDisplacementData);
-        // this._charts["corankingMatrix"]  = new CorankingMatrix(
-        //     "Co-ranking matrix",
-        //     this,
-        //     ["high_dim_neighbour_rank", "low_dim_neighbour_rank"],
-        //     this._operator._dataset._pairwiseDisplacementData.filter(
-        //         record => record.metric === this.currentShepardDiagramDistanceMetric
-        //     ),
-        //     this._operator._dataset.getCurrentlyFilteredPairwiseDisplacmentRecordIDs(
-        //         this.currentShepardDiagramDistanceMetric,
-        //         this._filteredRecordIDs
-        //     ),
-        //     {},
-        //     "coranking-matrix,
-        //     this._operator._target,
-        //     this._operator._dataset._crossfilterData.low_dim_projection.dimensions.idShepardDiagram
-        // );
+        const nBins = 10;
+        this._charts["corankingMatrix"]  = new CorankingMatrix(
+            "Co-ranking matrix",
+            this,
+            ["high_dim_neighbour_bin", "low_dim_neighbour_bin"],
+            this._operator._dataset._corankingMatrixData.filter(
+                record => record.metric === this.currentCorankingMatrixDistanceMetric
+            ),
+            this._operator._dataset.getCurrentlyFilteredPairwiseDisplacmentRecordIDs(
+                this.currentCorankingMatrixDistanceMetric,
+                this._filteredRecordIDs
+            ),
+            {},
+            "coranking-matrix",
+            this._operator._target,
+            this._operator._dataset._crossfilterData.low_dim_projection.dimensions.idCorankingMatrix,
+            this._operator._dataset._allModelMetadata[0].num_records,
+            nBins
+        );
     }
 
     /**
@@ -685,6 +681,10 @@ export default class ModelDetailPanel extends Panel
         if (optionValues.distanceMetricShepard !== this._optionValues.distanceMetricShepard)
             this._redrawShepardDiagram();
 
+        // Distance metric for co-ranking matrix changed - redraw.
+        if (optionValues.distanceMetricCoranking !== this._optionValues.distanceMetricCoranking)
+            this._redrawCorankingmatrix();
+
         // Attribute to color-code scatterplots changed - update color scale for all scatterplots.
         if (
             optionValues.scatterplotColorCoding !== this._optionValues.scatterplotColorCoding ||
@@ -814,6 +814,7 @@ export default class ModelDetailPanel extends Panel
                             this._redrawAttributeInfluenceHeatmap();
                             this._redrawRecordScatterplots();
                             this._redrawShepardDiagram();
+                            this._redrawCorankingmatrix();
                             break;
                         case "left":
                             this._redrawAttributeInfluenceHeatmap();
@@ -824,6 +825,7 @@ export default class ModelDetailPanel extends Panel
                             break;
                         case "right":
                             this._redrawShepardDiagram();
+                            this._redrawCorankingmatrix();
                             break;
                         default:
                             break;
