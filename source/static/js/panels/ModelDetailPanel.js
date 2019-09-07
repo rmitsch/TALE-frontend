@@ -37,6 +37,9 @@ export default class ModelDetailPanel extends Panel
         // is needed.
         this._scatterplotColorizingMethods = {colorAccessor: null, colors: null};
 
+        // Remember last position of highlighted record.
+        this._lastHighlightedPositions = {};
+
         // Generate settings panel.
         this._settingsPanel = new ModelDetailSettingsPanel(
             "Model Detail View: Settings", this._operator, this, null, null
@@ -405,6 +408,7 @@ export default class ModelDetailPanel extends Panel
                 // Render chart.
                 scatterplot.render();
                 this._charts.scatterplots[i + ":" + j] = scatterplot;
+                this._lastHighlightedPositions[i + ":" + j] = null;
             }
         }
     }
@@ -833,10 +837,50 @@ export default class ModelDetailPanel extends Panel
         }
     }
 
+    /**
+     * Visually highlights record with given ID in scatterplot.
+     * @param scatterplotID
+     * @param scatterplot
+     * @param idToHighlight
+     */
+    _highlightRecordInScatterplot(scatterplotID, scatterplot, idToHighlight)
+    {
+        let instance    = this;
+        let chart       = scatterplot;
+        let id          = idToHighlight;
+
+        chart.selectAll('path.symbol').each(function(record) {
+            if (record.value.items.find(record => record.id === id) !== undefined) {
+                const lastHighlightedPos = instance._lastHighlightedPositions[scatterplotID];
+                record.coordinates = {
+                    x: chart.x()(chart.keyAccessor()(record)),
+                    y: chart.y()(chart.valueAccessor()(record))
+                };
+
+                let circles = chart.chartBodyG()
+                    .selectAll("circle")
+                    .data([record])
+                    .enter()
+                    .append("circle")
+                    .attr("class", "highlight");
+                circles
+                    .attr("opacity", 1)
+                    .attr("r", 5)
+                    .attr("cx", d => lastHighlightedPos !== null ? lastHighlightedPos.x : d.coordinates.x)
+                    .attr("cy", d => lastHighlightedPos !== null ? lastHighlightedPos.y : d.coordinates.y)
+                    .style("fill", "red");
+
+                dc.transition(circles, 100, chart.transitionDelay())
+                    .attr("cx", d => d.coordinates.x)
+                    .attr("cy", d => d.coordinates.y);
+
+                instance._lastHighlightedPositions[scatterplotID] = record.coordinates;
+            }
+        });
+    }
+
     highlight(id, source, propagate = false)
     {
-        let instance = this;
-
         // We know that the only possible source we want to consider for a highlighting operation is the correponding
         // ModelDetailTable instance, so we can safely ignore all other sources.
         if (this._charts["table"] !== null) {
@@ -844,23 +888,14 @@ export default class ModelDetailPanel extends Panel
                 for (const scatterplotID in this._charts["scatterplots"]) {
                     let chart = this._charts["scatterplots"][scatterplotID];
 
-                    if (id !== null) {
-                        chart.colorAccessor(d => d);
-                        chart.colors(
-                            d => d.value.items.find(record => record.id === id) !== undefined ?
-                                "red" : "#ccc"
-                                // instance._scatterplotColorizingMethods.colors(
-                                //     instance._scatterplotColorizingMethods.colorAccessor(d)
-                                // )
-                        );
-                    }
+                    if (id !== null)
+                        this._highlightRecordInScatterplot(scatterplotID, chart, id);
 
-                    else {
-                        chart.colorAccessor(this._scatterplotColorizingMethods.colorAccessor);
-                        chart.colors(this._scatterplotColorizingMethods.colors);
-                    }
-
-                    chart.render();
+                    else
+                        // Re-rendering the chart clears all added (highlight) circles.
+                        // Selecting and deleting highlighted circles is cheaper - potential optimization target, if
+                        // deemed necessary.
+                        chart.render();
                 }
 
             }
