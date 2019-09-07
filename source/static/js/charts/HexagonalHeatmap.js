@@ -101,8 +101,6 @@ export default class HexagonalHeatmap extends ModelDetailHeatmap
         const dataExt   = this._filteredRecordIDs.external;
         const dataInt   = this._filteredRecordIDs.internal;
         // Find cell content extrema.
-        // const maxElemCount = Math.max(...bins.map(bin => bin.length));
-        //
         const maxElemCount = Math.max(...bins.map(
             bin => bin.filter(
                 record =>
@@ -157,6 +155,6 @@ export default class HexagonalHeatmap extends ModelDetailHeatmap
         // 6. Add brush.
         // --------------------------------------
 
-        this._addBrush(this._svg, axesScales.xAxisScale, axesScales.yAxisScale, this._colors);
+        this._addBrush(this._svg, axesScales.xAxisScale, axesScales.yAxisScale, this._colors, "path", d => d, 2, 3);
     }
 }

@@ -130,9 +130,24 @@ export default class ModelDetailHeatmap extends Chart
      * @param xAxisScale
      * @param yAxisScale
      * @param colors
+     * @param svgElementTyeToSelect
+     * @param svgElementDataAccessor
+     * @param datasetDataAccessor
+     * @param recordSourceIdx
+     * @param recordNeighbourIdx
      * @private
      */
-    _addBrush(svg, xAxisScale, yAxisScale, colors)
+    _addBrush(
+        svg,
+        xAxisScale,
+        yAxisScale,
+        colors,
+        svgElementTyeToSelect,
+        svgElementDataAccessor,
+
+        recordSourceIdx,
+        recordNeighbourIdx
+    )
     {
         let instance    = this;
         const attrs     = this._attributes;
@@ -164,8 +179,10 @@ export default class ModelDetailHeatmap extends Chart
         {
             instance._brushExtent   = brush.extent();
             const extent            = instance._brushExtent;
-            let paths               = instance._svg.selectAll("path");
+            let paths               = instance._svg.selectAll(svgElementTyeToSelect);
 
+            console.log("this._dataset:", instance._dataset)
+            console.log("paths:", paths)
             // If extent is one point only: Reset.
             if (extent[0][0] === extent[1][0] && extent[0][1] === extent[1][1]) {
                 // Reset state of internal filter set.
@@ -174,7 +191,9 @@ export default class ModelDetailHeatmap extends Chart
                 );
 
                 // Color cells.
-                paths.style("fill", d => instance._computeColorForBin(instance._colors, d));
+                paths.style("fill", d => instance._computeColorForBin(
+                    instance._colors, d, recordSourceIdx, recordNeighbourIdx
+                ));
             }
 
             // Color hexagons, filter records w.r.t. brush extent.
@@ -182,7 +201,9 @@ export default class ModelDetailHeatmap extends Chart
                 paths
                     .style("fill", d => valuesInBrush(
                         extent, xAxisScale.invert(d.x), yAxisScale.invert(d.y)
-                    ) ? instance._computeColorForBin(instance._colors, d) : "#fff");
+                    ) ? instance._computeColorForBin(
+                        instance._colors, svgElementDataAccessor(d), recordSourceIdx, recordNeighbourIdx) : "#ccc"
+                    );
 
                 // Update selection of filtered points.
                 instance._filteredRecordIDs.internal = new Set(

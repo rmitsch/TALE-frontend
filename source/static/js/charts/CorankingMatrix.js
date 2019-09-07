@@ -152,6 +152,14 @@ export default class CorankingMatrix extends ModelDetailHeatmap
             .attr("width", x.bandwidth())
             .attr("height", y.bandwidth())
             .style("fill", d => this._computeColorForBin(this._colors, d.paths, 0, 1));
+
+        // --------------------------------------
+        // 4. Add brush.
+        // --------------------------------------
+
+        this._addBrush(
+            this._svg, axesScales.xAxisScale, axesScales.yAxisScale, this._colors, "rect", d => d.__data__.paths, 0, 1
+        );
     }
 
     redraw()
