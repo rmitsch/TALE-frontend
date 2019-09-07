@@ -97,10 +97,19 @@ export default class HexagonalHeatmap extends ModelDetailHeatmap
         let hexbin  = d3.hexbin()
             .extent([[-margin.left, -margin.top], [chartWidth + margin.right, chartHeight + margin.bottom]])
             .radius(radius);
-        let bins    = hexbin(normalizationResults.normalizedRecords);
-
+        let bins        = hexbin(normalizationResults.normalizedRecords);
+        const dataExt   = this._filteredRecordIDs.external;
+        const dataInt   = this._filteredRecordIDs.internal;
         // Find cell content extrema.
-        const maxElemCount = Math.max(...bins.map(bin => bin.length));
+        // const maxElemCount = Math.max(...bins.map(bin => bin.length));
+        //
+        const maxElemCount = Math.max(...bins.map(
+            bin => bin.filter(
+                record =>
+                    dataExt.has(record[2]) && dataExt.has(record[3]) &&
+                    dataInt.has(record[2]) && dataInt.has(record[3])
+            ).length)
+        );
 
         // --------------------------------------
         // 3. Append/reset SVG to container div.
@@ -110,7 +119,7 @@ export default class HexagonalHeatmap extends ModelDetailHeatmap
         this._colors = d3
             .scaleLinear()
             .domain([0, (maxElemCount)])
-            .range(["#fff7fb", "#1f77b4"]);
+            .range(this._colorRange);
 
         // Generate SVG.
         this._svg = d3.select("#" + chartDiv.id).select("svg");
@@ -135,7 +144,7 @@ export default class HexagonalHeatmap extends ModelDetailHeatmap
             .enter().append("path")
             .attr("d", hexbin.hexagon())
             .attr("transform", d => "translate(" + d.x + "," + d.y + ")")
-            .style("fill", d => this._computeColorForBin(this._colors, d));
+            .style("fill", d => this._computeColorForBin(this._colors, d, 2, 3));
 
         // --------------------------------------
         // 5. Draw axes.
@@ -149,17 +158,5 @@ export default class HexagonalHeatmap extends ModelDetailHeatmap
         // --------------------------------------
 
         this._addBrush(this._svg, axesScales.xAxisScale, axesScales.yAxisScale, this._colors);
-    }
-
-    _computeColorForBin(colors, binData)
-    {
-        const filteredDataLength = binData.filter(record =>
-            this._filteredRecordIDs.external.has(record[2]) &&
-            this._filteredRecordIDs.external.has(record[3]) &&
-            this._filteredRecordIDs.internal.has(record[2]) &&
-            this._filteredRecordIDs.internal.has(record[3])
-        ).length;
-
-        return filteredDataLength > 0 ? colors((filteredDataLength)) : "#ccc";
     }
 }

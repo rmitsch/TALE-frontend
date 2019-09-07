@@ -50,6 +50,7 @@ export default class ModelDetailHeatmap extends Chart
          this._svg          = null;
          this._colors       = null;
          this._brushExtent  = null;
+         this._colorRange   = ["#fff7fb", "#1f77b4"];
          // Used to store max. value in heatmap cell - important for setting color of cells.
          this._maxCellValue = null;
 
@@ -93,15 +94,24 @@ export default class ModelDetailHeatmap extends Chart
     }
 
     /**
-     * Computes color for hex bin w.r.t. set of currently selected records.
+     * Computes color for bin w.r.t. set of currently selected records.
      * @param colors
-     * @param binData
-     * @returns {*}
+     * @param binData Collection of connections between points for pairwise displacement data.
+     * @param index1
+     * @param index2
+     * @returns {string} Color for this bin.
      * @private
      */
-    _computeColorForBin(colors, binData)
+    _computeColorForBin(colors, binData, index1, index2)
     {
-        throw new TypeError("ModelDetailHeatmap._computeColorForBin(): Abstract method must not be called.");
+        const filteredDataLength = binData.filter(record =>
+            this._filteredRecordIDs.external.has(record[index1]) &&
+            this._filteredRecordIDs.external.has(record[index2]) &&
+            this._filteredRecordIDs.internal.has(record[index1]) &&
+            this._filteredRecordIDs.internal.has(record[index2])
+        ).length;
+
+        return filteredDataLength > 0 ? colors((filteredDataLength)) : "#fff";
     }
 
     /**
@@ -172,7 +182,7 @@ export default class ModelDetailHeatmap extends Chart
                 paths
                     .style("fill", d => valuesInBrush(
                         extent, xAxisScale.invert(d.x), yAxisScale.invert(d.y)
-                    ) ? instance._computeColorForBin(instance._colors, d) : "#ccc");
+                    ) ? instance._computeColorForBin(instance._colors, d) : "#fff");
 
                 // Update selection of filtered points.
                 instance._filteredRecordIDs.internal = new Set(
@@ -310,6 +320,34 @@ export default class ModelDetailHeatmap extends Chart
             xAxisScale: xAxisScale,
             yAxisScale: yAxisScale
         }
+    }
+
+    /**
+     * Generates (or replaces, if it exists) SVG.
+     * @param chartDivID
+     * @param chartWidth
+     * @param chartHeight
+     * @param margin
+     * @returns Generated SVG element.
+     * @private
+     */
+    _generateEmptySVG(chartDivID, chartWidth, chartHeight, margin)
+    {
+        let svg = d3.select("#" + chartDivID).select("svg");
+        if (svg.empty())
+            svg.remove();
+
+        // Append SVG.
+        svg = d3
+            .select("#" + chartDivID)
+            .append("svg")
+            .attr("width", chartWidth + margin.left + margin.right)
+            .attr("height", chartHeight + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+            .style("stroke", "none");
+
+        return svg;
     }
 
     resize()

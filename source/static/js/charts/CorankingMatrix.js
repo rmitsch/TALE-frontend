@@ -81,24 +81,23 @@ export default class CorankingMatrix extends ModelDetailHeatmap
         // 1. Bin records.
         // --------------------------------------
 
-        let bins            = this._dataset;
-        // Find highest number of elements in bin.
-        const maxElemCount  = Math.max(...bins.map(bin => bin.paths.length));
+        let bins        = this._dataset;
+        const dataExt   = this._filteredRecordIDs.external;
+        const dataInt   = this._filteredRecordIDs.internal;
+        // Find highest number of filtered elements in bin.
+        const maxElemCount  = Math.max(...bins.map(
+            bin => bin.paths.filter(
+                record =>
+                    dataExt.has(record[0]) && dataExt.has(record[1]) &&
+                    dataInt.has(record[0]) && dataInt.has(record[1])
+            ).length)
+        );
         
         // --------------------------------------
         // 2. Generate SVG.
         // --------------------------------------
 
-        this._svg = d3.select("#" + chartDiv.id).select("svg");
-        if (!this._svg.empty())
-            this._svg.remove();
-        // Append SVG.
-        this._svg = d3.select("#" + chartDiv.id).append("svg")
-            .attr("width", chartWidth + margin.left + margin.right)
-            .attr("height", chartHeight + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
-            .style("stroke", "none");
+        this._svg = this._generateEmptySVG(chartDiv.id, chartWidth, chartHeight, margin);
 
         // --------------------------------------
         // 2. Build scales and axes.
@@ -132,8 +131,8 @@ export default class CorankingMatrix extends ModelDetailHeatmap
         // Define color range.
         this._colors = d3
             .scaleLinear()
-            .domain([0, (maxElemCount)])
-            .range(["#fff7fb", "#1f77b4"]);
+            .domain([0, maxElemCount])
+            .range(this._colorRange);
 
         // --------------------------------------
         // 3. Draw heatmap.
@@ -152,76 +151,8 @@ export default class CorankingMatrix extends ModelDetailHeatmap
             .attr("y", d => y(d[attrs[1]]))
             .attr("width", x.bandwidth())
             .attr("height", y.bandwidth())
-            .style("fill", d => this._computeColorForBin(this._colors, d));
+            .style("fill", d => this._computeColorForBin(this._colors, d.paths, 0, 1));
     }
-
-    _computeColorForBin(colors, binData)
-    {
-        const filteredDataLength = binData.paths.filter(record =>
-            this._filteredRecordIDs.external.has(record[0]) &&
-            this._filteredRecordIDs.external.has(record[1]) &&
-            this._filteredRecordIDs.internal.has(record[0]) &&
-            this._filteredRecordIDs.internal.has(record[1])
-        ).length;
-
-        return filteredDataLength > 0 ? colors((filteredDataLength)) : "#ccc";
-    }
-
-    // _drawAxes(targetElem, attrs, extrema, axesDiv)
-    // {
-    //     const targetDivHeight   = targetElem.height();
-    //     const targetDivWidth    = targetElem.width();
-    //
-    //     let xAxisScale = d3.scale
-    //         .linear()
-    //         .domain([0, extrema[attrs[0]].max])
-    //         .range([0, targetDivWidth - 0]);
-    //     let yAxisScale = d3.scale
-    //         .linear()
-    //         .domain([0, extrema[attrs[1]].max])
-    //         .range([targetDivHeight - 0, 0]);
-    //     let xAxis = d3.svg
-    //         .axis()
-    //         .scale(xAxisScale)
-    //         .ticks(3)
-    //         .orient("bottom");
-    //     let yAxis = d3.svg
-    //         .axis()
-    //         .scale(yAxisScale)
-    //         .ticks(3)
-    //         .orient("left");
-    //     const axisStyle = {
-    //         'stroke': 'black',
-    //         'fill': 'none',
-    //         'stroke-width': '1px',
-    //         "shape-rendering": "crispEdges",
-    //         "font": "10px sans-serif",
-    //         "font-weight": "normal"
-    //     };
-    //
-    //     let svgAxes = d3.select("#" + axesDiv.id)
-    //         .append("svg")
-    //         .attr("width", targetDivWidth)
-    //         .attr("height", targetDivHeight);
-    //
-    //     svgAxes
-    //         .append("g")
-    //         .attr("class", "coranking-matrix-x-axis")
-    //         .attr("transform", "translate(20, " + (targetDivHeight - 25) + ")")
-    //         .style(axisStyle)
-    //         .call(xAxis);
-    //     svgAxes
-    //         .append("g")
-    //         .attr("class", "coranking-matrix-y-axis")
-    //         .attr("transform", "translate(25, 0)")
-    //         .style(axisStyle)
-    //         .call(yAxis);
-    //
-    //     return {
-    //         xAxisScale: xAxisScale,
-    //         yAxisScale: yAxisScale
-    //     }
-    // }
 
     redraw()
     {
