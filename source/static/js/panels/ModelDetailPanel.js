@@ -33,6 +33,10 @@ export default class ModelDetailPanel extends Panel
         // Update involved CSS classes.
         $("#" + this._target).addClass("model-detail-panel");
 
+        // Keep a copy of currently used colorizing methods for scatterplots in case a reset due to highlighting changes
+        // is needed.
+        this._scatterplotColorizingMethods = {colorAccessor: null, colors: null};
+
         // Generate settings panel.
         this._settingsPanel = new ModelDetailSettingsPanel(
             "Model Detail View: Settings", this._operator, this, null, null
@@ -524,8 +528,11 @@ export default class ModelDetailPanel extends Panel
         );
         $("#" + scatterplotContainer.id).css('left', (i * (scatterplotSize.width + 10)) + 'px');
 
-        let scatterplot = dc.scatterPlot("#" + scatterplotContainer.id, this._operator._target);
+        // Update colorization methods.
+        this._updateScatterplotColorScheme(this._optionValues);
+
         // Configure scatterplot.
+        let scatterplot = dc.scatterPlot("#" + scatterplotContainer.id, this._operator._target);
         scatterplot
             .height(scatterplotSize.height)
             .width(scatterplotSize.width)
@@ -544,7 +551,7 @@ export default class ModelDetailPanel extends Panel
             .keyAccessor(d => d.key[0])
             .valueAccessor(d => d.key[1])
             .existenceAccessor(d => d.value.count > 0)
-            .excludedSize(1)
+            .excludedSize(3)
             .excludedOpacity(0.7)
             .excludedColor("#ccc")
             .symbolSize(4)
@@ -553,27 +560,9 @@ export default class ModelDetailPanel extends Panel
             .transitionDuration(0)
             .margins({top: 5, right: 0, bottom: 2, left: 0});
 
-        // Define color map.
-        const attr              = this._optionValues.scatterplotColorCoding;
-        if (attr === "none")
-            scatterplot.colors(d => "#1f77b4");
-        else {
-            const extrema   = this._data._cf_extrema[attr];
-            const colors    = d3
-                .scaleLinear()
-                .domain([
-                    extrema.min,
-                    this._optionValues.scatterplotColorCodingUseLog ? Math.log(extrema.max) : extrema.max
-                ])
-                .range(["#fff7fb", "#1f77b4"]);
-
-            scatterplot.colorAccessor(
-                d => d.value.items.reduce((sum, record) => sum + parseFloat(record[attr]), 0) / d.value.items.length
-            );
-            scatterplot.colors(
-                d => this._optionValues.scatterplotColorCodingUseLog ? colors(Math.log(d)) : colors(d)
-            );
-        }
+        // Set color methods.
+        scatterplot.colorAccessor(this._scatterplotColorizingMethods.colorAccessor);
+        scatterplot.colors(this._scatterplotColorizingMethods.colors);
 
         scatterplot.render();
         scatterplot.yAxis().ticks(5);
@@ -705,34 +694,43 @@ export default class ModelDetailPanel extends Panel
      */
     _updateScatterplotColorScheme(optionValues, render = true)
     {
-        const attr      = optionValues.scatterplotColorCoding;
-        const extrema   = this._data._cf_extrema[attr];
-        // Define offset for logarithmic color coding.
-        const logBuffer = 0.000001 - Math.min(extrema.min, 0);
+        let instance            = this;
+        const defaultFillColor  = "#1f77b4";
+        const attr              = optionValues.scatterplotColorCoding;
 
-        // Create color schemes.
-        const colors = attr !== "none" ? d3
-            .scaleLinear()
-            .domain([
-                optionValues.scatterplotColorCodingUseLog ? Math.log(extrema.min + logBuffer) : extrema.min,
-                optionValues.scatterplotColorCodingUseLog ? Math.log(extrema.max + logBuffer) : extrema.max
-            ])
-            .range(["#fff7fb", "#1f77b4"]) : null;
+        if (attr !== "none") {
+            const extrema   = this._data._cf_extrema[attr];
+            const logBuffer = 0.000001 - Math.min(extrema.min, 0);
 
+            // Create color schemes.
+            const colors = attr !== "none" ? d3
+                .scaleLinear()
+                .domain([
+                    optionValues.scatterplotColorCodingUseLog ? Math.log(extrema.min + logBuffer) : extrema.min,
+                    optionValues.scatterplotColorCodingUseLog ? Math.log(extrema.max + logBuffer) : extrema.max
+                ])
+                .range(["#fff7fb", "#1f77b4"]) : null;
+
+            this._scatterplotColorizingMethods = {
+                colorAccessor: d => d.value.items.reduce(
+                    (sum, record) => sum + parseFloat(record[attr]), 0
+                ) / d.value.items.length,
+                colors: d => optionValues.scatterplotColorCodingUseLog ? colors(Math.log(d + logBuffer)) : colors(d)
+            };
+        }
+
+        else {
+            this._scatterplotColorizingMethods = {
+                colorAccessor: d => d,
+                colors: d => defaultFillColor
+            };
+        }
+
+        // Set new colorization methods, render.
         for (let scatterplotID in this._charts.scatterplots) {
-            const scatterplot = this._charts.scatterplots[scatterplotID];
-            if (attr === "none")
-                scatterplot.colors(d => "#1f77b4");
-            else {
-                scatterplot.colorAccessor(
-                    d => d.value.items.reduce(
-                        (sum, record) => sum + parseFloat(record[attr]), 0
-                    ) / d.value.items.length
-                );
-                scatterplot.colors(
-                    d => optionValues.scatterplotColorCodingUseLog ? colors(Math.log(d + logBuffer)) : colors(d)
-                );
-            }
+            let scatterplot = this._charts.scatterplots[scatterplotID];
+            scatterplot.colorAccessor(instance._scatterplotColorizingMethods.colorAccessor);
+            scatterplot.colors(instance._scatterplotColorizingMethods.colors);
 
             if (render)
                 scatterplot.render();
@@ -837,12 +835,34 @@ export default class ModelDetailPanel extends Panel
 
     highlight(id, source, propagate = false)
     {
+        let instance = this;
+
         // We know that the only possible source we want to consider for a highlighting operation is the correponding
         // ModelDetailTable instance, so we can safely ignore all other sources.
         if (this._charts["table"] !== null) {
             if (this._charts["table"].name === source) {
-                for (const scatterplot in this._charts["scatterplots"])
-                    this._charts["scatterplots"][scatterplot].highlight(id);
+                for (const scatterplotID in this._charts["scatterplots"]) {
+                    let chart = this._charts["scatterplots"][scatterplotID];
+
+                    if (id !== null) {
+                        chart.colorAccessor(d => d);
+                        chart.colors(
+                            d => d.value.items.find(record => record.id === id) !== undefined ?
+                                "red" : "#ccc"
+                                // instance._scatterplotColorizingMethods.colors(
+                                //     instance._scatterplotColorizingMethods.colorAccessor(d)
+                                // )
+                        );
+                    }
+
+                    else {
+                        chart.colorAccessor(this._scatterplotColorizingMethods.colorAccessor);
+                        chart.colors(this._scatterplotColorizingMethods.colors);
+                    }
+
+                    chart.render();
+                }
+
             }
         }
     }

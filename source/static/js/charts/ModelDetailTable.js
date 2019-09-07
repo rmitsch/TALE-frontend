@@ -120,13 +120,12 @@ export default class ModelDetailTable extends Chart
     _constructFCChart(tableID)
     {
         let instance    = this;
-        const table     = $("#" + tableID + " tbody");
-
-        this._cf_chart = $("#" + tableID).DataTable({
+        this._cf_chart  = $("#" + tableID).DataTable({
             scrollX: true,
             scrollY: Math.floor($("#model-details-block-record-table").height() - 175) + "px",
             fixedColumns: false
         });
+        const table     = $("#" + tableID + " tbody");
 
         // Add eventl istener for updating histogram positions when table is scrolled.
         $(".model-detail-table-container .dataTables_scrollBody").on("scroll", function(event) {
