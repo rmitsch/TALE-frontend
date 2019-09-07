@@ -141,8 +141,6 @@ export default class CorankingMatrix extends ModelDetailHeatmap
         this._svg
             .attr("class", "coranking-bins")
             .selectAll()
-            // .data(bins, d => d[attrs[0]] + ':' + d[attrs[1]])
-            // .data(bins, function(d) {console.log("data:", d); return d;})
             .data(bins)
             .enter()
             .append("rect")
@@ -152,14 +150,6 @@ export default class CorankingMatrix extends ModelDetailHeatmap
             .attr("width", x.bandwidth())
             .attr("height", y.bandwidth())
             .style("fill", d => this._computeColorForBin(this._colors, d.paths, 0, 1));
-
-        // --------------------------------------
-        // 4. Add brush.
-        // --------------------------------------
-
-        this._addBrush(
-            this._svg, axesScales.xAxisScale, axesScales.yAxisScale, this._colors, "rect", d => d.__data__.paths, 0, 1
-        );
     }
 
     redraw()
