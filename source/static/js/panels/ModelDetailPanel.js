@@ -352,7 +352,7 @@ export default class ModelDetailPanel extends Panel
 
         // Construct new table - easier than updating existing one.
         this._charts["table"] = new ModelDetailTable(
-            "Model Detail ModelOverviewTable",
+            "ModelDetailTable",
             this,
             this._data._originalRecordAttributes,
             this._data,
@@ -847,7 +847,7 @@ export default class ModelDetailPanel extends Panel
     {
         let instance    = this;
         let chart       = scatterplot;
-        let id          = idToHighlight;
+        const id        = idToHighlight;
 
         chart.selectAll('path.symbol').each(function(record) {
             if (record.value.items.find(record => record.id === id) !== undefined) {
@@ -862,15 +862,15 @@ export default class ModelDetailPanel extends Panel
                     .data([record])
                     .enter()
                     .append("circle")
-                    .attr("class", "highlight");
-                circles
+                    .attr("class", "highlight")
                     .attr("opacity", 1)
                     .attr("r", 5)
                     .attr("cx", d => lastHighlightedPos !== null ? lastHighlightedPos.x : d.coordinates.x)
                     .attr("cy", d => lastHighlightedPos !== null ? lastHighlightedPos.y : d.coordinates.y)
                     .style("fill", "red");
 
-                dc.transition(circles, 100, chart.transitionDelay())
+                dc
+                    .transition(circles, 100, chart.transitionDelay())
                     .attr("cx", d => d.coordinates.x)
                     .attr("cy", d => d.coordinates.y);
 

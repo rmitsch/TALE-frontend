@@ -173,7 +173,7 @@ export default class NumericalHistogram extends Histogram
 
             // Reset all bars to default color.
             else {
-                this._cf_chart.selectAll('rect.bar').each(function(d){
+                this._cf_chart.selectAll('rect.bar').each(function(d) {
                     d3.select(this).attr("fill", "#1f77b4");
                 });
             }

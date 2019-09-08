@@ -135,16 +135,21 @@ export default class ModelDetailTable extends Chart
 
         // Highlight data point on hover in scatterplots & histograms.
         table.on('mouseenter', 'tr', function () {
-            if (instance._cf_chart.row(this).data() !== null)
-                instance._panel.highlight(
-                    instance._cf_chart.row(this).data()[0],
-                    instance._name,
-                    false
-                );
+            if (instance._cf_chart.row(this).data() !== null) {
+                const idToHighlight = instance._cf_chart.row(this).data()[0];
+
+                // Highlight histograms.
+                for (let chartID in instance._charts)
+                    instance._charts[chartID].highlight(idToHighlight, instance._name);
+
+                // Highlights other charts in panel.
+                instance._panel.highlight(idToHighlight, instance._name, false);
             }
-        );
+        });
         // Clear highlighting on mouseout.
         table.on('mouseout', 'tr', function () {
+            for (let chartID in instance._charts)
+                instance._charts[chartID].highlight(null, instance._name);
             instance._panel.highlight(null, instance._name, false);
         });
 
@@ -167,7 +172,7 @@ export default class ModelDetailTable extends Chart
                 ).id;
 
                 // Generate chart in div.
-                instance._generateHistogram(columnTitle);
+                this._charts[columnTitle + "Histogram"] = instance._generateHistogram(columnTitle);
             }
         }
     }
@@ -312,11 +317,17 @@ export default class ModelDetailTable extends Chart
         }
     }
 
+    /**
+     * Generates attribute histogram for specified column.
+     * @param columnTitle
+     * @returns {NumericalHistogram}
+     * @private
+     */
    _generateHistogram(columnTitle)
    {
        let instance = this;
 
-       this._charts[columnTitle + "Histogram"] = new NumericalHistogram(
+       let histogram = new NumericalHistogram(
            columnTitle + ".histogram",
            this._panel,
            [columnTitle],
@@ -336,11 +347,13 @@ export default class ModelDetailTable extends Chart
        );
 
        // Adjustments for histograms that diverge from default behaviour in NumericalHistogram class.
-       this._charts[columnTitle + "Histogram"]._cf_chart
+       histogram._cf_chart
            .on("filtered", event => {
                instance._panel.updateFilteredRecordBuffer(instance._name, instance._dataset.currentlyFilteredIDs);
            })
            .transitionDuration(0)
            .margins({top: 5, right: 10, bottom: 16, left: 25})
+
+       return histogram;
     }
 }
