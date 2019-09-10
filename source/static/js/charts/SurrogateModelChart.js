@@ -193,7 +193,7 @@ export default class SurrogateModelChart extends Chart
 
         // Update sizes.
         $("#" + this._target + " .dataTables_scrollBody").css(
-            'height', Math.floor(panelDiv.height() - 317) + "px"
+            'height', Math.floor(panelDiv.height() - 265) + "px"
         );
         this.synchHistogramsWidthColumnHeaders();
         this.updateHistogramPositionsAfterScroll(this._tableScrollPosition);
@@ -206,14 +206,13 @@ export default class SurrogateModelChart extends Chart
         // Update table height.
         if (panelDiv.height() !== this._lastPanelSize.height) {
             $("#" + this._target + " .dataTables_scrollBody").css(
-                'height', Math.floor(panelDiv.height() - 317) + "px"
+                'height', Math.floor(panelDiv.height() - 265) + "px"
             );
         }
 
         // Update histogram size and positioning.
-        if (panelDiv.width() !== this._lastPanelSize.width) {
+        if (panelDiv.width() !== this._lastPanelSize.width)
             this.synchHistogramsWidthColumnHeaders();
-        }
 
         // Store size of panel at time of last render.
         this._lastPanelSize.width = panelDiv.width();
@@ -225,9 +224,9 @@ export default class SurrogateModelChart extends Chart
      */
     synchHistogramsWidthColumnHeaders()
     {
-        let currX = 75;
+        let currX = 85;
 
-        $("#surrogate-model-histogram-container").width($("#" + this._divStructure.tableContainerDivID).width());
+        $("#surrogate-model-histogram-container").width($("#" + this._divStructure.tableContainerDivID).width() - 10);
 
         for (let i = 0; i < this._attributes.rulesTable.length; i++) {
             const columnTitle   = this._attributes.rulesTable[i];
@@ -255,6 +254,9 @@ export default class SurrogateModelChart extends Chart
     updateHistogramPositionsAfterScroll(scrollLeft)
     {
         if (!isNaN(scrollLeft) && scrollLeft !== 0) {
+            // let histogramDiv = $("#surrogate-model-histogram-container");
+            // histogramDiv.css({left: -scrollLeft + 10});
+
             for (let i = 0; i < this._attributes.rulesTable.length; i++) {
                 const columnTitle   = this._attributes.rulesTable[i];
 
