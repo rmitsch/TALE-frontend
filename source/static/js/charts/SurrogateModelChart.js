@@ -94,27 +94,16 @@ export default class SurrogateModelChart extends Chart
 
         // On hover: Highlight data point on hover in scatterplots & histograms.
         table.on('mouseenter', 'tr', function () {
-            // if (instance._charts.rulesTable.row(this).data() !== null)
-                // console.log("mouseenter");
+                const idToHighlight = instance._charts.rulesTable.row(this).data()[0];
+                if (instance._charts.rulesTable.row(this).data() !== null)
+                    for (const chartID in instance._divStructure.histogramChartsDivIDs)
+                        instance._charts[chartID + "Histogram"].highlight(idToHighlight, instance._name);
             }
         );
         // Clear highlighting on mouseout.
         table.on('mouseout', 'tr', function () {
-            // console.log("mouseout");
-        });
-
-        // On (double-)click: Open detail view.
-        table.on('dblclick', 'td', function (e) {
-            // Instruct model detail operator to load data for the selected model.
-            // console.log("dblclick");
-        });
-
-        // On click: Filter.
-        table.on('click', 'td', function (e) {
-            const row           = instance._charts.rulesTable.row(this);
-            const selectedID    = row.data()[0];
-
-            // console.log("click");
+            for (const chartID in instance._divStructure.histogramChartsDivIDs)
+                instance._charts[chartID + "Histogram"].highlight(null, instance._name);
         });
 
         // -------------------------------------
@@ -133,14 +122,20 @@ export default class SurrogateModelChart extends Chart
                 ).id;
 
                 // Generate chart in div.
-                instance._generateHistogram(columnTitle);
+                this._charts[columnTitle + "Histogram"] = this._generateHistogram(columnTitle);
             }
         }
     }
 
+    /**
+     * Generates histogram used as scented widget in table header.
+     * @param columnTitle
+     * @returns {NumericalHistogram}
+     * @private
+     */
     _generateHistogram(columnTitle)
     {
-        this._charts[columnTitle + "Histogram"] = new NumericalHistogram(
+        let chart = new NumericalHistogram(
             columnTitle + ".histogram",
             this._panel,
             [columnTitle],
@@ -160,9 +155,11 @@ export default class SurrogateModelChart extends Chart
         );
 
         // Adjustments for histograms that diverge from default behaviour in NumericalHistogram class.
-        this._charts[columnTitle + "Histogram"]._cf_chart
+        chart._cf_chart
             .on("filtered", event => {})
-            .margins({top: 5, right: 10, bottom: 16, left: 25})
+            .margins({top: 5, right: 10, bottom: 16, left: 25});
+
+        return chart;
     }
 
     /**
@@ -177,7 +174,7 @@ export default class SurrogateModelChart extends Chart
         this._clearChartsAndTable();
         this._initTableData();
         for (let columnTitle in this._divStructure.histogramChartsDivIDs) {
-            this._generateHistogram(columnTitle);
+            this._charts[columnTitle + "Histogram"] = this._generateHistogram(columnTitle);
             this._charts[columnTitle + "Histogram"].render();
         }
     }
