@@ -24,6 +24,7 @@ export default class ModelDetailDataset extends Dataset
         this._drMetaDataset                 = drMetaDataset;
         this._binCount                      = drMetaDataset._binCount;
         this._low_dim_projection            = modelDataJSON.original_dataset;
+        this._dataset_for_table             = JSON.parse(modelDataJSON.original_dataset_for_table);
         this._allModelMetadata              = modelDataJSON.model_metadata;
         this._explanations                  = modelDataJSON.explanations;
         this._preprocessedExplanationData   = ModelDetailDataset._preprocessExplainerData(
@@ -34,7 +35,9 @@ export default class ModelDetailDataset extends Dataset
 
         // Gather attributes available for original record.
         this._attributeDataTypes        = modelDataJSON.attribute_data_types;
-        this._originalRecordAttributes  = Object.keys(this._attributeDataTypes).filter(key => isNaN(key));
+        this._originalRecordAttributes  = Object.keys(modelDataJSON.original_dataset[0]).filter(
+            key => isNaN(key) && key in this._attributeDataTypes
+        );
 
         //--------------------------------------
         // Initialize crossfilter datasets.
@@ -380,5 +383,14 @@ export default class ModelDetailDataset extends Dataset
         return Object.keys(this._attributeDataTypes).filter(
             attr => this._attributeDataTypes[attr]["supertype"] !== "categorical"
         );
+    }
+
+    /**
+     * Fetches dataset prepared for detail panel table.
+     * @returns {any}
+     */
+    get dataset_for_table()
+    {
+        return this._dataset_for_table;
     }
 }

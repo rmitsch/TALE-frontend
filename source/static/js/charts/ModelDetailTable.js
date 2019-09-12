@@ -22,9 +22,6 @@ export default class ModelDetailTable extends Chart
 
         super(name, panel, attributes, dataset, style, parentDivID);
 
-        // Pre-process attribute data.
-        this._preprocessAttributes();
-
         // Update involved CSS classes.
         $("#" + this._target).addClass("model-detail-table");
 
@@ -67,48 +64,13 @@ export default class ModelDetailTable extends Chart
     }
 
     /**
-     * Adjusts attributes data - e. g. making sure that order is correct and that #histogram columns are not included
-     * in listing.
-     * @private
-     */
-    _preprocessAttributes()
-    {
-        for (let i = 0; i < this._attributes.length; i++) {
-            if (this._attributes[i] === "record_name") {
-                let tmp = this._attributes[0];
-                this._attributes[0] = this._attributes[i];
-                this._attributes[i] = tmp;
-                break;
-            }
-        }
-
-        // Disregard histogram columns supplied by backend.
-        this._attributes = this._attributes.filter(attribute => !attribute.includes("#histogram"))
-    }
-
-    /**
-     * Fetches initial set of data for table. Includes all datasets filtered in arbitrary dimension.
+     * Fetches initial set of data for table.
      * Assumption: Data is not filtered at initialization.
      * @private
      */
     _initTableData()
     {
-        let records             = this._dimension.top(Infinity);
-        let transformedRecords  = [records.length];
-
-        // Transform records to format accepted by DataTable.
-        for (let i = 0; i < records.length; i++) {
-            let transformedRecord   = [this._attributes.length + 1];
-
-            transformedRecord[0]    = records[i].id;
-            for (let j = 0; j < this._attributes.length; j++) {
-                const currAttr = this._attributes[j];
-                transformedRecord[j + 1] = records[i][currAttr];
-            }
-            transformedRecords[i] = transformedRecord;
-        }
-
-        this._cf_chart.rows.add(transformedRecords);
+        this._cf_chart.rows.add(this._dataset.dataset_for_table);
         this._cf_chart.draw();
     }
 
