@@ -23,26 +23,18 @@ export default class ModelDetailDataset extends Dataset
         this._modelID                       = modelID;
         this._drMetaDataset                 = drMetaDataset;
         this._binCount                      = drMetaDataset._binCount;
-        this._low_dim_projection            = ModelDetailDataset._preprocessLowDimProjectionData(
-            modelDataJSON.low_dim_projection, modelDataJSON.original_dataset
-        );
-
+        this._low_dim_projection            = modelDataJSON.original_dataset;
         this._allModelMetadata              = modelDataJSON.model_metadata;
         this._explanations                  = modelDataJSON.explanations;
         this._preprocessedExplanationData   = ModelDetailDataset._preprocessExplainerData(
             this._explanations, modelDataJSON.explanation_columns
         );
-        this._sampleDissonances             = modelDataJSON.sample_dissonances;
         this._pairwiseDisplacementData      = modelDataJSON.pairwise_displacement_data;
         this._corankingMatrixData           = modelDataJSON.coranking_matrix_data;
 
         // Gather attributes available for original record.
-        this._originalRecordAttributes  = [];
-        for (let key in modelDataJSON.original_dataset[0]) {
-            // if (key !== "record_name")
-            this._originalRecordAttributes.push(key);
-        }
-        this._attributeDataTypes = modelDataJSON.attribute_data_types;;
+        this._attributeDataTypes        = modelDataJSON.attribute_data_types;
+        this._originalRecordAttributes  = Object.keys(this._attributeDataTypes).filter(key => isNaN(key));
 
         //--------------------------------------
         // Initialize crossfilter datasets.
@@ -131,41 +123,6 @@ export default class ModelDetailDataset extends Dataset
         let extremaInfo = this._calculateSingularExtremaByDimension(config.dimensions["weight"], "weight");
         config.extrema["weight"] = extremaInfo.extrema;
         config.intervals["weight"] = extremaInfo.interval;
-    }
-
-    /**
-     * Converts low-dimensional projection data into a JSON object with ID and x_1...x_n coordinates.
-     * Adds data from original records.
-     * @param coordinateLists
-     * @param originalData
-     * @private
-     */
-    static _preprocessLowDimProjectionData(coordinateLists, originalData)
-    {
-        let processedCoordinateObjects = [];
-
-        for (let i = 0; i < coordinateLists.length; i++) {
-            let newCoordinateObject = {id: i};
-            // Transform data into dict structure.
-            for (let j = 0; j < coordinateLists[i].length; j++) {
-                newCoordinateObject[j] = coordinateLists[i][j];
-            }
-
-            // If low-dim. projection is one-dimensional:
-            // Pad coordinate list with second dimension with fixed values so that dataset can be shown in scatterplot
-            // without further preprocessing.
-            if (coordinateLists[i].length === 1)
-                newCoordinateObject[1] = 0;
-
-            // Append data from original records.
-            for (let key in originalData[0]) {
-                newCoordinateObject[key] = originalData[i][key];
-            }
-
-            processedCoordinateObjects.push(newCoordinateObject)
-        }
-
-        return processedCoordinateObjects;
     }
 
     /**

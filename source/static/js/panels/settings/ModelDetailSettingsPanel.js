@@ -19,6 +19,7 @@ export default class DissonanceSettingsPanel extends SettingsPanel
         super(name, operator, parentDivID, iconID);
         this._panel                     = panel;
         this._colorCodingOptionsAreSet  = false;
+        this._optionValues              = this._extractOptionValues();;
     }
 
     _createDivStructure()
@@ -84,7 +85,8 @@ export default class DissonanceSettingsPanel extends SettingsPanel
 
     _applyOptionChanges()
     {
-        this._panel.processSettingsChange(this._extractOptionValues());
+        this._optionValues = this._extractOptionValues();
+        this._panel.processSettingsChange(this._optionValues);
     }
 
     /**
@@ -113,7 +115,7 @@ export default class DissonanceSettingsPanel extends SettingsPanel
      */
     get optionValues()
     {
-        return this._extractOptionValues();
+        return this._optionValues;
     }
 
     /**
