@@ -93,7 +93,7 @@
 
 .dissonance-chart-x-axis-label {
     position: absolute;
-    bottom: 18px;
+    bottom: -25px;
     margin-left: calc(50% - 55px);
 }
 

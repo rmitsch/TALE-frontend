@@ -32,8 +32,8 @@ export default class FilterReduceSettingsPanel extends SettingsPanel {
         settingsHTML += "<div class='settings-section-header'>Line opacity</div>";
         // Bin fraction.
         settingsHTML += "<div class='settings-subsection'>";
-        settingsHTML += "<span id='filter-reduce-settings-line-opacity-bin-fraction'>Number of bins</span>";
-        settingsHTML += "<input type='number' id='filter-reduce-bin-number' min='1' max='10000' step='1' value='1'>";
+        settingsHTML += "<span id='filter-reduce-settings-line-opacity-bin-fraction'>Number of steps</span>";
+        settingsHTML += "<input type='number' id='filter-reduce-bin-number' min='1' max='10000' step='1' value='10'>";
         settingsHTML += "</div>";
 
         // Logarithmic scaling.

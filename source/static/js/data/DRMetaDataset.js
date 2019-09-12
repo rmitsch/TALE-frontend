@@ -23,7 +23,7 @@ export default class DRMetaDataset extends Dataset
         this._dataIndicesByID   = {};
         this._metadata          = metadata;
         this._binCount          = 10;
-        this._binCountSSP       = 10;
+        this._binCountSSP       = 100;
         this._correlations      = null;
 
         // Maps for translation of categorical variables into numerical ones.
