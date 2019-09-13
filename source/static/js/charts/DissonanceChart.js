@@ -27,7 +27,6 @@ export default class DissonanceChart extends Chart
         this._highlightColors       = d3.scaleLinear().range(["#fee5d9", "#ff0000"]);
         this._numRecordsInEmbedding = this._dataset._data.length / this._dataset._drModelMetadata._data.length;
 
-        console.log(this._dataset)
         // Cache number of filtered records (to speed up color computation).
         this._numFilteredRecords = this._dataset._cf_dimensions.model_id.top(Infinity).length;
 
@@ -336,7 +335,6 @@ export default class DissonanceChart extends Chart
         // Set number of ticks.
         this._verticalHistogram.yAxis().ticks(1);
         this._verticalHistogram.xAxis().ticks(0);
-
 
         this._verticalHistogram.on("filtered", function(d) {
             instance.propagateFilterChange(instance, "id")

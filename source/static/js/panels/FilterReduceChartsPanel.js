@@ -20,6 +20,13 @@ export default class FilterReduceChartsPanel extends Panel
     constructor(name, operator, parentDivID)
     {
         super(name, operator, parentDivID);
+        this._options = {
+            binFraction: 10,
+            plotOpacityBy: "threshold",
+            plotOpacityMinCorrStrength: 0.3,
+            plotOpacityOpacityUnderThreshold: 0.25,
+            useLogs: false
+        };
 
         // Update involved CSS classes.
         $("#" + this._target).addClass("filter-reduce-charts-panel");
@@ -30,6 +37,7 @@ export default class FilterReduceChartsPanel extends Panel
         this._histogramDivIDs   = divStructure.histogramDivIDs;
 
         // Generate charts.
+        this._correlationStrengths  = null;
         this._generateCharts();
     }
 
@@ -380,18 +388,63 @@ export default class FilterReduceChartsPanel extends Panel
         $(".filter-reduce-row-label-text").css("padding-top", (chartHeight / 2) + "px");
     }
 
+
     /**
-     * Updates binning configuration for SSP plots.
-     * @param config
+     * Updates options object and charts in accordance with changed options.
+     * @param options
      */
-    updateSSPBinning(config)
+    set options(options)
     {
-        for (const chartName in this._charts) {
-            // Consider only SSPs without binning, i. e. HP-objective plots.
-            if (!chartName.includes("histogram")) {
-                const chartAttributes = chartName.split(":");
-                if (chartAttributes.length === 2 && chartAttributes[0] !== chartAttributes[1])
-                    this._charts[chartName].updateSSPBinning(config);
+        // SSP binning.
+        if (
+            this._options.binFraction !== options.binFraction ||
+            this._options.useLogs !== options.useLogs
+        ) {
+            for (const chartName in this._charts) {
+                // Consider only SSPs without binning, i. e. HP-objective plots.
+                if (!chartName.includes("histogram")) {
+                    const chartAttributes = chartName.split(":");
+                    if (chartAttributes.length === 2 && chartAttributes[0] !== chartAttributes[1])
+                        this._charts[chartName].updateSSPBinning(options);
+                }
+            }
+        }
+
+        // Update opacity.
+        this._updatePlotOpacities(options);
+
+        this._options = options;
+    }
+
+    /**
+     * Update SSPs' opacities.
+     * @param options
+     * @param forceUpdate Updates even if options haven't changed.
+     * @private
+     */
+    _updatePlotOpacities(options, forceUpdate = false)
+    {
+        if (
+            forceUpdate ||
+            this._options.plotOpacityBy !== options.plotOpacityBy ||
+            this._options.plotOpacityMinCorrStrength !== options.plotOpacityMinCorrStrength ||
+            this._options.plotOpacityOpacityUnderThreshold !== options.plotOpacityOpacityUnderThreshold
+        ) {
+            for (const chartName in this._charts) {
+                // Ignore histograms.
+                if (!chartName.includes("histogram")) {
+                    const attributes            = chartName.split(":");
+                    const correlationStrength   = this._correlationStrengths[attributes[0]][attributes[1]];
+
+                    if (options.plotOpacityBy === "corrStrength")
+                        $("#" + this._charts[chartName]._target).css("opacity", correlationStrength);
+                    else if (options.plotOpacityBy === "threshold") {
+                        if (correlationStrength < options.plotOpacityMinCorrStrength)
+                            $("#" + this._charts[chartName]._target).css("opacity", options.plotOpacityOpacityUnderThreshold);
+                        else
+                            $("#" + this._charts[chartName]._target).css("opacity", 1);
+                    }
+                }
             }
         }
     }
@@ -429,6 +482,8 @@ export default class FilterReduceChartsPanel extends Panel
      */
     updateCorrelationBars(results)
     {
+        this._correlationStrengths = results;
+
         for (const chartName in this._charts) {
             // Ignore histograms.
             if (!chartName.includes("histogram")) {
@@ -436,6 +491,8 @@ export default class FilterReduceChartsPanel extends Panel
                     this._charts[chartName].updateCorrelationBar(results);
             }
         }
+
+        this._updatePlotOpacities(this._options, true);
     }
 
     render()

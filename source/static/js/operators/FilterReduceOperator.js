@@ -87,11 +87,11 @@ export default class FilterReduceOperator extends Operator
         }
     }
 
-    propagateSettingsChanges(delta, sourcePanelName)
+    propagateSettingsChanges(config, sourcePanelName)
     {
         // We know that currently only one panel is affected by setting changes.
         // Otherwise changes would have to be propagated as done in parent method.
-        this._panels["Hyperparameters & Objectives"].updateSSPBinning(delta);
+        this._panels["Hyperparameters & Objectives"].options = config;
     }
 
     filter(embeddingIDs)
