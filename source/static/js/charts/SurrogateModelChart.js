@@ -190,7 +190,7 @@ export default class SurrogateModelChart extends Chart
 
         // Update sizes.
         $("#" + this._target + " .dataTables_scrollBody").css(
-            'height', Math.floor(panelDiv.height() - 265) + "px"
+            'height', Math.floor(panelDiv.height() - 235) + "px"
         );
         this.synchHistogramsWidthColumnHeaders();
         this.updateHistogramPositionsAfterScroll(this._tableScrollPosition);
@@ -203,7 +203,7 @@ export default class SurrogateModelChart extends Chart
         // Update table height.
         if (panelDiv.height() !== this._lastPanelSize.height) {
             $("#" + this._target + " .dataTables_scrollBody").css(
-                'height', Math.floor(panelDiv.height() - 265) + "px"
+                'height', Math.floor(panelDiv.height() - 235) + "px"
             );
         }
 

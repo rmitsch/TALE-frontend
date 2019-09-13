@@ -53,7 +53,7 @@ export default class DissonanceSettingsPanel extends SettingsPanel
         settingsHTML += "<span>Distance metric</span>";
         settingsHTML += "<select id='model-details-settings-shepard-distancemetric-select'>" +
             "  <option value='cosine'>Cosine</option>" +
-            "  <option value='euclidean'>Euclidean</option>" +
+            "  <option value='euclidean' selected>Euclidean</option>" +
         "</select>";
         settingsHTML += "</div>";
 
@@ -63,7 +63,7 @@ export default class DissonanceSettingsPanel extends SettingsPanel
         settingsHTML += "<span>Distance metric</span>";
         settingsHTML += "<select id='model-details-settings-coranking-distancemetric-select'>" +
             "  <option value='cosine'>Cosine</option>" +
-            "  <option value='euclidean'>Euclidean</option>" +
+            "  <option value='euclidean' selected>Euclidean</option>" +
         "</select>";
         settingsHTML += "</div>";
 

@@ -146,7 +146,7 @@ export default class ModelDetailPanel extends Panel
         let explainerPane = Utils.spawnChildDiv(
             parameterPane.id, null, "model-detail-pane split-vertical",
             `<div class='model-details-block'>
-                <div class='model-details-title'>Local Hyperparameter Relevance</div>
+                <div class='model-details-title'>Local Hyperparameter Influence</div>
                 <div id="model-details-explainer-pane"</div>
             </div>`
         );
@@ -758,7 +758,7 @@ export default class ModelDetailPanel extends Panel
 
         // Show modal.
         $("#" + this._target).dialog({
-            title: "Model Details for Model with ID #" +
+            title: "Model Details for Model #" +
                 data._modelID +
                 "<a id='model-detail-settings-icon' href='#'>" +
                 "    <img src='./static/img/icon_settings_white.png' class='info-icon' alt='Settings' width='20px'>" +
