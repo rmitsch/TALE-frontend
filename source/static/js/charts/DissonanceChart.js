@@ -27,6 +27,7 @@ export default class DissonanceChart extends Chart
         this._highlightColors       = d3.scaleLinear().range(["#fee5d9", "#ff0000"]);
         this._numRecordsInEmbedding = this._dataset._data.length / this._dataset._drModelMetadata._data.length;
 
+        console.log(this._dataset)
         // Cache number of filtered records (to speed up color computation).
         this._numFilteredRecords = this._dataset._cf_dimensions.model_id.top(Infinity).length;
 
@@ -220,8 +221,10 @@ export default class DissonanceChart extends Chart
             .rowsLabel(function(d)      { return ""; })
             .margins({top: 0, right: 20, bottom: 0, left: 0})
             .transitionDuration(0)
+            // No rounded corners.
+            .xBorderRadius(0)
+            .yBorderRadius(0)
             // Cut off superfluous SVG height (probably reserved for labels).
-            // Note: Has to be tested with different widths and heights.
             .on('postRedraw', function(chart) {
                 let svg = $("#" + scope._divStructure.heatmapDivID).find('svg')[0];
                 svg.setAttribute('width', (svg.width.baseVal.value - scope._heatmapCutoff) + "px");
@@ -232,18 +235,14 @@ export default class DissonanceChart extends Chart
             });
 
         // Forward cell selection to filter mechanism in DissonanceDataset.
-        this._dissonanceHeatmap.boxOnClick(function (d) {
-            console.log(d);
-            dc.events.trigger(function () {
-                // dataset.addToHeatmapCellSelection(d.key)
-                // scope._dissonanceHeatmap.filter(d.key);
-                // scope._dissonanceHeatmap.redrawGroup();
-            });
-        });
-
-        // No rounded corners.
-        this._dissonanceHeatmap.xBorderRadius(0);
-        this._dissonanceHeatmap.yBorderRadius(0);
+        // this._dissonanceHeatmap.boxOnClick(function (d) {
+        //     console.log(d);
+        //     dc.events.trigger(function () {
+        //         // dataset.addToHeatmapCellSelection(d.key)
+        //         // scope._dissonanceHeatmap.filter(d.key);
+        //         // scope._dissonanceHeatmap.redrawGroup();
+        //     });
+        // });
     }
 
     /**
@@ -300,6 +299,7 @@ export default class DissonanceChart extends Chart
     _generateVerticalHistogram(dcGroupName)
     {
         // Create shorthand references.
+        let instance    = this;
         let dataset     = this._dataset;
         let extrema     = dataset._cf_extrema;
         let dimensions  = dataset._cf_dimensions;
@@ -324,7 +324,7 @@ export default class DissonanceChart extends Chart
             .filterOnBrushEnd(true)
             .dimension(dimensions[xAttribute + "#sort"])
             .group(dataset._cf_groups[yAttribute])
-            .brushOn(false)
+            // .brushOn(false)
             .margins({top: 5, right: 5, bottom: 5, left: 35})
             .gap(0);
 
@@ -336,6 +336,28 @@ export default class DissonanceChart extends Chart
         // Set number of ticks.
         this._verticalHistogram.yAxis().ticks(1);
         this._verticalHistogram.xAxis().ticks(0);
+
+
+        this._verticalHistogram.on("filtered", function(d) {
+            instance.propagateFilterChange(instance, "id")
+        });
+    }
+
+    propagateFilterChange(instance, key)
+    {
+        let dimensions      = instance._dataset._cf_dimensions;
+        let operator        = instance._panel._operator;
+        let embeddingIDs    = new Set();
+
+        // console.log(dimensions[key].top(Infinity));
+        // dimensions[key].top(Infinity).forEach(record => embeddingIDs.add(record.id));
+        // console.log(embeddingIDs);
+        // if (!(Utils.compareSets(embeddingIDs, operator._filteredIDs))) {
+        //     operator._filteredIDs = embeddingIDs;
+        //     operator._stage.filter(operator._name, embeddingIDs);
+        // }
+
+        return embeddingIDs;
     }
 
      /**

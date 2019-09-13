@@ -97,11 +97,7 @@ export default class ModelOverviewTable extends Chart
         // On hover: Highlight data point on hover in scatterplots & histograms.
         table.on('mouseenter', 'tr', function () {
             if (instance._cf_chart.row(this).data() !== null)
-                instance._panel.highlight(
-                    instance._cf_chart.row(this).data()[0],
-                    instance._name,
-                    true
-                );
+                instance._panel.highlight(instance._cf_chart.row(this).data()[0], instance._name, true);
             }
         );
         // Clear highlighting on mouseout.
