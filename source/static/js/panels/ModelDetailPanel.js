@@ -311,7 +311,7 @@ export default class ModelDetailPanel extends Panel
 
         const explainerPane = $("#model-details-explainer-pane");
         this._charts["explainerHeatmap"]
-            .height(explainerPane.height() + 25)
+            .height(explainerPane.height() + 20)
             .width(explainerPane.width())
             .dimension(cfConfig.dimensions[attribute])
             .group(cfConfig.groups[attribute])
