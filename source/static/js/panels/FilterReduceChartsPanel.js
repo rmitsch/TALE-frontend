@@ -435,14 +435,16 @@ export default class FilterReduceChartsPanel extends Panel
                 if (!chartName.includes("histogram")) {
                     const attributes            = chartName.split(":");
                     const correlationStrength   = this._correlationStrengths[attributes[0]][attributes[1]];
+                    const animationDuration     = 1000;
+                    let chart                   = $("#" + this._charts[chartName]._target);
 
                     if (options.plotOpacityBy === "corrStrength")
-                        $("#" + this._charts[chartName]._target).css("opacity", correlationStrength);
+                        chart.animate({"opacity": correlationStrength}, animationDuration);
                     else if (options.plotOpacityBy === "threshold") {
                         if (correlationStrength < options.plotOpacityMinCorrStrength)
-                            $("#" + this._charts[chartName]._target).css("opacity", options.plotOpacityOpacityUnderThreshold);
+                            chart.animate({"opacity": options.plotOpacityOpacityUnderThreshold}, animationDuration);
                         else
-                            $("#" + this._charts[chartName]._target).css("opacity", 1);
+                            chart.animate({"opacity": 1}, animationDuration);
                     }
                 }
             }

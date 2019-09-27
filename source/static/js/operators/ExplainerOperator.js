@@ -54,6 +54,6 @@ export default class ExplainerOperator extends Operator
     filter(embeddingIDs)
     {
         this._dataset._cf_dimensions["embeddingID"].filter(id => embeddingIDs.has(id));
-        this._panels["Explanations"].render();
+        this._panels["Hyperparameter Influence"].render();
     }
 }
