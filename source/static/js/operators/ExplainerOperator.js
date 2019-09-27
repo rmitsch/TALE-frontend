@@ -33,7 +33,7 @@ export default class ExplainerOperator extends Operator
     constructPanels()
     {
         // Construct panel for explainer heatmap.
-        const explainerPanelName            = "Explanations";
+        const explainerPanelName            = "Hyperparameter Influence";
         this._panels[explainerPanelName]    = new ExplainerPanel(explainerPanelName, this);
     }
 

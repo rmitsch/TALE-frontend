@@ -75,8 +75,6 @@
 .color-palette-cell {
     position: relative;
     display: block;
-    /* Assumption of 10 color steps in scale. */
-    height: 10%;
     width: 100%;
     background-color: #00cc33;;
 }

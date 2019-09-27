@@ -23,7 +23,7 @@
 .color-palette {
     display: inline-block;
     position: absolute;
-    top: 34px;
+    top: 46px;
     right: 90px;
     width: 20px;
     vertical-align: bottom;
@@ -34,8 +34,6 @@
 .color-palette-cell {
     position: relative;
     display: block;
-    /* Assumption of 10 color steps in scale. */
-    height: 10%;
     width: 100%;
     background-color: #00cc33;;
 }
