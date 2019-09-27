@@ -123,9 +123,9 @@ export default class ModelDetailDataset extends Dataset
         );
 
         // Calculate extrema.
-        let extremaInfo = this._calculateSingularExtremaByDimension(config.dimensions["weight"], "weight");
-        config.extrema["weight"] = extremaInfo.extrema;
-        config.intervals["weight"] = extremaInfo.interval;
+        let extremaInfo             = this._calculateSingularExtremaByDimension(config.dimensions["weight"], "weight");
+        config.extrema["weight"]    = extremaInfo.extrema;
+        config.intervals["weight"]  = extremaInfo.interval;
     }
 
     /**

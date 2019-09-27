@@ -83,16 +83,14 @@ export default class ModelDetailPanel extends Panel
         console.log("Generating ModelDetailPanel...");
         $("#logField").text("Generating ModelDetailPanel...");
 
-        // Use operator's target ID as group name.
-        let dcGroupName = this._operator._target;
-
         // Initialize table.
         this._charts["table"] = null;
 
         // Initialize explainer heatmap.
         this._charts["explainerHeatmap"] = dc.heatMap(
             "#" + this._divStructure.explainerPaneID,
-            dcGroupName
+            // Use operator's target ID as group name.
+            this._operator._target
         );
     }
 

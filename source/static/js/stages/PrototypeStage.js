@@ -6,11 +6,11 @@
 import Stage from './Stage.js'
 import FilterReduceOperator from "../operators/FilterReduceOperator.js";
 import SurrogateModelOperator from "../operators/SurrogateModelOperator.js";
-import DissonanceOperator from "../operators/DissonanceOperator.js";
 import Utils from "../Utils.js";
-import DissonanceDataset from "../data/DissonanceDataset.js";
 import SurrogateModelDataset from "../data/SurrogateModelDataset.js"
 import ModelDetailOperator from "../operators/ModelDetailOperator.js";
+import ExplainerDataset from "../data/ExplainerDataset.js";
+import ExplainerOperator from "../operators/ExplainerOperator.js";
 
 /**
  * Stage for prototype (2018-02).
@@ -51,8 +51,8 @@ export default class PrototypeStage extends Stage
             }
         ).then(res => res.json());
 
-        let dissonanceDataJSON = fetch(
-            "/get_sample_dissonance",
+        let explainerDataJSON = fetch(
+            "/get_explainer_values",
             {
                 headers: { "Content-Type": "application/json; charset=utf-8"},
                 method: "GET"
@@ -60,7 +60,7 @@ export default class PrototypeStage extends Stage
         ).then(res => res.json());
 
         // Fetch data.
-        Promise.all([surrModelJSON, dissonanceDataJSON])
+        Promise.all([surrModelJSON, explainerDataJSON])
             .then(function(values) {
                 $("#logField").text("Compiling DissonanceDataset");
                 console.log("Compiling DissonanceDataset.");
@@ -71,19 +71,12 @@ export default class PrototypeStage extends Stage
                     scope._datasets["modelMetadata"]
                 );
 
-                // Compile DissonanceDataset.
-                scope._datasets["dissonance"]       = new DissonanceDataset(
-                    "Dissonance Dataset",
-                    values[1],
-                    {x: 10, y: 10},
-                    scope._datasets["modelMetadata"],
-                    "r_nx"
-                );
+                scope._datasets["explainer"]       = new ExplainerDataset("ExplainerDataset", values[1]);
 
                 // For panels at bottom: Spawn container.
-                let splitTopDiv = Utils.spawnChildDiv(scope._target, null, "split-top-container");
+                let splitTopDiv     = Utils.spawnChildDiv(scope._target, null, "split-top-container");
                 // For panels at bottom: Spawn container. Used for surrogate and dissonance panel.
-                let splitBottomDiv = Utils.spawnChildDiv(scope._target, null, "split-bottom-container");
+                let splitBottomDiv  = Utils.spawnChildDiv(scope._target, null, "split-bottom-container");
 
                 //---------------------------------------------------------
                 // 1. Operator for hyperparameter and objective selection.
@@ -110,13 +103,13 @@ export default class PrototypeStage extends Stage
                 );
 
                 // ---------------------------------------------------------
-                // 3. Operator for exploration of inter-model disagreement.
+                // 3. Operator for exploration of explainer values.
                 // ---------------------------------------------------------
 
-                scope._operators["Dissonance"] = new DissonanceOperator(
-                    "Dissonance:DecisionTree",
+                scope._operators["Explainer"] = new ExplainerOperator(
+                    "Explainer",
                     scope,
-                    scope._datasets["dissonance"],
+                    scope._datasets["explainer"],
                     splitBottomDiv.id
                 );
 
@@ -137,15 +130,15 @@ export default class PrototypeStage extends Stage
                 // ---------------------------------------------------------
 
                 let surrTarget              = scope._operators["SurrogateModel"]._target;
-                let dissTarget              = scope._operators["Dissonance"]._target;
+                let explainerTarget         = scope._operators["Explainer"]._target;
                 let embeddingsTableTarget   = scope._operators["FilterReduce"].tablePanel._target;
 
                 // Horizontal split.
                 $("#" + surrTarget).addClass("split split-horizontal");
-                $("#" + dissTarget).addClass("split split-horizontal");
+                $("#" + explainerTarget).addClass("split split-horizontal");
                 $("#" + embeddingsTableTarget).addClass("split split-horizontal");
                 scope._bottomSplitPane = Split(
-                    ["#" + embeddingsTableTarget, "#" + surrTarget, "#" + dissTarget],
+                    ["#" + embeddingsTableTarget, "#" + surrTarget, "#" + explainerTarget],
                     {
                         direction: "horizontal",
                         sizes: [30, 45, 25],
@@ -154,7 +147,7 @@ export default class PrototypeStage extends Stage
                         onDragEnd: function() {
                             scope._operators["SurrogateModel"].resize();
                             scope._operators["FilterReduce"].resize();
-                            scope._operators["Dissonance"].resize();
+                            scope._operators["Explainer"].resize();
                         }
                     }
                 );
@@ -171,14 +164,14 @@ export default class PrototypeStage extends Stage
                         onDragEnd: function() {
                             scope._operators["SurrogateModel"].resize();
                             scope._operators["FilterReduce"].resize();
-                            scope._operators["Dissonance"].resize();
+                            scope._operators["Explainer"].resize();
                         }
                     }
                 );
 
                 // After split: Render (resize-sensitive) components.
                 scope._operators["SurrogateModel"].render();
-                scope._operators["Dissonance"].render();
+                scope._operators["Explainer"].resize();
                 scope._operators["FilterReduce"].resize();
                 $("#" + embeddingsTableTarget + " .dataTables_scrollBody").css(
                     'height', ($("#" + splitBottomDiv.id).height() - 190) + "px"
@@ -205,7 +198,6 @@ export default class PrototypeStage extends Stage
         // E. g.: Explanation rules - we don't automatically won't to exclude embeddings just because we excluded filter
         // rules; also they don't use the same underlying ID structure.
         const isolatedOperators = new Set(["GlobalSurrogateModel:ExplanationRules"]);
-
         if (!isolatedOperators.has(source))
             for (let opKey in this._operators) {
                 if (this._operators[opKey]._name !== source)

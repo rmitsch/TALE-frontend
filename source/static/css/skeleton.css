@@ -142,3 +142,8 @@ ul.pure-menu-children li {
     text-align: center;
     border-radius: 5px;
 }
+
+svg rect {
+  stroke-width: 0.2;
+  stroke: grey;
+}

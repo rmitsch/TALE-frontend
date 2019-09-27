@@ -72,44 +72,36 @@ $(document).ready(function() {
                 }
             }
 
-            $("#logField").text("Fetching explainer data.");
-            console.log("Fetching explainer data.");
+            // Get information on which hyperparameters and objectives are available.
+            // Note: Sequence of calls is important, since /get_metadata_template uses information
+            // made available by /get_metadata.
+            $("#logField").text("Compiling and storing DRMetaDataset.");
+            console.log("Compiling and storing DRMetaDataset.");
             $.ajax({
-                url: '/get_explainer_values',
+                url: '/get_metadata_template',
                 type: 'GET',
-                success: function (explainer_data) {
-                    // Get information on which hyperparameters and objectives are available.
-                    // Note: Sequence of calls is important, since /get_metadata_template uses information
-                    // made available by /get_metadata.
-                    $("#logField").text("Compiling and storing DRMetaDataset.");
-                    console.log("Compiling and storing DRMetaDataset.");
-                    $.ajax({
-                        url: '/get_metadata_template',
-                        type: 'GET',
-                        // Compile or load DRMetadatset.
-                        success: function (model_metadata) {
-                            let dataset = new DRMetaDataset(
-                                "PrototypeDataset",
-                                model_data_list,
-                                model_metadata,
-                                10
-                            );
+                // Compile or load DRMetadatset.
+                success: function (model_metadata) {
+                    let dataset = new DRMetaDataset(
+                        "PrototypeDataset",
+                        model_data_list,
+                        model_metadata,
+                        10
+                    );
 
-                            // All components inside a panel are automatically linked with dc.js. Panels have to be
-                            // linked with each other explicitly, if so desired (since used datasets may differ).
-                            $("#logField").text("Constructing stage.");
-                            console.log("Constructing stage.");
-                            let prototypeStage = new PrototypeStage(
-                                "PrototypeStage",
-                                "stage",
-                                {
-                                    modelMetadata: dataset,
-                                    surrogateModel: null,
-                                    dissonance: null
-                                }
-                            );
+                    // All components inside a panel are automatically linked with dc.js. Panels have to be
+                    // linked with each other explicitly, if so desired (since used datasets may differ).
+                    $("#logField").text("Constructing stage.");
+                    console.log("Constructing stage.");
+                    let prototypeStage = new PrototypeStage(
+                        "PrototypeStage",
+                        "stage",
+                        {
+                            modelMetadata: dataset,
+                            surrogateModel: null,
+                            dissonance: null
                         }
-                    });
+                    );
                 }
             });
         }
