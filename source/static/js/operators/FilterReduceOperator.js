@@ -18,11 +18,13 @@ export default class FilterReduceOperator extends Operator
      * @param stage
      * @param dataset Instance of DRMetaDataset class.
      * @param parentDivID
+     * @param pointwiseQualityData
      * @param tableParentDivID ID of parent div for embedding overview table.
      */
-    constructor(name, stage, dataset, parentDivID, tableParentDivID)
+    constructor(name, stage, dataset, pointwiseQualityData, parentDivID, tableParentDivID)
     {
         super(name, stage, "1", "n", dataset, parentDivID);
+        this._pointwiseQualityData = pointwiseQualityData;
 
         // Update involved CSS classes.
         $("#" + this._target).addClass("filter-reduce-operator");
@@ -71,6 +73,11 @@ export default class FilterReduceOperator extends Operator
     get tablePanel()
     {
         return this._panels["Model Selection"];
+    }
+
+    get pointwiseQualityData()
+    {
+        return this._pointwiseQualityData;
     }
 
     resize()

@@ -40,7 +40,8 @@ export default class PrototypeStage extends Stage
      */
     constructOperators()
     {
-        let scope = this;
+        let scope       = this;
+        const logField  = $("#logField");
 
         // Fetch (test) dataset for surrogate model first, then initialize panels.
         let surrModelJSON = fetch(
@@ -59,18 +60,27 @@ export default class PrototypeStage extends Stage
             }
         ).then(res => res.json());
 
-        // Fetch data.
-        Promise.all([surrModelJSON, explainerDataJSON])
-            .then(function(values) {
-                $("#logField").text("Compiling DissonanceDataset");
-                console.log("Compiling DissonanceDataset.");
+        let pointwiseQualityData = fetch(
+            "/get_binned_pointwise_quality_data",
+            {
+                headers: { "Content-Type": "application/json; charset=utf-8"},
+                method: "GET"
+            }
+        ).then(res => res.json());
 
+        // Fetch data.
+        Promise.all([surrModelJSON, explainerDataJSON, pointwiseQualityData])
+            .then(function(values) {
+                logField.text("Compiling SurrogateModelDataset");
+                console.log("Compiling SurrogateModelDataset.");
                 scope._datasets["surrogateModel"]   = new SurrogateModelDataset(
                     "Surrogate Model Dataset",
                     values[0],
                     scope._datasets["modelMetadata"]
                 );
 
+                logField.text("Compiling ExplainerDataset");
+                console.log("Compiling ExplainerDataset.");
                 scope._datasets["explainer"]       = new ExplainerDataset("ExplainerDataset", values[1]);
 
                 // For panels at bottom: Spawn container.
@@ -86,6 +96,7 @@ export default class PrototypeStage extends Stage
                     "FilterReduce:TSNE",
                     scope,
                     scope._datasets["modelMetadata"],
+                    values[2],
                     splitTopDiv.id,
                     splitBottomDiv.id
                 );

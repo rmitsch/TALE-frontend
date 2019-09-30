@@ -35,8 +35,13 @@ export default class ModelOverviewTable extends Chart
         this._filteredIDs           = new Set();
         this._previousFilteredIDs   = new Set();
         this._selectedRows          = {};
+        // Number of bins to use for histogram of pointwise embedding quality. Assume fixed 10.
+        this._numBins               = 10;
         // Defines whether filter has already been added to jQuery's DataTable.
         this._filterHasBeenSet      = false;
+
+        // Shorthand for dataset with pointwise quality data.
+        this._pointwiseQualityData = this._panel._operator.pointwiseQualityData;
 
         // ----------------------------------------
         // 2. Calling initialization procedures.
@@ -64,12 +69,16 @@ export default class ModelOverviewTable extends Chart
 
         // Transform records to format accepted by DataTable.
         for (let i = 0; i < records.length; i++) {
-            transformedRecords[i]   = [this._attributes.length + 1];
+            transformedRecords[i]   = [this._attributes.length + 2];
             let transformedRecord   = transformedRecords[i];
             transformedRecord[0]    = records[i].id;
             for (let j = 0; j < this._attributes.length; j++) {
                 transformedRecord[j + 1] = records[i][this._attributes[j]];
             }
+
+            transformedRecord[this._attributes.length + 1] = [];
+            for (let bin_i = 0;  bin_i < this._numBins; bin_i++)
+                transformedRecord[this._attributes.length + 1].push(this._pointwiseQualityData[i]["bin_" + bin_i]);
         }
 
         this._cf_chart.rows.add(transformedRecords);
@@ -83,10 +92,37 @@ export default class ModelOverviewTable extends Chart
      */
     _constructFCChart(tableID)
     {
+        let columns = [{title: "ID"}];
+        columns.push.apply(columns, this._attributes.map(attr => {return {title: attr};}));
+        columns.push({
+            title: "Objective/record",
+            sortable: false,
+            "render": function(data, type, row, meta) {
+                return $(
+                    "<div></div>", {"class": "objective-record-distribution-barchart"}
+                ).append(
+                    () => {
+                        let bars = [];
+                        for(let i = 0; i < 10; i++) {
+                            bars.push($("<div></div>", {"class": "objective-record-distribution-bar"})
+                                .css({
+                                    "display": "inline-block",
+                                    "background-color": "#1f77b4",
+                                    "height": (row[row.length - 1][i]) * 100 + "%"
+                                })
+                            );
+                        }
+                        return bars;
+                    }
+                ).prop("outerHTML")
+            }
+        });
+
         this._cf_chart = $("#" + tableID).DataTable({
             scrollX: true,
             scrollY: Math.floor($("#" + this._panel._target).height()) + "px",
-            fixedColumns: false
+            fixedColumns: false,
+            columns: columns
         });
 
         let instance    = this;
@@ -201,15 +237,6 @@ export default class ModelOverviewTable extends Chart
         table.id        = Utils.uuidv4();
         table.className = "display";
         $("#" + this._target).append(table);
-
-        // Create table header.
-        let tableHeader = "<thead><tr><th>ID</th>";
-        // Append all hyperparameter to table.
-        for (let i = 0; i < this._attributes.length; i++) {
-            tableHeader += "<th>" + this._attributes[i] + "</th>";
-        }
-        tableHeader += "</tr></thead>";
-        $("#" + table.id).append(tableHeader);
 
         return table.id;
     }

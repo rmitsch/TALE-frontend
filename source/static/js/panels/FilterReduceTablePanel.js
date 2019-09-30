@@ -1,6 +1,6 @@
 import Panel from "./Panel.js";
 import Utils from "../Utils.js";
-import Table from "../charts/ModelOverviewTable.js"
+import ModelOverviewTable from "../charts/ModelOverviewTable.js"
 
 /**
  * Panel holding table for selection of models in operator FilterReduce.
@@ -25,7 +25,7 @@ export default class FilterReduceTablePanel extends Panel
 
         // Generate table.
         this._tableName = "Model selection table";
-        let table = new Table(
+        let table = new ModelOverviewTable(
             this._tableName,
             this,
             Utils.unfoldHyperparameterObjectList(

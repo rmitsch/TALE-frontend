@@ -137,3 +137,20 @@ span.filter-reduce-row-label-text {
     position: relative;
     top: 1px;
 }
+
+.objective-record-distribution-barchart {
+    margin: 0;
+    padding: 0;
+    border-bottom: 1px solid;
+    border-right: 1px solid;
+    border-left: 1px solid;
+    height: 19px;
+}
+
+.objective-record-distribution-bar {
+    /* Note: We assume to have 10 bars for distribution chart. */
+    width: calc(10% - 1px);
+    margin-right: 1px;
+    position: relative;
+    bottom: -4px;
+}
