@@ -48,7 +48,37 @@ $(document).ready(function() {
     });
 
     // -----------------------------------------------------
-    // 3. Fetch model metadata - both structure and content.
+    // 3. Initialize stage handling.
+    // -----------------------------------------------------
+
+    const stageExplorationButton    = $("#stage-exploration-link");
+    const mentalModelButton         = $("#stage-mental-model-link");
+    let currentStage                = "exploration";
+
+    stageExplorationButton.click(() => {
+        if (currentStage === "exploration")
+            return;
+
+        stageExplorationButton.parent().addClass("pure-menu-selected");
+        mentalModelButton.parent().removeClass("pure-menu-selected");
+        currentStage = "exploration";
+
+        // todo implement stage switching.
+
+
+    });
+
+    mentalModelButton.click(() => {
+        if (currentStage === "mental-model")
+            return;
+
+        mentalModelButton.parent().addClass("pure-menu-selected");
+        stageExplorationButton.parent().removeClass("pure-menu-selected");
+        currentStage = "mental-model";
+    });
+
+    // -----------------------------------------------------
+    // 4. Fetch model metadata - both structure and content.
     // -----------------------------------------------------
 
     $("#logField").text("Fetching metadata.");
