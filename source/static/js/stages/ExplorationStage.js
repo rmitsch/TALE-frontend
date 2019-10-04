@@ -1,8 +1,3 @@
-// Import d3.js, crossfilter.js and dc.js.
-// import * as d3 from "./static/lib/d3.v3";
-// import * as crossfilter from "./static/lib/crossfilter.js";
-// import * as dc from "./static/lib/dc.js";
-
 import Stage from './Stage.js'
 import FilterReduceOperator from "../operators/FilterReduceOperator.js";
 import SurrogateModelOperator from "../operators/SurrogateModelOperator.js";
@@ -13,9 +8,9 @@ import ExplainerDataset from "../data/ExplainerDataset.js";
 import ExplainerOperator from "../operators/ExplainerOperator.js";
 
 /**
- * Stage for prototype (2018-02).
+ * Stage for exploration.
  */
-export default class PrototypeStage extends Stage
+export default class ExplorationStage extends Stage
 {
     /**
      *
@@ -192,7 +187,7 @@ export default class PrototypeStage extends Stage
                 // 5. Fade out splash screen, fade in stage.
                 // ---------------------------------------------------------
 
-                  $("#stage").fadeTo(2000, 1.0);
+                  $("#exploration-stage").fadeTo(2000, 1.0);
                   $("#splashscreen").fadeTo(1000, 0, function() {
                       $("#splashscreen").css("display", "none");
                   });

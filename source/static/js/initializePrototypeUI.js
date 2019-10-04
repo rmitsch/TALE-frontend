@@ -1,4 +1,4 @@
-import PrototypeStage from './stages/PrototypeStage.js';
+import ExplorationStage from './stages/ExplorationStage.js';
 import Utils from './Utils.js'
 import DRMetaDataset from "./data/DRMetaDataset.js";
 
@@ -51,30 +51,39 @@ $(document).ready(function() {
     // 3. Initialize stage handling.
     // -----------------------------------------------------
 
-    const stageExplorationButton    = $("#stage-exploration-link");
-    const mentalModelButton         = $("#stage-mental-model-link");
+    const explorationStage          = $("#exploration-stage");
+    const mentalModelStage          = $("#mental-model-stage");
+    const explorationStageButton    = $("#stage-exploration-link");
+    const mentalModelStageButton    = $("#stage-mental-model-link");
     let currentStage                = "exploration";
 
-    stageExplorationButton.click(() => {
+    explorationStageButton.click(() => {
         if (currentStage === "exploration")
             return;
 
-        stageExplorationButton.parent().addClass("pure-menu-selected");
-        mentalModelButton.parent().removeClass("pure-menu-selected");
+        explorationStageButton.parent().addClass("pure-menu-selected");
+        mentalModelStageButton.parent().removeClass("pure-menu-selected");
         currentStage = "exploration";
 
         // todo implement stage switching.
-
-
+        mentalModelStage.fadeTo(1000, 0, () => {
+            mentalModelStage.css("display", "none");
+            explorationStage.fadeTo(1500, 1.0);
+        });
     });
 
-    mentalModelButton.click(() => {
+    mentalModelStageButton.click(() => {
         if (currentStage === "mental-model")
             return;
 
-        mentalModelButton.parent().addClass("pure-menu-selected");
-        stageExplorationButton.parent().removeClass("pure-menu-selected");
+        mentalModelStageButton.parent().addClass("pure-menu-selected");
+        explorationStageButton.parent().removeClass("pure-menu-selected");
         currentStage = "mental-model";
+
+        explorationStage.fadeTo(1000, 0, () => {
+            explorationStage.css("display", "none");
+            mentalModelStage.fadeTo(1500, 1.0);
+        });
     });
 
     // -----------------------------------------------------
@@ -121,11 +130,11 @@ $(document).ready(function() {
 
                     // All components inside a panel are automatically linked with dc.js. Panels have to be
                     // linked with each other explicitly, if so desired (since used datasets may differ).
-                    $("#logField").text("Constructing stage.");
-                    console.log("Constructing stage.");
-                    let prototypeStage = new PrototypeStage(
-                        "PrototypeStage",
-                        "stage",
+                    $("#logField").text("Constructing exploration stage.");
+                    console.log("Constructing exploration stage.");
+                    let prototypeStage = new ExplorationStage(
+                        "ExplorationStage",
+                        "exploration-stage",
                         {
                             modelMetadata: dataset,
                             surrogateModel: null,
@@ -146,15 +155,15 @@ $(document).ready(function() {
 function processGETParameters()
 {
     // Read GET parameters.
-    let datasetName     = Utils.findGETParameter("dataset") === null ? "happiness" : Utils.findGETParameter("dataset");
-    let drKernelName    = Utils.findGETParameter("drk") === null ? "tsne" : Utils.findGETParameter("drk");
-    let forceReload     = Utils.findGETParameter("force") === null ? "false" : Utils.findGETParameter("force");
+    const datasetName   = Utils.findGETParameter("dataset") === null ? "happiness" : Utils.findGETParameter("dataset");
+    const drKernelName  = Utils.findGETParameter("drk") === null ? "tsne" : Utils.findGETParameter("drk");
+    const forceReload   = Utils.findGETParameter("force") === null ? "false" : Utils.findGETParameter("force");
 
     // Update displayed value of dropdown based on current URL parameters.
-    let datasetNameTranslation = {
+    const datasetNameTranslation = {
         wine: "Wine", mnist: "MNIST", swiss_roll: "Swiss Roll", vis: "VIS Papers", happiness: "Happiness"
     };
-    let drkTranslation = {tsne: "t-SNE", umap: "UMAP", svd: "SVD"};
+    const drkTranslation = {tsne: "t-SNE", umap: "UMAP", svd: "SVD"};
     $("#datasetLink").html(datasetNameTranslation[datasetName]);
     $("#drkernelLink").html(drkTranslation[drKernelName]);
 

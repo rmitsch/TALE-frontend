@@ -147,3 +147,12 @@ svg rect {
   stroke-width: 0.2;
   stroke: grey;
 }
+
+#mental-model-stage {
+    display: none;
+    background-color: #00cc33;
+}
+
+#exploration-stage {
+    display: block;
+}
