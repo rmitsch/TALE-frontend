@@ -1,4 +1,6 @@
 import Stage from './Stage.js'
+import SurrogateModelGeneratorOperator from "../operators/SurrogateModelGeneratorOperator.js";
+import SurrogateModelViewerOperator from "../operators/SurrogateModelViewerOperator.js";
 
 /**
  * Stage for exploration.
@@ -15,8 +17,7 @@ export default class MentalModelStage extends Stage
     {
         super(name, target, datasets);
 
-        // Store splitter instance for bottom div.
-        this._bottomSplitPane   = null;
+        this._splitPane = null;
 
         // Construct operators.
         this.constructOperators();
@@ -28,6 +29,33 @@ export default class MentalModelStage extends Stage
      */
     constructOperators()
     {
+        this._operators["generator"] = new SurrogateModelGeneratorOperator(
+            "SurrogateModelGenerator", this, this._datasets.modelMetadata
+        );
+        this._operators["viewer"] = new SurrogateModelViewerOperator(
+            "SurrogateModelViewer", this, this._datasets.modelMetadata
+        );
+
+        // ---------------------------------------------------------
+        // Initialize split panes.
+        // ---------------------------------------------------------
+
+        const generatorPanelID  = this._operators.generator._target;
+        const viewerPanelID     = this._operators.viewer._target;
+
+        $("#" + generatorPanelID).addClass("split split-horizontal");
+        $("#" + viewerPanelID).addClass("split split-horizontal");
+        this._splitPane = Split(
+            ["#" + generatorPanelID, "#" + viewerPanelID],
+            {
+                direction: "horizontal",
+                sizes: [35, 65],
+                minSize: 0,
+                snapOffset: 0,
+                onDragEnd: function() {
+                }
+            }
+        );
     }
 
     filter(source, embeddingIDs)

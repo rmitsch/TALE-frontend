@@ -132,7 +132,7 @@ export default class ExplorationStage extends Stage
                 );
 
                 // ---------------------------------------------------------
-                // 4. Initialize split panes.
+                // 5. Initialize split panes.
                 // ---------------------------------------------------------
 
                 let surrTarget              = scope._operators["SurrogateModel"]._target;

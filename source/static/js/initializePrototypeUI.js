@@ -1,6 +1,7 @@
 import ExplorationStage from './stages/ExplorationStage.js';
 import Utils from './Utils.js'
 import DRMetaDataset from "./data/DRMetaDataset.js";
+import MentalModelStage from "./stages/MentalModelStage.js";
 
 // IDs of menu buttons.
 let menuIDs = ["menu_prototype", "menu_about"];
@@ -65,7 +66,6 @@ $(document).ready(function() {
         mentalModelStageButton.parent().removeClass("pure-menu-selected");
         currentStage = "exploration";
 
-        // todo implement stage switching.
         mentalModelStage.fadeTo(1000, 0, () => {
             mentalModelStage.css("display", "none");
             explorationStage.fadeTo(1500, 1.0);
@@ -139,6 +139,13 @@ $(document).ready(function() {
                             modelMetadata: dataset,
                             surrogateModel: null,
                             dissonance: null
+                        }
+                    );
+                    let mentalModelStage = new MentalModelStage(
+                        "MentalModelStage",
+                        "mental-model-stage",
+                        {
+                            modelMetadata: dataset
                         }
                     );
                 }

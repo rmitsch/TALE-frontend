@@ -43,9 +43,6 @@ export default class SurrogateModelOperator extends Operator
         this.constructPanels();
     }
 
-    /**
-     * Constructs all panels required by this operator.
-     */
     constructPanels()
     {
         // ----------------------------------------------
