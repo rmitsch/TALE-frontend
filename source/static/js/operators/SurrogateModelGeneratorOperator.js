@@ -26,20 +26,13 @@ export default class SurrogateModelGeneratorOperator extends Operator {
             this._filteredIDs.add(record.id);
 
         // Construct all necessary panels.
-        this._panelName = "Model Generation";
+        this._panelName = "Surrogate Model Generation";
         this.constructPanels();
     }
 
     constructPanels()
     {
         this._panels[this._panelName] = new SurrogateModelPanel(this._panelName, this);
-
-        // let generatorOptionsLabel = Utils.spawnChildDiv(
-        //     this._panels[surrModelPanelName]._target,
-        //     "surrogate-model-generator-panel-label-generator-options",
-        //     "surrogate-model-generator-panel-label",
-        //     "Generation options"
-        // );
     }
 
     render()
