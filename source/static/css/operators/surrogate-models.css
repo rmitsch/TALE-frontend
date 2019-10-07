@@ -209,6 +209,15 @@
     display: inline-block;
 }
 
+#surrogate-model-generator-button {
+    position: absolute;
+    top: 60px;
+    right: 100px;
+    height: 75px;
+    width: 100px;
+    border-radius: 10px;
+}
+
 /* Start style for sortable lists. */
 
 body.dragging, body.dragging * {
