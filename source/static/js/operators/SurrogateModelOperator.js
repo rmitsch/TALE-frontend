@@ -20,20 +20,15 @@ export default class SurrogateModelOperator extends Operator
      * @param name
      * @param stage
      * @param dataset Instance of DRMetaDataset class.
-     * @param modelType Type of model to be used as surrogate. Currently available: Decision tree.
      * @param parentDivID
      */
-    constructor(name, stage, dataset, modelType, parentDivID)
+    constructor(name, stage, dataset, parentDivID)
     {
         // Relationship cardinality is 1:0, since one dataset is read and none is produced.
         super(name, stage, "1", "0", dataset, parentDivID);
 
         // Update involved CSS classes.
         $("#" + this._target).addClass("surrogate-model-operator");
-
-        // Save which model (influences inference model and visualization)
-        // should be used as surrogate - e. g. decision tree.
-        this._modelType = modelType;
 
         // Initialize _filteredIDs with all available IDs.
         for (let record of stage._datasets["modelMetadata"]._data)

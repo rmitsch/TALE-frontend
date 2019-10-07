@@ -1,8 +1,6 @@
 import Stage from './Stage.js'
 import FilterReduceOperator from "../operators/FilterReduceOperator.js";
-import SurrogateModelOperator from "../operators/SurrogateModelOperator.js";
 import Utils from "../Utils.js";
-import SurrogateModelDataset from "../data/SurrogateModelDataset.js"
 import ModelDetailOperator from "../operators/ModelDetailOperator.js";
 import ExplainerDataset from "../data/ExplainerDataset.js";
 import ExplainerOperator from "../operators/ExplainerOperator.js";
@@ -38,15 +36,7 @@ export default class ExplorationStage extends Stage
         let scope       = this;
         const logField  = $("#logField");
 
-        // Fetch (test) dataset for surrogate model first, then initialize panels.
-        let surrModelJSON = fetch(
-            "/get_surrogate_model_data?modeltype=rules&objs=r_nx&n_bins=5",
-            {
-                headers: { "Content-Type": "application/json; charset=utf-8"},
-                method: "GET"
-            }
-        ).then(res => res.json());
-
+        // Fetch data.
         let explainerDataJSON = fetch(
             "/get_explainer_values",
             {
@@ -64,19 +54,11 @@ export default class ExplorationStage extends Stage
         ).then(res => res.json());
 
         // Fetch data.
-        Promise.all([surrModelJSON, explainerDataJSON, pointwiseQualityData])
+        Promise.all([explainerDataJSON, pointwiseQualityData])
             .then(function(values) {
-                logField.text("Compiling SurrogateModelDataset");
-                console.log("Compiling SurrogateModelDataset.");
-                scope._datasets["surrogateModel"]   = new SurrogateModelDataset(
-                    "Surrogate Model Dataset",
-                    values[0],
-                    scope._datasets["modelMetadata"]
-                );
-
                 logField.text("Compiling ExplainerDataset");
                 console.log("Compiling ExplainerDataset.");
-                scope._datasets["explainer"]       = new ExplainerDataset("ExplainerDataset", values[1]);
+                scope._datasets["explainer"]       = new ExplainerDataset("ExplainerDataset", values[0]);
 
                 // For panels at bottom: Spawn container.
                 let splitTopDiv     = Utils.spawnChildDiv(scope._target, null, "split-top-container");
@@ -91,25 +73,13 @@ export default class ExplorationStage extends Stage
                     "FilterReduce:TSNE",
                     scope,
                     scope._datasets["modelMetadata"],
-                    values[2],
+                    values[1],
                     splitTopDiv.id,
                     splitBottomDiv.id
                 );
 
                 // ---------------------------------------------------------
-                // 2. Operator for exploration of surrogate model (read-only).
-                // ---------------------------------------------------------
-
-                scope._operators["SurrogateModel"] = new SurrogateModelOperator(
-                    "GlobalSurrogateModel:ExplanationRules",
-                    scope,
-                    scope._datasets["surrogateModel"],
-                    "Rules",
-                    splitBottomDiv.id
-                );
-
-                // ---------------------------------------------------------
-                // 3. Operator for exploration of explainer values.
+                // 2. Operator for exploration of explainer values.
                 // ---------------------------------------------------------
 
                 scope._operators["Explainer"] = new ExplainerOperator(
@@ -120,7 +90,7 @@ export default class ExplorationStage extends Stage
                 );
 
                 // ---------------------------------------------------------
-                // 4. Operator for model (+ sample) detail view.
+                // 3. Operator for model (+ sample) detail view.
                 // ---------------------------------------------------------
 
                 scope._operators["ModelDetail"] = new ModelDetailOperator(
@@ -132,26 +102,23 @@ export default class ExplorationStage extends Stage
                 );
 
                 // ---------------------------------------------------------
-                // 5. Initialize split panes.
+                // 4. Initialize split panes.
                 // ---------------------------------------------------------
 
-                let surrTarget              = scope._operators["SurrogateModel"]._target;
                 let explainerTarget         = scope._operators["Explainer"]._target;
                 let embeddingsTableTarget   = scope._operators["FilterReduce"].tablePanel._target;
 
                 // Horizontal split.
-                $("#" + surrTarget).addClass("split split-horizontal");
                 $("#" + explainerTarget).addClass("split split-horizontal");
                 $("#" + embeddingsTableTarget).addClass("split split-horizontal");
                 scope._bottomSplitPane = Split(
-                    ["#" + embeddingsTableTarget, "#" + surrTarget, "#" + explainerTarget],
+                    ["#" + embeddingsTableTarget, "#" + explainerTarget],
                     {
                         direction: "horizontal",
-                        sizes: [30, 45, 25],
+                        sizes: [65, 35],
                         minSize: 0,
                         snapOffset: 0,
                         onDragEnd: function() {
-                            scope._operators["SurrogateModel"].resize();
                             scope._operators["FilterReduce"].resize();
                             scope._operators["Explainer"].resize();
                         }
@@ -168,7 +135,6 @@ export default class ExplorationStage extends Stage
                         sizes: [52, 48],
                         minSize: [0.45 * $(document).height(), 10],
                         onDragEnd: function() {
-                            scope._operators["SurrogateModel"].resize();
                             scope._operators["FilterReduce"].resize();
                             scope._operators["Explainer"].resize();
                         }
@@ -176,7 +142,6 @@ export default class ExplorationStage extends Stage
                 );
 
                 // After split: Render (resize-sensitive) components.
-                scope._operators["SurrogateModel"].render();
                 scope._operators["Explainer"].resize();
                 scope._operators["FilterReduce"].resize();
                 $("#" + embeddingsTableTarget + " .dataTables_scrollBody").css(
@@ -224,5 +189,13 @@ export default class ExplorationStage extends Stage
     get keyEventCallbacks()
     {
         return this._keyEventCallbacks;
+    }
+
+    activate()
+    {
+    }
+
+    deactivate()
+    {
     }
 }

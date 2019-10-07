@@ -128,4 +128,20 @@ export default class Stage
     {
         return this._target;
     }
+
+     /**
+     * Activate stage (for stage handling mechanism).
+     */
+    activate()
+    {
+        throw new TypeError("Stage.activate(): Cannot execute abstract method.");
+    }
+
+     /**
+     * Deactivate stage (for stage handling mechanism).
+     */
+    deactivate()
+    {
+        throw new TypeError("Stage.deactivate(): Cannot execute abstract method.");
+    }
 }

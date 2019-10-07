@@ -49,45 +49,7 @@ $(document).ready(function() {
     });
 
     // -----------------------------------------------------
-    // 3. Initialize stage handling.
-    // -----------------------------------------------------
-
-    const explorationStage          = $("#exploration-stage");
-    const mentalModelStage          = $("#mental-model-stage");
-    const explorationStageButton    = $("#stage-exploration-link");
-    const mentalModelStageButton    = $("#stage-mental-model-link");
-    let currentStage                = "exploration";
-
-    explorationStageButton.click(() => {
-        if (currentStage === "exploration")
-            return;
-
-        explorationStageButton.parent().addClass("pure-menu-selected");
-        mentalModelStageButton.parent().removeClass("pure-menu-selected");
-        currentStage = "exploration";
-
-        mentalModelStage.fadeTo(1000, 0, () => {
-            mentalModelStage.css("display", "none");
-            explorationStage.fadeTo(1500, 1.0);
-        });
-    });
-
-    mentalModelStageButton.click(() => {
-        if (currentStage === "mental-model")
-            return;
-
-        mentalModelStageButton.parent().addClass("pure-menu-selected");
-        explorationStageButton.parent().removeClass("pure-menu-selected");
-        currentStage = "mental-model";
-
-        explorationStage.fadeTo(1000, 0, () => {
-            explorationStage.css("display", "none");
-            mentalModelStage.fadeTo(1500, 1.0);
-        });
-    });
-
-    // -----------------------------------------------------
-    // 4. Fetch model metadata - both structure and content.
+    // 3. Fetch model metadata - both structure and content.
     // -----------------------------------------------------
 
     $("#logField").text("Fetching metadata.");
@@ -132,7 +94,7 @@ $(document).ready(function() {
                     // linked with each other explicitly, if so desired (since used datasets may differ).
                     $("#logField").text("Constructing exploration stage.");
                     console.log("Constructing exploration stage.");
-                    let prototypeStage = new ExplorationStage(
+                    let explorationStage = new ExplorationStage(
                         "ExplorationStage",
                         "exploration-stage",
                         {
@@ -148,11 +110,60 @@ $(document).ready(function() {
                             modelMetadata: dataset
                         }
                     );
+
+                    // Initialize stage handling.
+                    initializeStageHandling(explorationStage, mentalModelStage);
                 }
             });
         }
      });
 });
+
+/**
+ * Initializes mechanism for stage handling/switching.
+ * @param explorationStage
+ * @param mentalModelStage
+ */
+function initializeStageHandling(explorationStage, mentalModelStage)
+{
+    const explorationStageDiv       = $("#exploration-stage");
+    const mentalModelStageDiv       = $("#mental-model-stage");
+    const explorationStageButton    = $("#stage-exploration-link");
+    const mentalModelStageButton    = $("#stage-mental-model-link");
+    let currentStage                = "exploration";
+
+    explorationStageButton.click(() => {
+        if (currentStage === "exploration")
+            return;
+
+        explorationStageButton.parent().addClass("pure-menu-selected");
+        mentalModelStageButton.parent().removeClass("pure-menu-selected");
+        currentStage = "exploration";
+
+        mentalModelStageDiv.fadeTo(500, 0, () => {
+            mentalModelStageDiv.css("display", "none");
+            explorationStageDiv.fadeTo(500, 1.0);
+            explorationStage.activate();
+            mentalModelStage.deactivate();
+        });
+    });
+
+    mentalModelStageButton.click(() => {
+        if (currentStage === "mental-model")
+            return;
+
+        mentalModelStageButton.parent().addClass("pure-menu-selected");
+        explorationStageButton.parent().removeClass("pure-menu-selected");
+        currentStage = "mental-model";
+
+        explorationStageDiv.fadeTo(500, 0, () => {
+            explorationStageDiv.css("display", "none");
+            mentalModelStageDiv.fadeTo(500, 1.0);
+            mentalModelStage.activate();
+            explorationStage.deactivate();
+        });
+    });
+}
 
 /**
  * Reads GET parameters defining which dataset and kernel to use.

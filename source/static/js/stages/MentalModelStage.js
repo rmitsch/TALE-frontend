@@ -1,6 +1,7 @@
 import Stage from './Stage.js'
 import SurrogateModelGeneratorOperator from "../operators/SurrogateModelGeneratorOperator.js";
 import SurrogateModelViewerOperator from "../operators/SurrogateModelViewerOperator.js";
+import SurrogateModelDataset from "../data/SurrogateModelDataset.js";
 
 /**
  * Stage for exploration.
@@ -29,33 +30,61 @@ export default class MentalModelStage extends Stage
      */
     constructOperators()
     {
-        this._operators["generator"] = new SurrogateModelGeneratorOperator(
-            "SurrogateModelGenerator", this, this._datasets.modelMetadata
-        );
-        this._operators["viewer"] = new SurrogateModelViewerOperator(
-            "SurrogateModelViewer", this, this._datasets.modelMetadata
-        );
+        const scope = this;
 
-        // ---------------------------------------------------------
-        // Initialize split panes.
+        //---------------------------------------------------------
+        // Fetch data.
         // ---------------------------------------------------------
 
-        const generatorPanelID  = this._operators.generator._target;
-        const viewerPanelID     = this._operators.viewer._target;
-
-        $("#" + generatorPanelID).addClass("split split-horizontal");
-        $("#" + viewerPanelID).addClass("split split-horizontal");
-        this._splitPane = Split(
-            ["#" + generatorPanelID, "#" + viewerPanelID],
+        let surrModelJSON = fetch(
+            "/get_surrogate_model_data?modeltype=rules&objs=r_nx&n_bins=5",
             {
-                direction: "horizontal",
-                sizes: [35, 65],
-                minSize: 0,
-                snapOffset: 0,
-                onDragEnd: function() {
-                }
+                headers: { "Content-Type": "application/json; charset=utf-8"},
+                method: "GET"
             }
-        );
+        ).then(res => res.json());
+
+        //---------------------------------------------------------
+        // Initialize operators.
+        // ---------------------------------------------------------
+
+        Promise.all([surrModelJSON]).then(function(data) {
+            scope._datasets["surrogateModel"]   = new SurrogateModelDataset(
+                "Surrogate Model Dataset",
+                data[0],
+                scope._datasets["modelMetadata"]
+            );
+
+            scope._operators["generator"] = new SurrogateModelGeneratorOperator(
+                "SurrogateModelGenerator", scope, scope._datasets.surrogateModel, scope._datasets.modelMetadata
+            );
+            scope._operators["viewer"] = new SurrogateModelViewerOperator(
+                "SurrogateModelViewer", scope, scope._datasets.modelMetadata
+            );
+
+            // ---------------------------------------------------------
+            // Initialize split panes.
+            // ---------------------------------------------------------
+
+            const generatorPanelID  = scope._operators.generator._target;
+            const viewerPanelID     = scope._operators.viewer._target;
+
+            $("#" + generatorPanelID).addClass("split split-horizontal");
+            $("#" + viewerPanelID).addClass("split split-horizontal");
+            scope._splitPane = Split(
+                ["#" + generatorPanelID, "#" + viewerPanelID],
+                {
+                    direction: "horizontal",
+                    sizes: [40, 60],
+                    minSize: [100, 100],
+                    snapOffset: 0,
+                    onDragEnd: function() {
+                        scope._operators.generator.resize();
+                        scope._operators.viewer.resize();
+                    }
+                }
+            );
+        });
     }
 
     filter(source, embeddingIDs)
@@ -75,5 +104,15 @@ export default class MentalModelStage extends Stage
     get keyEventCallbacks()
     {
         return this._keyEventCallbacks;
+    }
+
+    activate()
+    {
+        this._operators.generator.resize();
+        this._operators.viewer.resize();
+    }
+
+    deactivate()
+    {
     }
 }

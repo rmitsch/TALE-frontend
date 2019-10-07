@@ -37,6 +37,16 @@ export default class SurrogateModelViewerOperator extends Operator {
             this._panels.models.id, null, "surrogate-model-viewer-models-saved-panel"
         );
 
+        Utils.spawnChildDiv(
+            this._panels.vis.id, null, "panel-info", "<span class='title'>Current Model</span>"
+        );
+        Utils.spawnChildDiv(
+            this._panels.modelsSuggestions.id, null, "panel-info", "<span class='title'>Suggested Models</span>"
+        );
+        Utils.spawnChildDiv(
+            this._panels.modelsSaved.id, null, "panel-info", "<span class='title'>Saved Models</span>"
+        );
+
         // ---------------------------------------------------------
         // Initialize split panes.
         // ---------------------------------------------------------
@@ -73,6 +83,19 @@ export default class SurrogateModelViewerOperator extends Operator {
                 }
             }
         );
+    }
 
+    render()
+    {
+        for (let panelName in this._panels) {
+            // this._panels[panelName].render();
+        }
+    }
+
+    resize()
+    {
+        for (let panelName in this._panels) {
+            // this._panels[panelName].resize();
+        }
     }
 }

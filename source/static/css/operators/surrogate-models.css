@@ -24,9 +24,10 @@
 }
 
 .surrogate-model-panel {
-    padding-left: 0px;
+    padding-left: 0;
+    position: relative;
     width: 100%;
-    height: 100%;
+    height: 62%;
     overflow-y: hidden;
     overflow-x: auto;
 }
@@ -56,10 +57,9 @@
 /* End: Decision tree CSS. */
 
 .surrogate-model-table-container {
-    margin-top: 45px;
-    width: 100%;
-    height: 90%;
-    min-width: 450px;
+    margin-top: 90px;
+    height: 100%;
+    max-width: 805px;
     padding-left: 10px;
     padding-right: 0;
     overflow: auto;
@@ -68,8 +68,16 @@
 }
 
 .surrogate-model-table-container .dataTables_filter {
-    margin-bottom: 0px;
+    margin-bottom: 0;
     margin-right: 350px;
+}
+
+.surrogate-model-generator-operator .dataTables_filter {
+    margin-right: 20px;
+}
+
+.surrogate-model-generator-operator .dataTables_length {
+    margin-left: 250px;
 }
 
 .surrogate-model-chart-container .metric-chooser {
@@ -105,4 +113,50 @@
 .surrogate-model-table-histogram {
     height: 50px;
     position: absolute;
+}
+
+
+.surrogate-model-viewer-vis-panel {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.surrogate-model-viewer-models-suggestions-panel {
+    width: 100%;
+    height: 50%;
+    position: relative;
+}
+
+.surrogate-model-viewer-models-saved-panel {
+    width: 100%;
+    height: 50%;
+    position: relative;
+}
+
+.surrogate-model-generator-panel {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.surrogate-model-generator-panel-label {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    font-weight: bold;
+    font-size: 16px;
+    color: #3d4a57;
+}
+
+#surrogate-model-generator-panel-label-rules {
+    top: 77px;
+    left: 70px;
+}
+
+#surrogate-settings-target-objective-select {
+    display: block;
+    font-weight: normal;
+    width: 116px;
 }

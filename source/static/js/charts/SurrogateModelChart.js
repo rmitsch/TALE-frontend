@@ -88,9 +88,7 @@ export default class SurrogateModelChart extends Chart
             instance.updateHistogramPositionsAfterScroll(this.scrollLeft);
         });
 
-        const table     = $("#" + tableID + " tbody");
-        const stage     = instance._panel._operator._stage;
-        // stage.addKeyEventListener(this, SurrogateModelChart.processKeyEvent);
+        const table = $("#" + tableID + " tbody");
 
         // On hover: Highlight data point on hover in scatterplots & histograms.
         table.on('mouseenter', 'tr', function () {
@@ -190,7 +188,7 @@ export default class SurrogateModelChart extends Chart
 
         // Update sizes.
         $("#" + this._target + " .dataTables_scrollBody").css(
-            'height', Math.floor(panelDiv.height() - 230) + "px"
+            'height', Math.floor(panelDiv.height() * this._style.relativeTableHeight) + "px"
         );
         this.synchHistogramsWidthColumnHeaders();
         this.updateHistogramPositionsAfterScroll(this._tableScrollPosition);
@@ -203,7 +201,7 @@ export default class SurrogateModelChart extends Chart
         // Update table height.
         if (panelDiv.height() !== this._lastPanelSize.height) {
             $("#" + this._target + " .dataTables_scrollBody").css(
-                'height', Math.floor(panelDiv.height() - 230) + "px"
+                'height', Math.floor(panelDiv.height() * this._style.relativeTableHeight) + "px"
             );
         }
 
@@ -223,6 +221,7 @@ export default class SurrogateModelChart extends Chart
     {
         let currX = 85;
 
+        $($.fn.dataTable.tables(true)).DataTable().columns.adjust();
         $("#surrogate-model-histogram-container").width($("#" + this._divStructure.tableContainerDivID).width() - 10);
 
         for (let i = 0; i < this._attributes.rulesTable.length; i++) {

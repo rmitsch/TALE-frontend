@@ -11,7 +11,7 @@ export default class SurrogateModelPanel extends Panel
 {
     /**
      * Constructs new FilterReduce charts panel.
-     * Note that no CF interaction happens in this panel - it's read only.
+     * Note that no active CF interaction happens in this panel - it's read only.
      * @param name
      * @param operator
      * @param parentDivID
@@ -46,7 +46,9 @@ export default class SurrogateModelPanel extends Panel
             this,
             null,
             this._operator._dataset,
-            null,
+            {
+                relativeTableHeight: 0.5
+            },
             this._divStructure.chartContainerID
         );
     }
@@ -58,25 +60,29 @@ export default class SurrogateModelPanel extends Panel
      */
     _createDivStructure()
     {
-        let scope = this;
+        let scope           = this;
+        let chartContainer  = Utils.spawnChildDiv(this._target, null, "surrogate-model-chart-container");
+        let infoDiv         = Utils.spawnChildDiv(this._target, null, "panel-info", "<span class='title'>" + scope._name + "</span>");
+        // $("#" + infoDiv.id).html("<span class='title'>" + scope._name + "</span>");
 
-        // -----------------------------------
-        // Create chart container.
-        // -----------------------------------
-
-        let chartContainer = Utils.spawnChildDiv(this._target, null, "surrogate-model-chart-container");
-
-        // -----------------------------------
-        // Create title and options container.
-        // -----------------------------------
-
-        let infoDiv = Utils.spawnChildDiv(this._target, null, "panel-info");
-        $("#" + infoDiv.id).html(
-            "<span class='title'>" + scope._name + "</span>" +
-            "<a id='surrogate-info-settings-icon' href='#'>" +
-            "    <img src='./static/img/icon_settings.png' class='info-icon' alt='Settings' width='20px'>" +
-            "</a>"
+        let rulesTitleLabel = Utils.spawnChildDiv(
+            this._target,
+            "surrogate-model-generator-panel-label-rules",
+            "surrogate-model-generator-panel-label",
+            "Decision Rules" +
+            "<select id='surrogate-settings-target-objective-select'>" +
+            "  <option value='r_nx'>R<sub>nx</sub></option>" +
+            "  <option value='runtime'>Runtime</option>" +
+            "  <option value='stress'>Stress</option>" +
+            "  <option value='classification_accuracy'>Target domain performance</option>" +
+            "  <option value='separability_metric'>Separability</option>" +
+            "</select>"
         );
+        const objectiveSelector = $("#surrogate-settings-target-objective-select");
+
+        objectiveSelector.change(() => {
+            this._operator.updateSurrogateModelChart(this._operator.filteredIDs, objectiveSelector.val())
+        });
 
         return {
             chartContainerID: chartContainer.id
