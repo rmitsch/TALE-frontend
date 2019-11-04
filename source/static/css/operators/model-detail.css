@@ -16,6 +16,10 @@
     padding-top: 10px;
 }
 
+.model-detail-coranking-matrix-chart svg rect {
+    stroke-width: 0;
+}
+
 .model-details-title {
     margin-bottom: 10px;
     font-size: 16px;
@@ -173,6 +177,7 @@ table.attributeTable tr:nth-child(even) {
 .hexagons {
     fill: none;
     stroke: #000;
+    stroke-width: 0;
     border: none;
 }
 

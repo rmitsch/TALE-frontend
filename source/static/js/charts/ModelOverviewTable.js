@@ -149,7 +149,7 @@ export default class ModelOverviewTable extends Chart
                 // Fetch model ID from first field in selected table row.
                 instance._cf_chart.row(this).data()[0],
                 // Reset cursor after data has been loaded.
-                function() { $("html").css("cursor", "default"); }
+                () => $("html").css("cursor", "default")
             );
         });
 

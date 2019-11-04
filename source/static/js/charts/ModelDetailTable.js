@@ -84,7 +84,7 @@ export default class ModelDetailTable extends Chart
         let instance    = this;
         this._cf_chart  = $("#" + tableID).DataTable({
             scrollX: true,
-            scrollY: Math.floor($("#model-details-block-record-table").height() - 175) + "px",
+            scrollY: Math.floor($("#model-details-block-record-table").height() - 235) + "px",
             fixedColumns: false
         });
         const table     = $("#" + tableID + " tbody");

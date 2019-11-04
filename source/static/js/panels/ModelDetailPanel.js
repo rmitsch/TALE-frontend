@@ -22,7 +22,8 @@ export default class ModelDetailPanel extends Panel
     {
         super(name, operator, parentDivID);
 
-        this._sparklineValues = null;
+        this._adjustedStageHeight       = null;
+        this._sparklineValues   = null;
         // Store information on split positions.
         this._lastSplitPositions    = {};
         this._splits                = {};
@@ -188,7 +189,7 @@ export default class ModelDetailPanel extends Panel
         // -----------------------------------
 
         // Split left, center and right pane.
-        this._lastSplitPositions["all"] = [20, 60, 20];
+        this._lastSplitPositions["all"] = [25, 50, 25];
         this._splits["all"] = Split(["#" + parameterPane.id, "#" + samplePane.id, "#" + dimRedAnalyticsPane.id], {
             direction: "horizontal",
             sizes: this._lastSplitPositions["all"],
@@ -309,7 +310,7 @@ export default class ModelDetailPanel extends Panel
 
         const explainerPane = $("#model-details-explainer-pane");
         this._charts["explainerHeatmap"]
-            .height(explainerPane.height() + 20)
+            .height(explainerPane.height() + 10)
             .width(explainerPane.width())
             .dimension(cfConfig.dimensions[attribute])
             .group(cfConfig.groups[attribute])
@@ -748,6 +749,11 @@ export default class ModelDetailPanel extends Panel
         let data        = this._data;
         let stageDiv    = $("#" + this._operator._stage._target);
 
+        // Workaround: Set height of modal depending on whether this is the first time showing it,
+        // since for whatever reason the modal height changes after the first call despite having the same
+        // height.
+        this._adjustedStageHeight = stageDiv.height() + (this._adjustedStageHeight === null ? 5 : 12.5);
+
         // Get initial data points.
         this._filteredRecordIDs = this._data.currentlyFilteredIDs;
 
@@ -755,15 +761,19 @@ export default class ModelDetailPanel extends Panel
         this._updateExplanationRuleLookup();
 
         // Show modal.
-        $("#" + this._target).dialog({
+        const modal = $("#" + this._target);
+        modal.dialog({
             title: "Model Details for Model #" +
                 data._modelID +
                 "<a id='model-detail-settings-icon' href='#'>" +
                 "    <img src='./static/img/icon_settings_white.png' class='info-icon' alt='Settings' width='20px'>" +
                 "</a>",
-            width: stageDiv.width() / 1.25,
-            height: stageDiv.height() / 1.25,
-            resizeStop: (event, ui) => this.resize()
+            width: stageDiv.width() / 2,
+            height: this._adjustedStageHeight,
+            draggable: false,
+            resizable: true,
+            resizeStop: (event, ui) => this.resize(),
+            position: {my: "right center", at: "right", of: stageDiv}
         });
 
         // Set click listener.
@@ -773,6 +783,13 @@ export default class ModelDetailPanel extends Panel
 
         // Render charts.
         this.render();
+
+        // Adjust position of modal.
+        let modalElement = $(".ui-dialog");
+        modalElement.css({
+            left: (modalElement.width()) + "px",
+            top: "37.5px" // (modalElement.position().top - 8) + "px" //
+        });
     }
 
     _updateTableHeight()

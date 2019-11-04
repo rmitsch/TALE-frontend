@@ -60,13 +60,16 @@ export default class ExplorationStage extends Stage
                 console.log("Compiling ExplainerDataset.");
                 scope._datasets["explainer"]       = new ExplainerDataset("ExplainerDataset", values[0]);
 
-                // For panels at bottom: Spawn container.
-                let splitTopDiv     = Utils.spawnChildDiv(scope._target, null, "split-top-container");
-                // For panels at bottom: Spawn container. Used for surrogate and dissonance panel.
-                let splitBottomDiv  = Utils.spawnChildDiv(scope._target, null, "split-bottom-container");
+                // Spawn container for panels at bottom.
+                let splitLeftDiv    = Utils.spawnChildDiv(scope._target, null, "split-left-container");
+                let splitTopDiv     = Utils.spawnChildDiv(splitLeftDiv.id, null, "split-top-container");
+                // Spawn container for panels at bottom. Used for surrogate and dissonance panel.
+                let splitBottomDiv  = Utils.spawnChildDiv(splitLeftDiv.id, null, "split-bottom-container");
+                // Spawn container for model detail to the right.
+                // let splitRightDiv  = Utils.spawnChildDiv(scope._target, null, "split-right-container");
 
                 //---------------------------------------------------------
-                // 1. Operator for hyperparameter and objective selection.
+                // Operator for hyperparameter and objective selection.
                 // ---------------------------------------------------------
 
                 scope._operators["FilterReduce"] = new FilterReduceOperator(
@@ -79,7 +82,7 @@ export default class ExplorationStage extends Stage
                 );
 
                 // ---------------------------------------------------------
-                // 2. Operator for exploration of explainer values.
+                // Operator for exploration of explainer values.
                 // ---------------------------------------------------------
 
                 scope._operators["Explainer"] = new ExplainerOperator(
@@ -90,25 +93,41 @@ export default class ExplorationStage extends Stage
                 );
 
                 // ---------------------------------------------------------
-                // 3. Operator for model (+ sample) detail view.
+                // Operator for model (+ sample) detail view.
                 // ---------------------------------------------------------
 
                 scope._operators["ModelDetail"] = new ModelDetailOperator(
                     "Detail:DRModel",
                     scope,
                     scope._datasets["modelMetadata"],
-                    // Note that MD view is currently a modal, hence it doesn't matter which parent div is used.
                     scope._target
                 );
 
                 // ---------------------------------------------------------
-                // 4. Initialize split panes.
+                // Initialize split panes.
                 // ---------------------------------------------------------
 
                 let explainerTarget         = scope._operators["Explainer"]._target;
                 let embeddingsTableTarget   = scope._operators["FilterReduce"].tablePanel._target;
 
-                // Horizontal split.
+                // Horizontal split right.
+                // $("#" + splitLeftDiv.id).addClass("split split-horizontal");
+                // $("#" + splitRightDiv.id).addClass("split split-horizontal");
+                // Split(
+                //     ["#" + splitLeftDiv.id, "#" + splitRightDiv.id],
+                //     {
+                //         direction: "horizontal",
+                //         sizes: [99.5, 0],
+                //         minSize: 0,
+                //         snapOffset: 0,
+                //         onDragEnd: function() {
+                //             scope._operators["Explainer"].resize();
+                //             scope._operators["ModelDetail"].resize();
+                //         }
+                //     }
+                // );
+
+                // Horizontal split left.
                 $("#" + explainerTarget).addClass("split split-horizontal");
                 $("#" + embeddingsTableTarget).addClass("split split-horizontal");
                 scope._bottomSplitPane = Split(
@@ -125,7 +144,7 @@ export default class ExplorationStage extends Stage
                     }
                 );
 
-                // Vertical split.
+                // Vertical split left.
                 $("#" + splitTopDiv.id).addClass("split split-vertical");
                 $("#" + splitBottomDiv.id).addClass("split split-vertical");
                 Split(
@@ -144,12 +163,13 @@ export default class ExplorationStage extends Stage
                 // After split: Render (resize-sensitive) components.
                 scope._operators["Explainer"].resize();
                 scope._operators["FilterReduce"].resize();
+                // scope._operators["ModelDetail"].resize();
                 $("#" + embeddingsTableTarget + " .dataTables_scrollBody").css(
                     'height', ($("#" + splitBottomDiv.id).height() - 190) + "px"
                 );
 
                 // ---------------------------------------------------------
-                // 5. Fade out splash screen, fade in stage.
+                // Fade out splash screen, fade in stage.
                 // ---------------------------------------------------------
 
                   $("#exploration-stage").fadeTo(2000, 1.0);
