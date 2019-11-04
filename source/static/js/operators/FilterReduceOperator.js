@@ -55,14 +55,14 @@ export default class FilterReduceOperator extends Operator
 
         // 2. Construct panels for charts.
         let frcPanel = new FilterReduceChartsPanel(
-            "Hyperparameters & Objectives",
+            "Parameter Space",
             this
         );
         this._panels[frcPanel.name] = frcPanel;
 
         // 3. Construct panel for settings.
         let settingsPanel = new FilterReduceSettingsPanel(
-            "Hyperparameters & Objectives: Settings",
+            "Parameter Space: Settings",
             this,
             null,
             "filter-reduce-info-settings-icon"
@@ -98,12 +98,12 @@ export default class FilterReduceOperator extends Operator
     {
         // We know that currently only one panel is affected by setting changes.
         // Otherwise changes would have to be propagated as done in parent method.
-        this._panels["Hyperparameters & Objectives"].options = config;
+        this._panels["Parameter Space"].options = config;
     }
 
     filter(embeddingIDs)
     {
-        this._panels["Hyperparameters & Objectives"].updateFilteredRecordBuffer(embeddingIDs);
+        this._panels["Parameter Space"].updateFilteredRecordBuffer(embeddingIDs);
 
         // Assuming dimensions have already been filtered.
         // for (let panelName in this._panels) {

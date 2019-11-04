@@ -767,13 +767,24 @@ export default class ModelDetailPanel extends Panel
                 data._modelID +
                 "<a id='model-detail-settings-icon' href='#'>" +
                 "    <img src='./static/img/icon_settings_white.png' class='info-icon' alt='Settings' width='20px'>" +
-                "</a>",
+                "</a> " +
+                "<span class='embedding-rating' data-rateit-mode='font'></span>",
             width: stageDiv.width() / 2,
             height: this._adjustedStageHeight,
             draggable: false,
-            resizable: true,
+            resizable: false,
             resizeStop: (event, ui) => this.resize(),
             position: {my: "right center", at: "right", of: stageDiv}
+        });
+
+        $("span.embedding-rating").starRating({
+            starSize: 20,
+            disableAfterRate: false,
+            hoverColor: "gold",
+            ratedColor: "gold",
+            callback: (currentRating, $el) => {
+                data._drMetaDataset.embeddingRatings[data._modelID] = currentRating;
+            }
         });
 
         // Set click listener.

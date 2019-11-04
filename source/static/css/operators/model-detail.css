@@ -198,3 +198,8 @@ table.attributeTable tr:nth-child(even) {
     fill-opacity: .15;
     shape-rendering: crispEdges;
 }
+
+span.embedding-rating {
+    position: relative;
+    top: 3px;
+}

@@ -34,6 +34,7 @@ export default class DRMetaDataset extends Dataset
         this._categoricalHyperparameterSet = this._extractCategoricalHyperparameters();
 
         // Update record metadata before further preprocessing.
+        this._embeddingRatings  = {};
         this._updateRecordMetadata();
 
         // Set up containers for crossfilter data.
@@ -51,10 +52,27 @@ export default class DRMetaDataset extends Dataset
         // Compute correlation strengths.
         this.computeCorrelationStrengths();
 
+        // Set up crossfilter for user ratings.
+        this._initEmbeddingsRatingsData();
+
         // Create series mapping.
         // Since for the intended use case (i. e. DROP) it is to be expected to need series variant w.r.t. each possible
         // hyperparameter, in makes sense to calculate all of them beforehand.
         this._seriesMappingByHyperparameter = this._generateSeriesMappingForHyperparameters();
+    }
+
+    /**
+     * Initializes crossfilter setup for embedding ratings data.
+     * @private
+     */
+    _initEmbeddingsRatingsData()
+    {
+
+    }
+
+    get embeddingRatings()
+    {
+        return this._embeddingRatings;
     }
 
     /**

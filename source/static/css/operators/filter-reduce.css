@@ -91,7 +91,7 @@ span.filter-reduce-row-label-text {
 }
 
 .filter-reduce-info {
-    top: 55px;
+    top: 0;
     background-color: rgba(255, 255, 255, 0.9);
     z-index: 0;
 }
@@ -103,8 +103,8 @@ span.filter-reduce-row-label-text {
 
 .pareto-scatterplot-hexheatmap {
     position: absolute;
-    top: 0px;
-    left: 0px;
+    top: 0;
+    left: 0;
     border-right: 1px solid;
     border-top: 1px solid;
 }

@@ -92,24 +92,39 @@ export default class FilterReduceChartsPanel extends Panel
         let dataset = this._operator._dataset;
 
         // -----------------------------------
-        // 1. Histograms.
+        // Histograms.
         // -----------------------------------
 
         this._createHistograms(dataset, histogramStyle);
 
         // -----------------------------------
-        // 2. Create scatterplots.
+        // Create scatterplots.
         // -----------------------------------
 
         this._createScatterplots(dataset, scatterplotStyle);
 
-
         // -----------------------------------
-        // 3. Set correlation bars to initial
-        //    values.
+        // Set correlation bars to initial
+        // values.
         // -----------------------------------
 
         this._operator._dataset.computeCorrelationStrengths(results => this.updateCorrelationBars(results));
+
+        // -----------------------------------
+        // Create ratings box.
+        // -----------------------------------
+
+        this._createRatingsBox(dataset);
+    }
+
+    /**
+     * Create box showing user ratings.
+     * @param dataset Instance of DRMetadataset holding information on
+     * @private
+     */
+    _createRatingsBox(dataset)
+    {
+
     }
 
     /**
@@ -306,6 +321,14 @@ export default class FilterReduceChartsPanel extends Panel
         }
 
         // -----------------------------------
+        // Create ratings box.
+        // -----------------------------------
+
+        let ratingsBox = Utils.spawnChildDiv(
+            this._target, "embeddings-ratings-box", null, "<div>User Ratings</div>"
+        );
+
+        // -----------------------------------
         // Create container divs.
         // -----------------------------------
 
@@ -360,7 +383,8 @@ export default class FilterReduceChartsPanel extends Panel
 
         return {
             containerDivIDs: containerDivIDs,
-            histogramDivIDs: histogramDivIDs
+            histogramDivIDs: histogramDivIDs,
+            userRatingsDivID: ratingsBox.id
         };
     }
 
