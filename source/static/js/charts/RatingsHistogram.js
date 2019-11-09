@@ -42,13 +42,10 @@ export default class RatingsHistogram extends NumericalHistogram
         this._cf_chart
             .height(instance._style.height)
             .width(instance._style.width)
-            .valueAccessor( d => {console.log(d); console.log(d.value.count); return d.value.count} )
+            .valueAccessor( d => d.value.count / instance._dataset._numRecords)
             .keyAccessor(d => d.key)
             .elasticY(true)
-            .x(d3.scale.linear().domain([
-                extrema[instance._axes_attributes.x].min - dataPadding,
-                extrema[instance._axes_attributes.x].max + dataPadding
-            ]))
+            .x(d3.scale.linear().domain([1, 5]))
             // Add default padding to y-axis.
             .y(d3.scale.linear().domain([0, extrema[key].max]))
             .brushOn(true)
@@ -57,7 +54,7 @@ export default class RatingsHistogram extends NumericalHistogram
             .dimension(dimensions[key])
             .group(this._dataset.cf_groups[key])
             .renderHorizontalGridLines(true)
-            .margins({top: 0, right: 10, bottom: 16, left: 25})
+            .margins({top: 0, right: 10, bottom: 16, left: 40})
             .gap(1)
             // Call cross-operator filter method on stage instance after filter event.
             .on("filtered", event => {
@@ -71,34 +68,25 @@ export default class RatingsHistogram extends NumericalHistogram
                     d3Chart.select(".brush").style({"pointer-events": "none"});
 
                     chart.selectAll('rect.bar')
-                        .on('mouseover', function(d) {
+                        .on('mouseover', d => {
                             d3.select(this).attr('fill', 'rgb(255, 0, 0)');
                         })
-                        .on('mouseout', function(d) {
+                        .on('mouseout', d => {
                             d3.select(this).attr('fill', 'rgb(31, 119, 180)');
                         });
                 }
             });
-
+        
         // Intercept mousedown so we can have both brush and mouseover.
         this._updateMouseDownListener();
 
-        // Set number of ticks.
-        if (instance._style.numberOfTicks.y !== "minmax")
-            this._cf_chart.yAxis().ticks(instance._style.numberOfTicks.y);
-        else
-            this._cf_chart.yAxis().tickValues([0, extrema[key].max]);
+        // Set (number of) ticks.
+        this._cf_chart.yAxis().tickValues([0, 0.25, 0.5, 0.75, 1]);
+        this._cf_chart.xAxis().ticks(5);
 
-        if (instance._style.numberOfTicks.x !== "minmax")
-            this._cf_chart.xAxis().ticks(instance._style.numberOfTicks.x);
-        else
-            this._cf_chart.xAxis().tickValues([
-                extrema[instance._axes_attributes.x].min,
-                extrema[instance._axes_attributes.x].max
-            ]);
 
         // Update bin width.
-        const binWidth = this._dataset._cf_intervals[this._axes_attributes.x] / this._dataset._binCount;
-        this._cf_chart.xUnits(dc.units.fp.precision(binWidth));
+        this._cf_chart.xUnits(dc.units.fp.precision(1));
+
     }
 }

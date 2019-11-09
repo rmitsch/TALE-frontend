@@ -116,7 +116,7 @@ export default class FilterReduceChartsPanel extends Panel
         // Create ratings box.
         // -----------------------------------
 
-        histogramStyle.height           = 200;
+        histogramStyle.height           = 100;
         histogramStyle.width            = 200;
         histogramStyle.showAxisLabels   = true;
         histogramStyle.numberOfTicks = {
@@ -124,8 +124,7 @@ export default class FilterReduceChartsPanel extends Panel
             y: 4
         };
 
-        console.log(histogramStyle)
-        // todo plot histogram
+        // todo update data after rating embedding in detail view
         // todo write function to update crossfilter data after change in embedding ratings -
         //   https://stackoverflow.com/questions/32770830/updating-dc-js-data-and-reapplying-original-filters
         // todo B+L with all other charts
@@ -340,7 +339,16 @@ export default class FilterReduceChartsPanel extends Panel
         // -----------------------------------
 
         let ratingsBox = Utils.spawnChildDiv(
-            this._target, "embeddings-ratings-box", null, "<div class='box-title'>User Ratings</div>"
+            this._target, "embeddings-ratings-box", null, "" +
+            "<div class='box-title'>User Ratings</div>" +
+            "<div>" +
+            "   <span>Show unrated?</span>" +
+            "   <label class='switch'>" +
+    	    "       <input class='switch-input' type='checkbox' />" +
+    	    "       <span class='switch-label' data-on='Yes' data-off='No'></span>" +
+            "       <span class='switch-handle'></span>" +
+            "   </label>" +
+            "</div>"
         );
 
         // -----------------------------------

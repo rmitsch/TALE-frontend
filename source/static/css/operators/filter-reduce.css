@@ -159,11 +159,13 @@ span.filter-reduce-row-label-text {
 
 #embeddings-ratings-box {
     position: absolute;
-    top: 55px;
-    right: 130px;
+    top: 65px;
+    right: 20px;
     z-index: 2;
 }
 
-#embeddings-ratings-box.box-title {
+#embeddings-ratings-box .box-title {
     font-weight: bold;
+    color: #3d4a57;
+    margin-bottom: 5px;
 }

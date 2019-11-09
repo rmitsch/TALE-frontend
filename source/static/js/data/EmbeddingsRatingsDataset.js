@@ -12,12 +12,12 @@ export default class EmbeddingsRatingsDataset extends Dataset {
      * @param embeddingRecords All embedding records.
      * @param binCount Number of bins in histograms.
      */
-    constructor(name, embeddingRecords, binCount)
+    constructor(name, embeddingRecords)
     {
         super(name, null);
 
-        this._binCount          = binCount;
         this._data              = [];
+        this._numRecords        = embeddingRecords.length;
         this._crossfilterData   = null;
 
         this._initEmbeddingsRatingsData(embeddingRecords);
