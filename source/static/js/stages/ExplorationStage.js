@@ -76,6 +76,7 @@ export default class ExplorationStage extends Stage
                     "FilterReduce:TSNE",
                     scope,
                     scope._datasets["modelMetadata"],
+                    scope._datasets["embeddingsRatingsData"],
                     values[1],
                     splitTopDiv.id,
                     splitBottomDiv.id

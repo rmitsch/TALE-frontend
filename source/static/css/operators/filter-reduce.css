@@ -129,7 +129,7 @@ span.filter-reduce-row-label-text {
 .filter-reduce-correlation-bar {
     position: absolute;
     bottom: 20px;
-    left: 127px;
+    left: 139px;
     height: calc(100% - 22px);
     width: 3px;
     border: 1px solid #000;
@@ -155,4 +155,15 @@ span.filter-reduce-row-label-text {
     margin-right: 1px;
     position: relative;
     bottom: -4px;
+}
+
+#embeddings-ratings-box {
+    position: absolute;
+    top: 55px;
+    right: 130px;
+    z-index: 2;
+}
+
+#embeddings-ratings-box.box-title {
+    font-weight: bold;
 }

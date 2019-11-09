@@ -2,6 +2,7 @@ import ExplorationStage from './stages/ExplorationStage.js';
 import Utils from './Utils.js'
 import DRMetaDataset from "./data/DRMetaDataset.js";
 import MentalModelStage from "./stages/MentalModelStage.js";
+import EmbeddingsRatingsDataset from "./data/EmbeddingsRatingsDataset.js";
 
 // IDs of menu buttons.
 let menuIDs = ["menu_prototype", "menu_about"];
@@ -89,6 +90,10 @@ $(document).ready(function() {
                         model_metadata,
                         10
                     );
+                    let ratingsDataset = new EmbeddingsRatingsDataset(
+                        "EmbeddingRatingsDataset",
+                        dataset._cf_dimensions.id.top(Infinity)
+                    );
 
                     // All components inside a panel are automatically linked with dc.js. Panels have to be
                     // linked with each other explicitly, if so desired (since used datasets may differ).
@@ -99,6 +104,7 @@ $(document).ready(function() {
                         "exploration-stage",
                         {
                             modelMetadata: dataset,
+                            embeddingsRatingsData: ratingsDataset,
                             surrogateModel: null,
                             dissonance: null
                         }

@@ -2,9 +2,10 @@ import Panel from "./Panel.js";
 import Utils from "../Utils.js";
 import ParetoScatterplot from "../charts/ParetoScatterplot.js";
 import NumericalHistogram from "../charts/NumericalHistogram.js";
+import RatingsHistogram from "../charts/RatingsHistogram.js";
 import CategoricalHistogram from "../charts/CategoricalHistogram.js";
 import Dataset from "../data/DRMetaDataset.js";
-import HexagonalHeatmap from "../charts/HexagonalHeatmap.js";
+
 
 /**
  * Panel holding scatterplots and histograms in operator FilterReduce.
@@ -35,6 +36,7 @@ export default class FilterReduceChartsPanel extends Panel
         let divStructure        = this._createDivStructure();
         this._containerDivIDs   = divStructure.containerDivIDs;
         this._histogramDivIDs   = divStructure.histogramDivIDs;
+        this._ratingsDivID      = divStructure.ratingsDivID;
 
         // Generate charts.
         this._correlationStrengths  = null;
@@ -114,17 +116,30 @@ export default class FilterReduceChartsPanel extends Panel
         // Create ratings box.
         // -----------------------------------
 
-        this._createRatingsBox(dataset);
-    }
+        histogramStyle.height           = 200;
+        histogramStyle.width            = 200;
+        histogramStyle.showAxisLabels   = true;
+        histogramStyle.numberOfTicks = {
+            x: 4,
+            y: 4
+        };
 
-    /**
-     * Create box showing user ratings.
-     * @param dataset Instance of DRMetadataset holding information on
-     * @private
-     */
-    _createRatingsBox(dataset)
-    {
+        console.log(histogramStyle)
+        // todo plot histogram
+        // todo write function to update crossfilter data after change in embedding ratings -
+        //   https://stackoverflow.com/questions/32770830/updating-dc-js-data-and-reapplying-original-filters
+        // todo B+L with all other charts
 
+        let histogram = new RatingsHistogram(
+            "rating.histogram",
+            this,
+            ["rating"],
+            this._operator._embeddingsRatingsData,
+            histogramStyle,
+            // Place chart in previously generated container div.
+            this._ratingsDivID
+        );
+        histogram.render();
     }
 
     /**
@@ -300,7 +315,7 @@ export default class FilterReduceChartsPanel extends Panel
      */
     _createDivStructure()
     {
-        let scope = this;
+        let scope           = this;
         let containerDivIDs = {};
         let histogramDivIDs = {};
         let dataset         = this._operator._dataset;
@@ -325,7 +340,7 @@ export default class FilterReduceChartsPanel extends Panel
         // -----------------------------------
 
         let ratingsBox = Utils.spawnChildDiv(
-            this._target, "embeddings-ratings-box", null, "<div>User Ratings</div>"
+            this._target, "embeddings-ratings-box", null, "<div class='box-title'>User Ratings</div>"
         );
 
         // -----------------------------------
@@ -384,7 +399,7 @@ export default class FilterReduceChartsPanel extends Panel
         return {
             containerDivIDs: containerDivIDs,
             histogramDivIDs: histogramDivIDs,
-            userRatingsDivID: ratingsBox.id
+            ratingsDivID: ratingsBox.id
         };
     }
 

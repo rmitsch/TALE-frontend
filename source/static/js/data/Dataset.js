@@ -27,6 +27,11 @@ export default class Dataset
         return this._data;
     }
 
+    get cf_groups()
+    {
+        return this._cf_groups;
+    }
+
     /**
      * Initializes singular dimensions.
      * Note: Creates dimensions for all attribute by default. If not desired, columns have to be dropped beforehand.
