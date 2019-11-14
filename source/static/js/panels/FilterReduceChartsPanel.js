@@ -125,11 +125,6 @@ export default class FilterReduceChartsPanel extends Panel
             y: 4
         };
 
-        // todo update data after rating embedding in detail view
-        // todo write function to update crossfilter data after change in embedding ratings -
-        //   https://stackoverflow.com/questions/32770830/updating-dc-js-data-and-reapplying-original-filters
-        // todo B+L with all other charts
-
         this._ratingsHistogram = new RatingsHistogram(
             "rating.histogram",
             this,

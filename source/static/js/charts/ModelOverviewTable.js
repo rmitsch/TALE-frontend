@@ -256,10 +256,9 @@ export default class ModelOverviewTable extends Chart
      */
     _registerChartInDC()
     {
-        // --------------------------------
-        // 1. Implement necessary elements
-        // of dc.js' interface for charts.
-        // --------------------------------
+        // ----------------------------------------------------------------
+        // 1. Implement necessary elements of dc.js' interface for charts.
+        // ----------------------------------------------------------------
 
         let instance = this;
 
@@ -296,10 +295,9 @@ export default class ModelOverviewTable extends Chart
             instance._cf_chart.draw();
         };
 
-        // --------------------------------
-        // 2. Register parcoords plot in
-        // dc.js' registry.
-        // --------------------------------
+        // ----------------------------------------------------------------
+        // 2. Register table in dc.js' registry.
+        // ----------------------------------------------------------------
 
         // Use operators ID as group ID (all panels in operator use the same dataset and therefore should be notified if
         // filter conditions change).

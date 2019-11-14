@@ -19,6 +19,9 @@ export default class RatingsHistogram extends NumericalHistogram
     {
         super(name, panel, attributes, dataset, style, parentDivID);
 
+        // Implement methods necessary for dc.js hook and integrate it into it's chart registry.
+        this._registerChartInDC();
+
         this._showUnrated = false;
     }
 
@@ -58,6 +61,7 @@ export default class RatingsHistogram extends NumericalHistogram
             .renderHorizontalGridLines(true)
             .margins({top: 5, right: 10, bottom: 16, left: 40})
             .gap(1)
+            .transitionDuration(0)
             // Call cross-operator filter method on stage instance after filter event.
             .on("filtered", event => {
                 //this._filteredIDs = this.propagateFilterChange(this, key);
@@ -105,5 +109,45 @@ export default class RatingsHistogram extends NumericalHistogram
             this._cf_chart.x(d3.scale.linear().domain([1, 6]));
 
         this._cf_chart.render();
+    }
+
+    /**
+     * Implement methods necessary for dc.js hook and integrate it into it's chart registry.
+     */
+    _registerChartInDC()
+    {
+        // ----------------------------------------------------------------
+        // 1. Implement necessary elements of dc.js' interface for charts.
+        // ----------------------------------------------------------------
+
+        let instance = this;
+
+        this._cf_chart.redraw       = function() {
+            // Update filtered IDs.
+            const externallyFilteredIDs = new Set(
+                instance._panel._operator._dataset._cf_dimensions.id.top(Infinity).map(record => record.id)
+            );
+            // const internallyFilteredIDs = new Set(
+            //     instance._dataset._cf_dimensions.id.top(Infinity).map(record => record.id)
+            // );
+            // const filteredIDs = new Set([...externallyFilteredIDs].filter(x => internallyFilteredIDs.has(x)));
+            instance._dataset._cf_dimensions.id.filter(recordID => externallyFilteredIDs.has(recordID));
+
+            // Redraw chart.
+            instance._cf_chart.render();
+        };
+
+        this._cf_chart.filterAll    = function() {
+            console.log("filterall")
+            instance._dataset._cf_dimensions.id.filter(null);
+        };
+
+        // ----------------------------------------------------------------
+        // 2. Register in dc.js' registry.
+        // ----------------------------------------------------------------
+
+        // Use operators ID as group ID (all panels in operator use the same dataset and therefore should be notified if
+        // filter conditions change).
+        dc.chartRegistry.register(this._cf_chart, this._panel._operator._target);
     }
 }
