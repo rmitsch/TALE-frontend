@@ -79,11 +79,11 @@ export default class NumericalHistogram extends Histogram
                     d3Chart.select(".brush").style({"pointer-events": "none"});
 
                     chart.selectAll('rect.bar')
-                        .on('mouseover', function(d) {
-                            d3.select(this).attr('fill', 'rgb(255, 0, 0)');
+                        .on('mouseover', d => {
+                            d3.select(d3.event.target).attr('fill', 'rgb(255, 0, 0)');
                         })
-                        .on('mouseout', function(d) {
-                            d3.select(this).attr('fill', 'rgb(31, 119, 180)');
+                        .on('mouseout', d => {
+                            d3.select(d3.event.target).attr('fill', 'rgb(31, 119, 180)');
                         });
                 }
             });

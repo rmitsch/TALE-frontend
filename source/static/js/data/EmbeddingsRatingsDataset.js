@@ -16,13 +16,22 @@ export default class EmbeddingsRatingsDataset extends Dataset {
     {
         super(name, null);
 
-        this._data              = [];
-        this._numRecords        = embeddingRecords.length;
-        this._crossfilterData   = null;
-
+        this._data          = [];
+        this._numRecords    = embeddingRecords.length;
+        this._listeners     = {};
         this._initEmbeddingsRatingsData(embeddingRecords);
     }
 
+    /**
+     * Adds listener on ratings change. If ratings are changed by other actor, listeners are notified.
+     * @param name
+     * @param context E. g. instance.
+     * @param callback
+     */
+    addListener(name, context, callback)
+    {
+        this._listeners[name] = {context: context, callback: callback};
+    }
 
     /**
      * Initializes crossfilter setup for embedding ratings data.
@@ -31,8 +40,8 @@ export default class EmbeddingsRatingsDataset extends Dataset {
      */
     _initEmbeddingsRatingsData(embeddingRecords)
     {
-        this._ratings       = embeddingRecords.map(record => ({id: record.id, rating: -1}));
-        this._crossfilter   = crossfilter(this._ratings);
+        this._data          = embeddingRecords.map(record => ({id: record.id, rating: 0}));
+        this._crossfilter   = crossfilter(this._data);
 
         // Create dimensions.
         this._cf_dimensions["id"]               = this._crossfilter.dimension(d => d["id"]);
@@ -48,7 +57,17 @@ export default class EmbeddingsRatingsDataset extends Dataset {
         this._cf_extrema["rating"]              = {min: -1, max: 5};
         this._cf_intervals["rating"]            = this._cf_extrema["rating"].max - this._cf_extrema["rating"].min;
         this._cf_intervals["rating#histogram"]  = this._cf_extrema["rating#histogram"].max - this._cf_extrema["rating#histogram"].min;
+    }
 
+    /**
+     * Updates crossfilter data, e. g. after a rating was updated.
+     * @param embeddingID
+     * @private
+     */
+    _updateCrossfilterData(embeddingID)
+    {
+        this._crossfilter.remove((record) => record.id === embeddingID);
+        this._crossfilter.add([{id: embeddingID, rating: this._data[embeddingID]}]);
     }
 
     /**
@@ -78,4 +97,19 @@ export default class EmbeddingsRatingsDataset extends Dataset {
         );
     }
 
+    /**
+     * Updates embedding rating and notifies other listeners of changes.
+     * @param embeddingID
+     * @param rating
+     * @param sourceName
+     */
+    updateRatings(embeddingID, rating, sourceName)
+    {
+        this._data[embeddingID] = rating;
+        this._updateCrossfilterData(embeddingID);
+
+        for (let listenerName in this._listeners)
+            if (listenerName !== sourceName)
+                this._listeners[listenerName].callback(this._listeners[listenerName].context, embeddingID, rating);
+    }
 }

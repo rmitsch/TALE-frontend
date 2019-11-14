@@ -44,6 +44,17 @@ export default class FilterReduceTablePanel extends Panel
     }
 
     /**
+     * Updates row values for embedding ratings after update.
+     * @param context
+     * @param embeddingID
+     * @param rating
+     */
+    updateRatingsHistogram(context, embeddingID, rating)
+    {
+        context.table.updateRatingsHistogram(context, embeddingID, rating);
+    }
+
+    /**
      * Create (hardcoded) div structure for child nodes.
      * @returns {Object}
      */

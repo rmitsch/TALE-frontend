@@ -25,8 +25,9 @@ export default class FilterReduceOperator extends Operator
     constructor(name, stage, dataset, embeddingsRatingsData, pointwiseQualityData, parentDivID, tableParentDivID)
     {
         super(name, stage, "1", "n", dataset, parentDivID);
-        this._embeddingsRatingsData = embeddingsRatingsData;
+
         this._pointwiseQualityData  = pointwiseQualityData;
+        this._embeddingsRatingsData = embeddingsRatingsData;
 
         // Update involved CSS classes.
         $("#" + this._target).addClass("filter-reduce-operator");
@@ -36,6 +37,13 @@ export default class FilterReduceOperator extends Operator
 
         // Construct all necessary panels.
         this.constructPanels();
+
+
+        // Add listener for rating updates.
+        const chartPanel    = this._panels["Parameter Space"];
+        const tablePanel    = this._panels["Model Selection"];
+        this._embeddingsRatingsData.addListener(chartPanel._name, chartPanel, chartPanel.updateRatingsHistogram);
+        this._embeddingsRatingsData.addListener(tablePanel._name, tablePanel, tablePanel.updateRatingsHistogram);
     }
 
     /**

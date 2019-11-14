@@ -40,6 +40,7 @@ export default class FilterReduceChartsPanel extends Panel
 
         // Generate charts.
         this._correlationStrengths  = null;
+        this._ratingsHistogram      = null;
         this._generateCharts();
     }
 
@@ -129,7 +130,7 @@ export default class FilterReduceChartsPanel extends Panel
         //   https://stackoverflow.com/questions/32770830/updating-dc-js-data-and-reapplying-original-filters
         // todo B+L with all other charts
 
-        let histogram = new RatingsHistogram(
+        this._ratingsHistogram = new RatingsHistogram(
             "rating.histogram",
             this,
             ["rating"],
@@ -138,7 +139,20 @@ export default class FilterReduceChartsPanel extends Panel
             // Place chart in previously generated container div.
             this._ratingsDivID
         );
-        histogram.render();
+        this._ratingsHistogram.render();
+        // Set event listener for change of value for showing unrated embeddings.
+        $("#ratingsShowAllCheckbox").change(() => this._ratingsHistogram.toggleShowingUnrated());
+    }
+
+    /**
+     * Updates histogram for embedding ratings after update.
+     * @param context
+     * @param embeddingID
+     * @param rating
+     */
+    updateRatingsHistogram(context, embeddingID, rating)
+    {
+        context._ratingsHistogram.render();
     }
 
     /**
@@ -344,10 +358,11 @@ export default class FilterReduceChartsPanel extends Panel
             "<div>" +
             "   <span>Show unrated?</span>" +
             "   <label class='switch'>" +
-    	    "       <input class='switch-input' type='checkbox' />" +
+    	    "       <input class='switch-input' id='ratingsShowAllCheckbox' type='checkbox' />" +
     	    "       <span class='switch-label' data-on='Yes' data-off='No'></span>" +
             "       <span class='switch-handle'></span>" +
             "   </label>" +
+            "   <div id='embeddings-ratings-box-chart'></div>" +
             "</div>"
         );
 
@@ -407,7 +422,7 @@ export default class FilterReduceChartsPanel extends Panel
         return {
             containerDivIDs: containerDivIDs,
             histogramDivIDs: histogramDivIDs,
-            ratingsDivID: ratingsBox.id
+            ratingsDivID: "embeddings-ratings-box-chart"
         };
     }
 

@@ -101,6 +101,7 @@ export default class ExplorationStage extends Stage
                     "Detail:DRModel",
                     scope,
                     scope._datasets["modelMetadata"],
+                    scope._datasets["embeddingsRatingsData"],
                     scope._target
                 );
 

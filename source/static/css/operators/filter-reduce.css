@@ -147,6 +147,7 @@ span.filter-reduce-row-label-text {
     border-right: 1px solid;
     border-left: 1px solid;
     height: 19px;
+    width: 95%;
 }
 
 .objective-record-distribution-bar {
@@ -162,10 +163,17 @@ span.filter-reduce-row-label-text {
     top: 65px;
     right: 20px;
     z-index: 2;
+    font-size: 14px;
 }
 
 #embeddings-ratings-box .box-title {
     font-weight: bold;
     color: #3d4a57;
     margin-bottom: 5px;
+    font-size: 16px;
+}
+
+#embeddings-ratings-box-chart {
+    position: relative;
+    left: -25px;
 }

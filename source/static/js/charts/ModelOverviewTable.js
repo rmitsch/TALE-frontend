@@ -39,6 +39,8 @@ export default class ModelOverviewTable extends Chart
         this._numBins               = 10;
         // Defines whether filter has already been added to jQuery's DataTable.
         this._filterHasBeenSet      = false;
+        // Remember which embedding (ID) is in which row.
+        this._embeddingIDsToRowIdx  = {};
 
         // Shorthand for dataset with pointwise quality data.
         this._pointwiseQualityData = this._panel._operator.pointwiseQualityData;
@@ -66,19 +68,22 @@ export default class ModelOverviewTable extends Chart
     {
         let records             = this._dimension.top(Infinity);
         let transformedRecords  = [records.length];
+        let ratings             = this._panel._operator._embeddingsRatingsData;
 
         // Transform records to format accepted by DataTable.
         for (let i = 0; i < records.length; i++) {
-            transformedRecords[i]   = [this._attributes.length + 2];
-            let transformedRecord   = transformedRecords[i];
-            transformedRecord[0]    = records[i].id;
-            for (let j = 0; j < this._attributes.length; j++) {
-                transformedRecord[j + 1] = records[i][this._attributes[j]];
-            }
+            this._embeddingIDsToRowIdx[records[i].id]   = i;
+            transformedRecords[i]                       = [this._attributes.length + 3];
+            let transformedRecord                       = transformedRecords[i];
+            transformedRecord[0]                        = records[i].id;
+            transformedRecord[1]                        = ratings.data[records[i].id].rating;
 
-            transformedRecord[this._attributes.length + 1] = [];
+            for (let j = 0; j < this._attributes.length; j++) {
+                transformedRecord[j + 2] = records[i][this._attributes[j]];
+            }
+            transformedRecord[this._attributes.length + 2] = [];
             for (let bin_i = 0;  bin_i < this._numBins; bin_i++)
-                transformedRecord[this._attributes.length + 1].push(this._pointwiseQualityData[i]["bin_" + bin_i]);
+                transformedRecord[this._attributes.length + 2].push(this._pointwiseQualityData[i]["bin_" + bin_i]);
         }
 
         this._cf_chart.rows.add(transformedRecords);
@@ -92,7 +97,7 @@ export default class ModelOverviewTable extends Chart
      */
     _constructFCChart(tableID)
     {
-        let columns = [{title: "ID"}];
+        let columns = [{title: "ID"}, {title: "Rating"}];
         columns.push.apply(columns, this._attributes.map(attr => {return {title: attr};}));
         columns.push({
             title: "Objective/record",
@@ -265,11 +270,7 @@ export default class ModelOverviewTable extends Chart
 
         this._cf_chart.redraw       = function() {
             // Update filtered IDs.
-            let records = instance._dimension.top(Infinity);
-            instance._filteredIDs = new Set();
-            for (let i = 0; i < records.length; i++) {
-                instance._filteredIDs.add(records[i].id)
-            }
+            instance._filteredIDs = new Set(instance._dimension.top(Infinity).map(record => record.id));
 
             // Filter table data using an ugly hack 'cause DataTable.js can't do obvious things.
             // Add filter only if it doesn't exist yet.
@@ -314,5 +315,21 @@ export default class ModelOverviewTable extends Chart
     get table()
     {
         return this._cf_chart;
+    }
+
+    /**
+     * Updates row values for embedding ratings after update.
+     * @param context
+     * @param embeddingID
+     * @param rating
+     */
+    updateRatingsHistogram(context, embeddingID, rating)
+    {
+        const rowIdx    = this._embeddingIDsToRowIdx[embeddingID];
+        let rowData     = this._cf_chart.row(rowIdx).data();
+        // Note: Ratings are currently in column with index 1.
+        rowData[1]      = rating;
+        this._cf_chart.row(rowIdx).data(rowData).draw();
+
     }
 }
