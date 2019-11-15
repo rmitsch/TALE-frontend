@@ -17,17 +17,15 @@ export default class FilterReduceOperator extends Operator
      * @param name
      * @param stage
      * @param dataset Instance of DRMetaDataset class.
-     * @param embeddingsRatingsData
      * @param parentDivID
      * @param pointwiseQualityData
      * @param tableParentDivID ID of parent div for embedding overview table.
      */
-    constructor(name, stage, dataset, embeddingsRatingsData, pointwiseQualityData, parentDivID, tableParentDivID)
+    constructor(name, stage, dataset, pointwiseQualityData, parentDivID, tableParentDivID)
     {
         super(name, stage, "1", "n", dataset, parentDivID);
 
         this._pointwiseQualityData  = pointwiseQualityData;
-        this._embeddingsRatingsData = embeddingsRatingsData;
 
         // Update involved CSS classes.
         $("#" + this._target).addClass("filter-reduce-operator");
@@ -42,8 +40,8 @@ export default class FilterReduceOperator extends Operator
         // Add listener for rating updates.
         const chartPanel    = this._panels["Parameter Space"];
         const tablePanel    = this._panels["Model Selection"];
-        this._embeddingsRatingsData.addListener(chartPanel._name, chartPanel, chartPanel.updateRatingsHistogram);
-        this._embeddingsRatingsData.addListener(tablePanel._name, tablePanel, tablePanel.updateRatingsHistogram);
+        this.dataset.addRatingChangeListener(chartPanel._name, chartPanel, chartPanel.updateRatingsHistogram);
+        this.dataset.addRatingChangeListener(tablePanel._name, tablePanel, tablePanel.updateRatingsHistogram);
     }
 
     /**
@@ -114,7 +112,6 @@ export default class FilterReduceOperator extends Operator
     filter(embeddingIDs)
     {
         this._panels["Parameter Space"].updateFilteredRecordBuffer(embeddingIDs);
-
         // Assuming dimensions have already been filtered.
         // for (let panelName in this._panels) {
         //     this._panels[panelName].render();

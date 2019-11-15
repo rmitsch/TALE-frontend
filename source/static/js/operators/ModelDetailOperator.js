@@ -15,16 +15,14 @@ export default class ModelDetailOperator extends Operator
      * @param name
      * @param stage
      * @param drMetaDataset Instance of DRMetaDataset used for FilterReduce operator.
-     * @param embeddingsRatingsData
      * @param parentDivID
      */
-    constructor(name, stage, drMetaDataset, embeddingsRatingsData, parentDivID)
+    constructor(name, stage, drMetaDataset, parentDivID)
     {
         super(name, stage, "1", "1", null, parentDivID);
 
         this._modelID               = null;
         this._drMetaDataset         = drMetaDataset;
-        this._embeddingsRatingsData = embeddingsRatingsData;
 
         // Update involved CSS classes.
         $("#" + this._target).addClass("model-detail-operator");

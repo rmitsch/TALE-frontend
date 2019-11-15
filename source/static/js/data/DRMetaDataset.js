@@ -20,11 +20,12 @@ export default class DRMetaDataset extends Dataset
     {
         super(name, data);
 
-        this._dataIndicesByID   = {};
-        this._metadata          = metadata;
-        this._binCount          = 10;
-        this._binCountSSP       = 100;
-        this._correlations      = null;
+        this._dataIndicesByID       = {};
+        this._metadata              = metadata;
+        this._binCount              = 10;
+        this._binCountSSP           = 100;
+        this._correlations          = null;
+        this._ratingChangelisteners = {};
 
         // Maps for translation of categorical variables into numerical ones.
         this._categoricalToNumericalValues = {};
@@ -34,6 +35,7 @@ export default class DRMetaDataset extends Dataset
         this._categoricalHyperparameterSet = this._extractCategoricalHyperparameters();
 
         // Set up containers for crossfilter data.
+        this._initEmbeddingsRatingsData();
         this._crossfilter = crossfilter(this._data);
 
         // Update record metadata before further preprocessing.
@@ -48,6 +50,9 @@ export default class DRMetaDataset extends Dataset
         // Set up binary dimensions (for scatterplots).
         this._initBinaryDimensionsAndGroups(true);
 
+        // Set up crossfilter for embedding ratings data.
+        this._initEmbeddingsRatingsDimensionsAndGroups();
+
         // Compute correlation strengths.
         this.computeCorrelationStrengths();
 
@@ -55,6 +60,75 @@ export default class DRMetaDataset extends Dataset
         // Since for the intended use case (i. e. DROP) it is to be expected to need series variant w.r.t. each possible
         // hyperparameter, in makes sense to calculate all of them beforehand.
         this._seriesMappingByHyperparameter = this._generateSeriesMappingForHyperparameters();
+    }
+
+    /**
+     * Adds listener on ratings change. If ratings are changed by other actor, listeners are notified.
+     * @param name
+     * @param context E. g. instance.
+     * @param callback
+     */
+    addRatingChangeListener(name, context, callback)
+    {
+        this._ratingChangelisteners[name] = {context: context, callback: callback};
+    }
+
+    /**
+     * Updates embedding rating and notifies other listeners of changes.
+     * @param embeddingID
+     * @param rating
+     * @param sourceName
+     */
+    updateRating(embeddingID, rating, sourceName)
+    {
+        this._data[this._dataIndicesByID[embeddingID]].rating = rating;
+        this._updateCrossfilterData(embeddingID);
+
+        for (let listenerName in this._ratingChangelisteners)
+            if (listenerName !== sourceName)
+                this._ratingChangelisteners[listenerName].callback(
+                    this._ratingChangelisteners[listenerName].context, embeddingID, rating
+                );
+    }
+
+    /**
+     * Updates crossfilter data, e. g. after a rating was updated.
+     * @param embeddingID
+     * @private
+     */
+    _updateCrossfilterData(embeddingID)
+    {
+        this._crossfilter.remove((record) => record.id === embeddingID);
+        this._crossfilter.add([this._data[this._dataIndicesByID[embeddingID]]]);
+    }
+
+    /**
+     * Initializes crossfilter functionality for rating data.
+     * @private
+     */
+    _initEmbeddingsRatingsDimensionsAndGroups()
+    {
+        // Create dimensions and groups.
+        this._cf_dimensions["rating"]           = this._crossfilter.dimension(d => d["rating"]);
+        this._cf_dimensions["rating#histogram"] = this._cf_dimensions["rating"];
+        this._cf_groups["rating#histogram"]     = this._generateGroupWithCounts("rating");
+
+        // Determine extrema.
+        this._calculateSingularExtremaByAttribute("id");
+        this._calculateExtremaForAttribute("rating#histogram");
+        this._cf_extrema["rating"]              = {min: -1, max: 5};
+        this._cf_intervals["rating"]            = this._cf_extrema["rating"].max - this._cf_extrema["rating"].min;
+        this._cf_intervals["rating#histogram"]  = this._cf_extrema["rating#histogram"].max - this._cf_extrema["rating#histogram"].min;
+    }
+
+    /**
+     * Initializes rating data.
+     * @private
+     */
+    _initEmbeddingsRatingsData()
+    {
+        for (let i = 0; i < this._data.length; i++)
+            this._data[i]["rating"] = Math.floor(Math.random() * (5 - 0 + 1));
     }
 
     /**

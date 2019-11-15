@@ -68,7 +68,6 @@ export default class ModelOverviewTable extends Chart
     {
         let records             = this._dimension.top(Infinity);
         let transformedRecords  = [records.length];
-        let ratings             = this._panel._operator._embeddingsRatingsData;
 
         // Transform records to format accepted by DataTable.
         for (let i = 0; i < records.length; i++) {
@@ -76,7 +75,7 @@ export default class ModelOverviewTable extends Chart
             transformedRecords[i]                       = [this._attributes.length + 3];
             let transformedRecord                       = transformedRecords[i];
             transformedRecord[0]                        = records[i].id;
-            transformedRecord[1]                        = ratings.data[records[i].id].rating;
+            transformedRecord[1]                        = records[i].rating;
 
             for (let j = 0; j < this._attributes.length; j++) {
                 transformedRecord[j + 2] = records[i][this._attributes[j]];

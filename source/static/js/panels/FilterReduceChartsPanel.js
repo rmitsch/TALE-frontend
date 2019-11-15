@@ -129,7 +129,7 @@ export default class FilterReduceChartsPanel extends Panel
             "rating.histogram",
             this,
             ["rating"],
-            this._operator._embeddingsRatingsData,
+            this._operator.dataset,
             histogramStyle,
             // Place chart in previously generated container div.
             this._ratingsDivID

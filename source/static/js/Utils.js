@@ -222,7 +222,7 @@ export default class Utils
      * Comparison of two sets.
      * @param as
      * @param bs
-     * @returns {boolean}
+     * @returns {boolean} True if the two sets match exactly.
      */
     static compareSets(as, bs)
     {

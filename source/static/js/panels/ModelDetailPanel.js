@@ -747,7 +747,6 @@ export default class ModelDetailPanel extends Panel
     {
         let scope       = this;
         this._data      = this._operator._dataset;
-        let ratings     = this._operator._embeddingsRatingsData;
 
         let data        = this._data;
         let stageDiv    = $("#" + this._operator._stage._target);
@@ -787,8 +786,8 @@ export default class ModelDetailPanel extends Panel
             ratedColor: "gold",
             activeColor: "gold",
             useFullStars: true,
-            initialRating: ratings.data[data._modelID] > -1 ? ratings.data[data._modelID] : 0,
-            callback: (currentRating, $el) => ratings.updateRatings(data._modelID, currentRating, scope._name)
+            initialRating: data._drMetaDataset.getDataByID(data._modelID).rating,
+            callback: (currentRating, $el) => data._drMetaDataset.updateRating(data._modelID, currentRating, scope._name)
         });
 
         // Set click listener.
