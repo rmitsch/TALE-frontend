@@ -1,6 +1,7 @@
 .model-detail-operator {
-    display: none;
-    position: absolute;
+    display: block;
+    position: relative;
+    height: 100%;
 }
 
 #model-detail-parameter-pane {
@@ -202,4 +203,24 @@ table.attributeTable tr:nth-child(even) {
 span.embedding-rating {
     position: relative;
     top: 3px;
+}
+
+.model-detail-panel {
+    position: relative;
+    height: 100%;
+    width: 100%;
+}
+
+#model-detail-content-pane {
+    display: block;
+    position: relative;
+    height: calc(100% - 48px);
+    width: 100%;
+    margin-top: 20px;
+    border-top: 5px #3d4a57 solid;
+}
+
+.model-detail-panel-info {
+    position: relative;
+    text-align: right;
 }

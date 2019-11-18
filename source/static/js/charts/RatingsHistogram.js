@@ -101,10 +101,15 @@ export default class RatingsHistogram extends NumericalHistogram
     {
         this._showUnrated = !this._showUnrated;
 
-        if (this._showUnrated)
+        if (this._showUnrated) {
             this._cf_chart.x(d3.scale.linear().domain([0, 6]));
-        else
+            this._cf_chart.xAxis().tickValues([0, 1, 2, 3, 4, 5]);
+        }
+
+        else {
             this._cf_chart.x(d3.scale.linear().domain([1, 6]));
+            this._cf_chart.xAxis().tickValues([1, 2, 3, 4, 5]);
+        }
 
         this._cf_chart.render();
     }

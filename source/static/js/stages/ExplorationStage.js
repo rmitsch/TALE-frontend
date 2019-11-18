@@ -100,8 +100,7 @@ export default class ExplorationStage extends Stage
                     "Detail:DRModel",
                     scope,
                     scope._datasets["modelMetadata"],
-                    scope._datasets["embeddingsRatingsData"],
-                    scope._target
+                    splitRightDiv.id
                 );
 
                 // ---------------------------------------------------------
@@ -123,7 +122,7 @@ export default class ExplorationStage extends Stage
                         snapOffset: 0,
                         onDragEnd: function() {
                             scope._operators["Explainer"].resize();
-                            // scope._operators["ModelDetail"].resize();
+                            scope._operators["ModelDetail"].resize();
                         }
                     }
                 );

@@ -124,17 +124,36 @@ export default class ModelDetailPanel extends Panel
         // 1. Create panes.
         // -----------------------------------
 
+        let infoDiv = Utils.spawnChildDiv(this._target, null, "panel-info model-detail-panel-info");
+
+                //     title: "Model Details for Model #" +
+        //         data._modelID +
+        //         "<a id='model-detail-settings-icon' href='#'>" +
+        //         "    <img src='./static/img/icon_settings_white.png' class='info-icon' alt='Settings' width='20px'>" +
+        //         "</a> " +
+        //         "<span class='embedding-rating' data-rateit-mode='font'></span>",
+
+        $("#" + infoDiv.id).html(
+            "<span class='title' id='model-detail-title'></span>" +
+            "<a id='model-detail-settings-icon' href='#'>" +
+            "    <img src='./static/img/icon_settings.png' class='info-icon' alt='Settings' width='20px'>" +
+            "</a> " +
+            "<span class='embedding-rating' data-rateit-mode='font'></span>",
+        );
+
+        let contentPane         = Utils.spawnChildDiv(this._target, "model-detail-content-pane");
+
         // Left pane.
-        let parameterPane       = Utils.spawnChildDiv(this._target, "model-detail-parameter-pane", "split split-horizontal");
+        let parameterPane       = Utils.spawnChildDiv(contentPane.id, "model-detail-parameter-pane", "split split-horizontal");
         // Center pane.
-        let samplePane          = Utils.spawnChildDiv(this._target, "model-detail-sample-pane", "split split-horizontal");
+        let samplePane          = Utils.spawnChildDiv(contentPane.id, "model-detail-sample-pane", "split split-horizontal");
         // Right pane.
-        let dimRedAnalyticsPane = Utils.spawnChildDiv(this._target, "model-detail-dimred-pane", "split split-horizontal");
+        let dimRedAnalyticsPane = Utils.spawnChildDiv(contentPane.id, "model-detail-dimred-pane", "split split-horizontal");
 
         // 1. Upper-left pane - hyperparameters and objectives for current DR model.
         let attributePane = Utils.spawnChildDiv(
             parameterPane.id, null, "model-detail-pane split split-vertical",
-            `<div class='model-details-block reduced-padding'>
+            `<div class='model-details-block'>
                 <div class='model-details-title'>Hyperparameters</div>
                 <div id="model-details-block-hyperparameter-content"></div>
                 <div class='model-details-title'>Objectives</div>
@@ -154,7 +173,7 @@ export default class ModelDetailPanel extends Panel
         // 3. Upper-center pane - all records in scatterplot.
         let scatterplotPane = Utils.spawnChildDiv(
             samplePane.id, null, "model-detail-pane split-vertical",
-            `<div class='model-details-block reduced-padding'>
+            `<div class='model-details-block'>
                 <div class='model-details-title'>All Records</div>
             </div>`
         );
@@ -274,7 +293,7 @@ export default class ModelDetailPanel extends Panel
         this._redrawShepardDiagram();
 
         // -------------------------------------------------------
-        // 4. todo Draw heatmap for co-ranking matrix.
+        // 4. Draw heatmap for co-ranking matrix.
         // -------------------------------------------------------
 
         this._redrawCorankingmatrix();
@@ -766,22 +785,26 @@ export default class ModelDetailPanel extends Panel
         // Update explainer rule lookup.
         this._updateExplanationRuleLookup();
 
+        // Update title.
+        console.log($("#model-detail-title"))
+        $("#model-detail-title").text("Embedding Details for Embedding #" + data._modelID);
+
         // Show modal.
-        const modal = $("#" + this._target);
-        modal.dialog({
-            title: "Model Details for Model #" +
-                data._modelID +
-                "<a id='model-detail-settings-icon' href='#'>" +
-                "    <img src='./static/img/icon_settings_white.png' class='info-icon' alt='Settings' width='20px'>" +
-                "</a> " +
-                "<span class='embedding-rating' data-rateit-mode='font'></span>",
-            width: stageDiv.width() / 2,
-            height: this._adjustedStageHeight,
-            draggable: false,
-            resizable: false,
-            resizeStop: (event, ui) => this.resize(),
-            position: {my: "right center", at: "right", of: stageDiv}
-        });
+        // const modal = $("#" + this._target);
+        // modal.dialog({
+        //     title: "Model Details for Model #" +
+        //         data._modelID +
+        //         "<a id='model-detail-settings-icon' href='#'>" +
+        //         "    <img src='./static/img/icon_settings_white.png' class='info-icon' alt='Settings' width='20px'>" +
+        //         "</a> " +
+        //         "<span class='embedding-rating' data-rateit-mode='font'></span>",
+        //     width: stageDiv.width() / 2,
+        //     height: this._adjustedStageHeight,
+        //     draggable: false,
+        //     resizable: false,
+        //     resizeStop: (event, ui) => this.resize(),
+        //     position: {my: "right center", at: "right", of: stageDiv}
+        // });
 
         $("span.embedding-rating").starRating({
             starSize: 20,
@@ -799,16 +822,18 @@ export default class ModelDetailPanel extends Panel
         // Update settings values.
         this._settingsPanel.scatterplotColorCodingSelectValues = this._data.numericalAttributes;
 
+        // Update data availability indicator.
+        this._hasLoaded = true;
+
         // Render charts.
         this.render();
 
         // Adjust position of modal.
-        let modalElement = $(".ui-dialog");
-        modalElement.css({
-            left: (modalElement.width()) + "px",
-            top: "37.5px" // (modalElement.position().top - 8) + "px" //
-        });
-        this._hasLoaded = true;
+        // let modalElement = $(".ui-dialog");
+        // modalElement.css({
+        //     left: (modalElement.width()) + "px",
+        //     top: "37.5px" // (modalElement.position().top - 8) + "px" //
+        // });
     }
 
     _updateTableHeight()
