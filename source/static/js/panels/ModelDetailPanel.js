@@ -786,26 +786,8 @@ export default class ModelDetailPanel extends Panel
         this._updateExplanationRuleLookup();
 
         // Update title.
-        console.log($("#model-detail-title"))
         $("#model-detail-title").text("Embedding Details for Embedding #" + data._modelID);
-
-        // Show modal.
-        // const modal = $("#" + this._target);
-        // modal.dialog({
-        //     title: "Model Details for Model #" +
-        //         data._modelID +
-        //         "<a id='model-detail-settings-icon' href='#'>" +
-        //         "    <img src='./static/img/icon_settings_white.png' class='info-icon' alt='Settings' width='20px'>" +
-        //         "</a> " +
-        //         "<span class='embedding-rating' data-rateit-mode='font'></span>",
-        //     width: stageDiv.width() / 2,
-        //     height: this._adjustedStageHeight,
-        //     draggable: false,
-        //     resizable: false,
-        //     resizeStop: (event, ui) => this.resize(),
-        //     position: {my: "right center", at: "right", of: stageDiv}
-        // });
-
+        // Update star rating.
         $("span.embedding-rating").starRating({
             starSize: 20,
             disableAfterRate: false,
@@ -827,13 +809,6 @@ export default class ModelDetailPanel extends Panel
 
         // Render charts.
         this.render();
-
-        // Adjust position of modal.
-        // let modalElement = $(".ui-dialog");
-        // modalElement.css({
-        //     left: (modalElement.width()) + "px",
-        //     top: "37.5px" // (modalElement.position().top - 8) + "px" //
-        // });
     }
 
     _updateTableHeight()

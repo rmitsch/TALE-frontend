@@ -117,10 +117,11 @@ export default class ExplorationStage extends Stage
                     ["#" + splitLeftDiv.id, "#" + splitRightDiv.id],
                     {
                         direction: "horizontal",
-                        sizes: [99.5, 0],
+                        sizes: [99.7, 0],
                         minSize: 0,
                         snapOffset: 0,
                         onDragEnd: function() {
+                            scope._operators["FilterReduce"].resize();
                             scope._operators["Explainer"].resize();
                             scope._operators["ModelDetail"].resize();
                         }

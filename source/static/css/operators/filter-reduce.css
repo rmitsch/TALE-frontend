@@ -74,7 +74,7 @@ span.filter-reduce-row-label-text {
 
 .filter-reduce-charts-panel {
     height: 100%;
-    min-width: 98vw;
+    /*min-width: 98vw;*/
     padding-top: 10px;
 }
 
@@ -129,7 +129,7 @@ span.filter-reduce-row-label-text {
 .filter-reduce-correlation-bar {
     position: absolute;
     bottom: 20px;
-    left: 139px;
+    right: 0;
     height: calc(100% - 22px);
     width: 3px;
     border: 1px solid #000;

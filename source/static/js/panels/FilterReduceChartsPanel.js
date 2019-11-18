@@ -32,6 +32,10 @@ export default class FilterReduceChartsPanel extends Panel
         // Update involved CSS classes.
         $("#" + this._target).addClass("filter-reduce-charts-panel");
 
+        // Storage for current width and height.
+        this._lastTargetWidth   = 0;
+        this._lastTargetHeight  = 0;
+
         // Create div structure for child nodes.
         let divStructure        = this._createDivStructure();
         this._containerDivIDs   = divStructure.containerDivIDs;
@@ -423,26 +427,54 @@ export default class FilterReduceChartsPanel extends Panel
 
     resize()
     {
-        const chartContainerHeight = $(
-            "#" + this._containerDivIDs[Object.keys(this._containerDivIDs)[0]]
-        ).height();
-        let metadata = this._operator.dataset.metadata;
+        // Note: Case of height and width adjustment at the same time should not occur.
+        let target          = $("#" + this._target);
+        const targetWidth   = target.width();
+        const targetHeight  = target.height();
+        let metadata        = this._operator.dataset.metadata;
 
-        let chartHeight = Math.floor((chartContainerHeight - 20) / (this._operator.dataset.metadata.objectives.length + 1));
-        $(".chart-placeholder").css("height", chartHeight + "px");
+        // Adjust width, if necessary.
+        if (targetWidth !== this._lastTargetWidth) {
+            const targetChartWidth = ((targetWidth - 75) / (metadata.objectives.length + metadata.hyperparameters.length));
+            console.log(targetWidth, targetChartWidth);
 
-        // Resize charts.
-        for (let chartName in this._charts) {
-            this._charts[chartName].resize(chartHeight);
+            // Resize container divs' width.
+            $(".filter-reduce-charts-container").css("width", targetChartWidth + "px")
+
+            // Resize placeholders.
+            $(".chart-placeholder").css("width", targetChartWidth + "px");
+
+            // Resize charts' width.
+            for (let chartName in this._charts) {
+                this._charts[chartName].resize(-1, targetChartWidth);
+            }
+
+            this._lastTargetWidth = targetWidth;
         }
 
-        // Reposition chart column and row titles.
-        for (let i = 0; i < metadata.objectives.length; i++) {
-            $("#filter-reduce-title-" + metadata.objectives[i]).css({"top": (-25 + (chartHeight + 5) * (i + 1))  + "px"});
+        // Adjust height, if necessary.
+        if (targetHeight !== this._lastTargetHeight) {
+            const chartContainerHeight  = $("#" + this._containerDivIDs[Object.keys(this._containerDivIDs)[0]]).height();
+            let chartHeight             = Math.floor(
+                (chartContainerHeight - 20) / (this._operator.dataset.metadata.objectives.length + 1)
+            );
+            $(".chart-placeholder").css("height", chartHeight + "px");
+
+            // Resize charts.
+            for (let chartName in this._charts) {
+                this._charts[chartName].resize(chartHeight);
+            }
+
+            // Reposition chart column and row titles.
+            for (let i = 0; i < metadata.objectives.length; i++) {
+                $("#filter-reduce-title-" + metadata.objectives[i]).css({"top": (-25 + (chartHeight + 5) * (i + 1))  + "px"});
+            }
+            $(".filter-reduce-labels-container").css("margin-top", (chartHeight + 10) + "px");
+            $(".filter-reduce-row-label").css("margin-bottom", (chartHeight - 6) + "px");
+            $(".filter-reduce-row-label-text").css("padding-top", (chartHeight / 2) + "px");
+
+            this._lastTargetHeight = targetHeight;
         }
-        $(".filter-reduce-labels-container").css("margin-top", (chartHeight + 10) + "px");
-        $(".filter-reduce-row-label").css("margin-bottom", (chartHeight - 6) + "px");
-        $(".filter-reduce-row-label-text").css("padding-top", (chartHeight / 2) + "px");
     }
 
 
