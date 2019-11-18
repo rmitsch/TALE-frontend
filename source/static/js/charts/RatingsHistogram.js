@@ -84,7 +84,7 @@ export default class RatingsHistogram extends NumericalHistogram
         // Intercept mousedown so we can have both brush and mouseover.
         this._updateMouseDownListener();
 
-        // Configure ticks.
+        // Configure ticks.1
         this._cf_chart.yAxis().ticks(2);
         this._cf_chart.xAxis().tickValues([1, 2, 3, 4, 5]);
         this._cf_chart.xAxis().tickFormat(d3.format('d'));

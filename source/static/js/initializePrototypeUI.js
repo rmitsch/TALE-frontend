@@ -1,7 +1,6 @@
 import ExplorationStage from './stages/ExplorationStage.js';
 import Utils from './Utils.js'
 import DRMetaDataset from "./data/DRMetaDataset.js";
-import MentalModelStage from "./stages/MentalModelStage.js";
 
 // IDs of menu buttons.
 let menuIDs = ["menu_prototype", "menu_about"];
@@ -103,67 +102,12 @@ $(document).ready(function() {
                             dissonance: null
                         }
                     );
-                    let mentalModelStage = new MentalModelStage(
-                        "MentalModelStage",
-                        "mental-model-stage",
-                        {
-                            modelMetadata: dataset
-                        }
-                    );
-
-                    // Initialize stage handling.
-                    initializeStageHandling(explorationStage, mentalModelStage);
                 }
             });
         }
      });
 });
 
-/**
- * Initializes mechanism for stage handling/switching.
- * @param explorationStage
- * @param mentalModelStage
- */
-function initializeStageHandling(explorationStage, mentalModelStage)
-{
-    const explorationStageDiv       = $("#exploration-stage");
-    const mentalModelStageDiv       = $("#mental-model-stage");
-    const explorationStageButton    = $("#stage-exploration-link");
-    const mentalModelStageButton    = $("#stage-mental-model-link");
-    let currentStage                = "exploration";
-
-    explorationStageButton.click(() => {
-        if (currentStage === "exploration")
-            return;
-
-        explorationStageButton.parent().addClass("pure-menu-selected");
-        mentalModelStageButton.parent().removeClass("pure-menu-selected");
-        currentStage = "exploration";
-
-        mentalModelStageDiv.fadeTo(500, 0, () => {
-            mentalModelStageDiv.css("display", "none");
-            explorationStageDiv.fadeTo(500, 1.0);
-            explorationStage.activate();
-            mentalModelStage.deactivate();
-        });
-    });
-
-    mentalModelStageButton.click(() => {
-        if (currentStage === "mental-model")
-            return;
-
-        mentalModelStageButton.parent().addClass("pure-menu-selected");
-        explorationStageButton.parent().removeClass("pure-menu-selected");
-        currentStage = "mental-model";
-
-        explorationStageDiv.fadeTo(500, 0, () => {
-            explorationStageDiv.css("display", "none");
-            mentalModelStageDiv.fadeTo(500, 1.0);
-            mentalModelStage.activate();
-            explorationStage.deactivate();
-        });
-    });
-}
 
 /**
  * Reads GET parameters defining which dataset and kernel to use.
