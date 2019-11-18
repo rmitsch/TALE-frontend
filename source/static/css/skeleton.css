@@ -11,7 +11,7 @@ html {
 
 body {
     width: 100%;
-    height: calc(100% - 50px);
+    height: 100%;
     font-family: "Helvetica Neue", Helvetica, sans-serif;
 }
 
@@ -171,16 +171,9 @@ svg rect {
 
 #exploration-stage {
     display: block;
-}
-
-.split-left-container {
     position: relative;
-    height: 100%;
-    margin-top: 50px;
-}
-
-.split-right-container {
-    display: none;
+    top: 36px;
+    height: calc(100% - 36px);
 }
 
 /* Start toggle - https://www.htmllion.com/css3-toggle-switch-button.html */

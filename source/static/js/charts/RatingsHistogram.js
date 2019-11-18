@@ -57,7 +57,7 @@ export default class RatingsHistogram extends NumericalHistogram
             .dimension(dimensions[key])
             .group(this._dataset.cf_groups[key])
             .renderHorizontalGridLines(true)
-            .margins({top: 5, right: 10, bottom: 16, left: 40})
+            .margins({top: 5, right: 0, bottom: 16, left: 40})
             .gap(1)
             .transitionDuration(0)
             // Call cross-operator filter method on stage instance after filter event.

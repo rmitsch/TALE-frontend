@@ -90,4 +90,9 @@ export default class ModelDetailOperator extends Operator
     {
         // Note: Filtering on global level has no impact on MDO.
     }
+
+    resize()
+    {
+        super.resize();
+    }
 }

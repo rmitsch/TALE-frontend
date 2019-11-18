@@ -22,8 +22,9 @@ export default class ModelDetailPanel extends Panel
     {
         super(name, operator, parentDivID);
 
-        this._adjustedStageHeight       = null;
-        this._sparklineValues   = null;
+        this._hasLoaded              = false;
+        this._adjustedStageHeight    = null;
+        this._sparklineValues        = null;
         // Store information on split positions.
         this._lastSplitPositions    = {};
         this._splits                = {};
@@ -251,6 +252,9 @@ export default class ModelDetailPanel extends Panel
 
     render()
     {
+        if (!this._hasLoaded)
+            return;
+
         // -------------------------------------------------------
         // 1. Draw sparklines for attributes.
         // -------------------------------------------------------
@@ -804,6 +808,7 @@ export default class ModelDetailPanel extends Panel
             left: (modalElement.width()) + "px",
             top: "37.5px" // (modalElement.position().top - 8) + "px" //
         });
+        this._hasLoaded = true;
     }
 
     _updateTableHeight()
@@ -816,6 +821,10 @@ export default class ModelDetailPanel extends Panel
 
     resize()
     {
+        console.log("resize", this._data)
+        if (!this._hasLoaded)
+            return;
+
         // Check modal.
         const panelDiv = $("#" + this._target);
 

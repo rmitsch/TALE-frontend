@@ -35,7 +35,7 @@
 
 /* Container for split divs in lower half. */
 .split-bottom-container {
-    height: calc(100% - 54%);
+    height: calc(100% - 54px);
 }
 
 .gutter.gutter-vertical {
@@ -44,4 +44,15 @@
 
 .gutter.gutter-horizontal {
     width: 9px;
+}
+
+
+.split-left-container {
+    position: relative;
+    height: 100%;
+}
+
+.split-right-container {
+    position: relative;
+
 }

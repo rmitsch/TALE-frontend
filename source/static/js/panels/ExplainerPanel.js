@@ -176,12 +176,12 @@ export default class ExplainerPanel extends Panel
         const explainerPane         = $("#" + this._divStructure.chartContainerID);
         const explainerPaneHeight   = explainerPane.height();
         this._charts["explainerHeatmap"]
-            .height(explainerPaneHeight)
+            .height(explainerPaneHeight - 18)
             .width(explainerPane.width());
         this._charts["explainerHeatmap"].render();
 
         // Adjust color scale height.
-        $("#" + this._divStructure.colorPaletteDivID).height(explainerPaneHeight - 52);
+        $("#" + this._divStructure.colorPaletteDivID).height(explainerPaneHeight - 70);
         // Adjust color scale's labels' positions.
         for (let label of $(".color-palette-label")) {
             let labelElement = $("#" + label.id);

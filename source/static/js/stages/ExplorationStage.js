@@ -66,7 +66,7 @@ export default class ExplorationStage extends Stage
                 // Spawn container for panels at bottom. Used for surrogate and dissonance panel.
                 let splitBottomDiv  = Utils.spawnChildDiv(splitLeftDiv.id, null, "split-bottom-container");
                 // Spawn container for model detail to the right.
-                // let splitRightDiv  = Utils.spawnChildDiv(scope._target, null, "split-right-container");
+                let splitRightDiv  = Utils.spawnChildDiv(scope._target, null, "split-right-container");
 
                 //---------------------------------------------------------
                 // Operator for hyperparameter and objective selection.
@@ -112,21 +112,21 @@ export default class ExplorationStage extends Stage
                 let embeddingsTableTarget   = scope._operators["FilterReduce"].tablePanel._target;
 
                 // Horizontal split right.
-                // $("#" + splitLeftDiv.id).addClass("split split-horizontal");
-                // $("#" + splitRightDiv.id).addClass("split split-horizontal");
-                // Split(
-                //     ["#" + splitLeftDiv.id, "#" + splitRightDiv.id],
-                //     {
-                //         direction: "horizontal",
-                //         sizes: [99.5, 0],
-                //         minSize: 0,
-                //         snapOffset: 0,
-                //         onDragEnd: function() {
-                //             scope._operators["Explainer"].resize();
-                //             scope._operators["ModelDetail"].resize();
-                //         }
-                //     }
-                // );
+                $("#" + splitLeftDiv.id).addClass("split split-horizontal");
+                $("#" + splitRightDiv.id).addClass("split split-horizontal");
+                Split(
+                    ["#" + splitLeftDiv.id, "#" + splitRightDiv.id],
+                    {
+                        direction: "horizontal",
+                        sizes: [99.5, 0],
+                        minSize: 0,
+                        snapOffset: 0,
+                        onDragEnd: function() {
+                            scope._operators["Explainer"].resize();
+                            // scope._operators["ModelDetail"].resize();
+                        }
+                    }
+                );
 
                 // Horizontal split left.
                 $("#" + explainerTarget).addClass("split split-horizontal");
