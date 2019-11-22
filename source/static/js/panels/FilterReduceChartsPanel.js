@@ -436,7 +436,6 @@ export default class FilterReduceChartsPanel extends Panel
         // Adjust width, if necessary.
         if (targetWidth !== this._lastTargetWidth) {
             const targetChartWidth = ((targetWidth - 75) / (metadata.objectives.length + metadata.hyperparameters.length));
-            console.log(targetWidth, targetChartWidth);
 
             // Resize container divs' width.
             $(".filter-reduce-charts-container").css("width", targetChartWidth + "px")

@@ -124,14 +124,14 @@ export default class ModelDetailPanel extends Panel
         // 1. Create panes.
         // -----------------------------------
 
-        let infoDiv = Utils.spawnChildDiv(this._target, null, "panel-info model-detail-panel-info");
+        Utils.spawnChildDiv(
+            this._target,
+            "model-detail-not-loaded-indicator",
+            null,
+            "<span>Please select an embedding by double-clicking one of the rows in the table at the bottom left.</span>"
+        );
 
-                //     title: "Model Details for Model #" +
-        //         data._modelID +
-        //         "<a id='model-detail-settings-icon' href='#'>" +
-        //         "    <img src='./static/img/icon_settings_white.png' class='info-icon' alt='Settings' width='20px'>" +
-        //         "</a> " +
-        //         "<span class='embedding-rating' data-rateit-mode='font'></span>",
+        let infoDiv             = Utils.spawnChildDiv(this._target, null, "panel-info model-detail-panel-info");
 
         $("#" + infoDiv.id).html(
             "<span class='title' id='model-detail-title'></span>" +
@@ -273,6 +273,11 @@ export default class ModelDetailPanel extends Panel
     {
         if (!this._hasLoaded)
             return;
+
+        // Fade out placeholder screen after first load.
+        const placeholderScreen = $("#model-detail-not-loaded-indicator");
+        if (placeholderScreen.css("display") === "block")
+            placeholderScreen.fadeTo(1000, 0, () => placeholderScreen.css("display", "none"));
 
         // -------------------------------------------------------
         // 1. Draw sparklines for attributes.

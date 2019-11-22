@@ -224,3 +224,24 @@ span.embedding-rating {
     position: relative;
     text-align: right;
 }
+
+#model-detail-not-loaded-indicator {
+    position: absolute;
+    text-align: center;
+    vertical-align: middle;
+    width: 100%;
+    height: 100%;
+    z-index: 11;
+    left: 0;
+    top: 0;
+    background-color: #3d4a57;
+    opacity: 0.99;
+}
+
+#model-detail-not-loaded-indicator span {
+    position: relative;
+    top: calc(50% - 14px);
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+}
