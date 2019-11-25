@@ -164,7 +164,6 @@ export default class ExplorationStage extends Stage
                 // After split: Render (resize-sensitive) components.
                 scope._operators["Explainer"].resize();
                 scope._operators["FilterReduce"].resize();
-                // scope._operators["ModelDetail"].resize();
                 $("#" + embeddingsTableTarget + " .dataTables_scrollBody").css(
                     'height', ($("#" + splitBottomDiv.id).height() - 190) + "px"
                 );
@@ -174,8 +173,95 @@ export default class ExplorationStage extends Stage
                 // ---------------------------------------------------------
 
                   $("#exploration-stage").fadeTo(2000, 1.0);
-                  $("#splashscreen").fadeTo(1000, 0, function() {
+                    $("#splashscreen").fadeTo(1000, 0, function() {
                       $("#splashscreen").css("display", "none");
+
+                      // Start introduction tour.
+                      let intro = introJs();
+                      intro.setOptions({
+                          steps: [
+                              {
+                                  intro: "Welcome to DROP! blablabla. Settings can be accessed by clicking the cogwheel " +
+                                      "in the top right corner."
+                              },
+                              {
+                                  element: "#datasetLink",
+                                  intro: "Select the dataset to investigate here.",
+                                  position: "left"
+                              },
+                              {
+                                  element: "#drkernelLink",
+                                  intro: "Select the DR kernel to investigate here.",
+                                  position: "left"
+                              },
+                              {
+                                  element: "#" + scope
+                                      ._operators["FilterReduce"]
+                                      ._target,
+                                  intro: "purpose (HPS), histograms, SSPs, user ratings"
+                              },
+                              {
+                                  element: "#" + scope
+                                      ._operators["FilterReduce"]
+                                      ._panels["Parameter Space"]
+                                      ._histogramDivIDs["n_components"],
+                                  intro: "Histogram of distribution of values for this hyperparameter or objective."
+                              },
+                              {
+                                  element: "#" + scope
+                                      ._operators["FilterReduce"]
+                                      ._panels["Parameter Space"]
+                                      ._charts["n_components:runtime"]
+                                      ._target,
+                                  intro: "Scattered Scree Plots show the correlation between a hyperparameter and an " +
+                                      "objective."
+                              },
+                              {
+                                  element: "#" + scope
+                                      ._operators["FilterReduce"]
+                                      ._panels["Parameter Space"]
+                                      ._charts["runtime:r_nx"]
+                                      ._target,
+                                  intro: "Honeycomb plots show the correlation between two objectives."
+                              },
+                              {
+                                  element: "#embeddings-ratings-box",
+                                  intro: "This box shows the ratings that you have assigned to embeddings - 5 " +
+                                      "representing good, 1 bad. By default all embeddings have a rating of 0 - you can " +
+                                      "see and select those by clicking 'Show unrated'."
+                              },
+                              {
+                                  element: "#" + scope
+                                      ._operators["FilterReduce"]
+                                      ._panels["Model Selection"]
+                                      .table
+                                      ._target,
+                                  intro: "This table shows all embeddings included in the selected dataset, allowing " +
+                                      "filtering and sorting.<br>A double-click on a single row load detailed information " +
+                                      "on this model in the rightmost panel."
+                              },
+                              {
+                                  element: $(
+                                      `#${scope
+                                          ._operators["Explainer"]
+                                          ._panels["Hyperparameter Influence"]
+                                          ._divStructure
+                                          .chartContainerID} > svg`
+                                  )[0],
+                                  intro: "The influence of hyperparameters on objectives is shown in this heatmap. It" +
+                                      " is computed as relative to the remaining dataset, so to see the corresponding" +
+                                      " effect, please select a subset of embeddings."
+                              }
+                          ],
+                          showStepNumbers: false,
+                          disableInteraction: true,
+                          exitOnOverlayClick: false,
+                          keyboardNavigation: true,
+                          hideNext: true,
+                          showProgress: true,
+                          exitOnEsc: true
+                      });
+                      intro.start();
                   });
 
                   const now = new Date();

@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="./static/lib/parcoords/d3.parcoords.css">
     <link rel="stylesheet" href="./static/lib/jquery/jquery.datatables/jquery.dataTables.min.css">
     <link rel="stylesheet" href="./static/lib/star-rating/star-rating-svg.css">
+    <link rel="stylesheet" href="./static/lib/intro.js/introjs.css">
 
     <!-- Load custom .css files. -->
     <link rel="stylesheet" href="./static/css/dropdown.css">
@@ -27,6 +28,7 @@
     <link rel="stylesheet" href="./static/css/operators/model-detail.css">
     <link rel="stylesheet" href="./static/css/settings.css">
     <link rel="stylesheet" href="./static/css/splashscreen.css">
+    <link rel="stylesheet" href="./static/css/introjs-modifications.css">
 
     <!-- Load icon. -->
     <link rel="icon" type="image/png" href="./static/img/icon.png">
@@ -90,9 +92,10 @@
 
 <div class="header">
     <div class="pure-menu pure-menu-horizontal custom-restricted-width">
-        <a class="pure-menu-heading" id='icon-link' href="/"> <img src="./static/img/icon_white.png"
-                                                                   class="navIconImage" alt="DROP" width="20px">DROP
-            {{version}}</a>
+        <a class="pure-menu-heading" id='icon-link' href="/">
+            <img src="./static/img/icon_white.png" class="navIconImage" alt="DROP" width="20px">
+            DROP {{version}}
+        </a>
 
         <div class="dataset-selection-menu">
             Dataset
@@ -146,8 +149,6 @@
 </div>
 
 <!-- Stages. -->
-<div class="stage" id="mental-model-stage">
-</div>
 <div class="stage" id="exploration-stage">
 </div>
 
@@ -187,6 +188,8 @@
 <script src="./static/lib/jquery-sortable.js" charset="utf-8"></script>
 <!-- For rating. -->
 <script src="./static/lib/star-rating/jquery.star-rating-svg.js" charset="utf-8"></script>
+<!-- For user guidance. -->
+<script src="./static/lib/intro.js/intro.js" charset="utf-8"></script>
 
 <!-- Initialize protoype UI. -->
 <script type="module" src="./static/js/initializePrototypeUI.js"></script>
