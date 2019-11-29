@@ -88,8 +88,6 @@ li.pure-menu-item.pure-menu-selected {
 }
 
 .ui-widget.ui-widget-content {
-    border: 0;
-    border-left: 4px solid #3d4a57;
     margin: 0;
     padding: 0;
 }
