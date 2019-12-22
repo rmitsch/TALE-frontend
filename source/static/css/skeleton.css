@@ -281,3 +281,7 @@ svg rect {
 }
 
 /* End toggle - https://www.htmllion.com/css3-toggle-switch-button.html*/
+
+.introjs-tooltip {
+    min-width: 300px;
+}

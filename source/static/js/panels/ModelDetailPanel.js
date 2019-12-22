@@ -285,41 +285,48 @@ export default class ModelDetailPanel extends Panel
                 steps: [
                     {
                         element: $(".embedding-rating")[0],
-                        intro: "The current rating of the embedding is shown here. Rate by clicking one of the stars."
+                        intro: "The current rating of the embedding is shown here. Assign a rating based on your " +
+                            "subjective impression of this embedding's quality by clicking one of the stars."
                     },
                     {
                         element: "#" + scope._divStructure.attributePane.id,
-                        intro: "Hyperparameter & objective values for the currently selected embedding are shown here.",
+                        intro: "The selected embedding's Hyperparameter & objective values are shown here.",
                         position: "right"
                     },
                     {
                         element: "#" + scope._divStructure.explainerPaneID,
                         intro: "Similar to the 'Hyperparameter Influence' view, this visualizes the effect of " +
-                            "hyperparameters on objectives for this particular embedding.",
+                            "hyperparameters on objectives for the selected embedding.",
                         position: "right"
                     },
                     {
                         element: "#" + scope._divStructure.scatterplotPaneID,
                         intro: "The low-dimensional, embedded representation of the records in the embedded dataset. " +
-                            "One point represents one record.",
+                            "If there are more than two dimensions, a scatterplot matrix is shown: First vs. second " +
+                            "dimension, first vs. third, second vs. third etc." +
+                            "<br>One point represents one record.",
                         position: "bottom"
                     },
                     {
                         element: "#" + scope._divStructure.recordPane.tableID,
-                        intro: "A table showing all records in the dataset.",
+                        intro: "This table shows all records in the dataset. Records are highlighted in the scatterplots " +
+                            "above when hovered over.",
                         position: "top"
                     },
                     {
                         element: "#shepard-diagram",
                         intro: "The Shepard diagram shows the correlation between the distances between pairs of " +
-                            "records in the high- and the low-dimensional/emnbedded space. An ideal correlation in this " +
-                            "respect result in a straight line of 45 degrees from the bottom left to the top right.",
+                            "records in the high- and the low-dimensional space. An ideal correlation in this " +
+                            "respect result in a straight line of 45 degrees from the bottom left to the top right " +
+                            "(i. e. the proportion of distance between records in the low- is identical to that in the" +
+                            " high-dimensional space.",
                         position: "left"
                     },
                     {
                         element: "#coranking-matrix",
                         intro: "The co-ranking matrix is the rankwise equivalent to the Shepard diagram. A perfect " +
-                            "embedding would have full cells along the diagonale from the top left to the bottom right.",
+                            "embedding would have full cells along the diagonale from the top left to the bottom right " +
+                            "and empty cells everywhere else.",
                         position: "left"
                     }
                 ],

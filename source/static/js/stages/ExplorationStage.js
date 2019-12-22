@@ -177,92 +177,121 @@ export default class ExplorationStage extends Stage
                       $("#splashscreen").css("display", "none");
 
                       // Start introduction tour.
-                      let intro = introJs();
-                      intro.setOptions({
-                          steps: [
-                              {
-                                  intro: "Welcome to DROP! blablabla. Settings can be accessed by clicking the cogwheel " +
-                                      "in the top right corner."
-                              },
-                              {
-                                  element: "#datasetLink",
-                                  intro: "Select the dataset to investigate here.",
-                                  position: "left"
-                              },
-                              {
-                                  element: "#drkernelLink",
-                                  intro: "Select the DR kernel to investigate here.",
-                                  position: "left"
-                              },
-                              {
-                                  element: "#" + scope
-                                      ._operators["FilterReduce"]
-                                      ._target,
-                                  intro: "purpose (HPS), histograms, SSPs, user ratings"
-                              },
-                              {
-                                  element: "#" + scope
-                                      ._operators["FilterReduce"]
-                                      ._panels["Parameter Space"]
-                                      ._histogramDivIDs["n_components"],
-                                  intro: "Histogram of distribution of values for this hyperparameter or objective."
-                              },
-                              {
-                                  element: "#" + scope
-                                      ._operators["FilterReduce"]
-                                      ._panels["Parameter Space"]
-                                      ._charts["n_components:runtime"]
-                                      ._target,
-                                  intro: "Scattered Scree Plots show the correlation between a hyperparameter and an " +
-                                      "objective."
-                              },
-                              {
-                                  element: "#" + scope
-                                      ._operators["FilterReduce"]
-                                      ._panels["Parameter Space"]
-                                      ._charts["runtime:r_nx"]
-                                      ._target,
-                                  intro: "Honeycomb plots show the correlation between two objectives."
-                              },
-                              {
-                                  element: "#embeddings-ratings-box",
-                                  intro: "This box shows the ratings that you have assigned to embeddings - 5 " +
-                                      "representing good, 1 bad. By default all embeddings have a rating of 0 - you can " +
-                                      "see and select those by clicking 'Show unrated'."
-                              },
-                              {
-                                  element: "#" + scope
-                                      ._operators["FilterReduce"]
-                                      ._panels["Model Selection"]
-                                      .table
-                                      ._target,
-                                  intro: "This table shows all embeddings included in the selected dataset, allowing " +
-                                      "filtering and sorting.<br>A double-click on a single row load detailed information " +
-                                      "on this model in the rightmost panel."
-                              },
-                              {
-                                  element: $(
-                                      `#${scope
-                                          ._operators["Explainer"]
-                                          ._panels["Hyperparameter Influence"]
-                                          ._divStructure
-                                          .chartContainerID} > svg`
-                                  )[0],
-                                  intro: "The influence of hyperparameters on objectives is shown in this heatmap. It" +
-                                      " is computed as relative to the remaining dataset, so to see the corresponding" +
-                                      " effect, please select a subset of embeddings."
-                              }
-                          ],
-                          showStepNumbers: false,
-                          disableInteraction: true,
-                          exitOnOverlayClick: false,
-                          keyboardNavigation: true,
-                          hideNext: true,
-                          showProgress: true,
-                          exitOnEsc: true
-                      });
-                      intro.start();
-                  });
+                        let intro = introJs();
+                        intro.setOptions({
+                            steps: [
+                                {
+                                    intro: "Welcome to DROP! This tour will guide you step-by-step through the application. " +
+                                        "<br><br>The user interface is divided into 'panels', each serving a specific " +
+                                        "purpose. Settings can be accessed by clicking the cogwheel in the top right " +
+                                        "corner of a panel."
+                                },
+                                {
+                                    element: "#datasetLink",
+                                    intro: "Multiple datasets are offered. Select the dataset you want to investigate " +
+                                        "here.",
+                                    position: "left"
+                                },
+                                {
+                                    element: "#drkernelLink",
+                                    intro: "Multiple algorithms for dimensionality reduction are offered. Select the " +
+                                        "dimensionality reduction method you want to investigate here.",
+                                    position: "left"
+                                },
+                                {
+                                    element: "#" + scope
+                                        ._operators["FilterReduce"]
+                                        ._target,
+                                    intro: "The 'Parameter Space' panel explores the effect of different hyperparameters " +
+                                        "on the faithfulness of embeddings measured by various objectives. Specifically," +
+                                        " it shows: " +
+                                        "<ul>" +
+                                            "<li>The distributions of hyperparameters and objectives in the each column's top" +
+                                            " chart,</li>" +
+                                            "<li>the correlation of each hyperparameter with each objective in the left " +
+                                            "(square) part of the panel, </li>" +
+                                            "<li>the correlation between objectives in the right (triangular) part of the panel</li>" +
+                                            "<li>and the ratings assigned by you in the 'User ratings' box to the right.</li>" +
+                                        "</ul> "
+                                },
+                                {
+                                    element: "#" + scope
+                                        ._operators["FilterReduce"]
+                                        ._panels["Parameter Space"]
+                                        ._histogramDivIDs["n_components"],
+                                    intro: "Charts in the top row show the distribution of a hyperparameter or objective " +
+                                        "(here: number of dimensions in the low-dimensional space)."
+                                },
+                                {
+                                    element: "#" + scope
+                                        ._operators["FilterReduce"]
+                                        ._panels["Parameter Space"]
+                                        ._charts["n_components:runtime"]
+                                        ._target,
+                                    intro: "This is a 'Scattered Scree Plot' (SSP) visualizing the relationship between a " +
+                                        "hyperparameter and an objective. The underlying idea here is to show how an " +
+                                        "embedding changes w.r.t. one objective when only one hyperparameter (HP) is " +
+                                        "manipulated. This is achieved by: " +
+                                        "<ol>" +
+                                            "<li> Define values to be sampled for each HP. Generate all resulting HP configurations.</li>" +
+                                            "<li> Compute the low-dimensional embeddings for these HP configurations.</li>" +
+                                            "<li> When showing hyperparameter <i>H</i> and objective <i>O</i>: Group " +
+                                            "together those configurations where all HPs are equal except for <i>H</i>.</li>" +
+                                            "<li> Plot the values for <i>O</i> for each group as a line. Each line represents " +
+                                            "the behaviour of one HP configuration with changing values for  <i>H</i>.</li>" +
+                                        "</ol>" +
+                                        "Additionally, the bar on the right shows the correlation between <i>H</i> and" +
+                                        "<i>O</i> in percent."
+                                },
+                                {
+                                    element: "#" + scope
+                                        ._operators["FilterReduce"]
+                                        ._panels["Parameter Space"]
+                                        ._charts["runtime:r_nx"]
+                                        ._target,
+                                    intro: "The relationship two objectives are shown as honeycomb plots. The color " +
+                                        "saturation indicates how many HP configurations are placed in corresponding bin."
+                                },
+                                {
+                                    element: "#embeddings-ratings-box",
+                                    intro: "This box shows the ratings that you have assigned to embeddings - 5 " +
+                                        "representing good, 1 bad. By default all embeddings have a rating of 0 - you can " +
+                                        "see and select those by clicking 'Show unrated'."
+                                },
+                                {
+                                    element: "#" + scope
+                                        ._operators["FilterReduce"]
+                                        ._panels["Model Selection"]
+                                        .table
+                                        ._target,
+                                    intro: "This table shows all embeddings included in the selected dataset, allowing " +
+                                        "filtering and sorting.<br>A double-click on a single row load detailed information " +
+                                        "on this model in the rightmost panel."
+                                },
+                                {
+                                    element: $(
+                                        `#${scope
+                                            ._operators["Explainer"]
+                                            ._panels["Hyperparameter Influence"]
+                                            ._divStructure
+                                            .chartContainerID} > svg`
+                                    )[0],
+                                    intro: "The influence of hyperparameters on objectives in the selected subset of " +
+                                        "embeddings is shown in this heatmap. Note that it is computed by comparing the " +
+                                        "selected sub- to the entire set of embeddings - as long no selection has taken" +
+                                        " place, no effects are visible here."
+                                }
+                            ],
+                            showStepNumbers: false,
+                            disableInteraction: true,
+                            exitOnOverlayClick: false,
+                            keyboardNavigation: true,
+                            hideNext: true,
+                            showProgress: true,
+                            exitOnEsc: true
+                        });
+                        intro.start();
+                    });
 
                   const now = new Date();
                   console.log("*** DROP *** Finished construction at " + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds() + ".");
