@@ -58,7 +58,7 @@ export default class ExplorationStage extends Stage
             .then(function(values) {
                 logField.text("Compiling ExplainerDataset");
                 console.log("Compiling ExplainerDataset.");
-                scope._datasets["explainer"]       = new ExplainerDataset("ExplainerDataset", values[0]);
+                scope._datasets["explainer"] = new ExplainerDataset("ExplainerDataset", values[0]);
 
                 // Spawn container for panels at bottom.
                 let splitLeftDiv    = Utils.spawnChildDiv(scope._target, null, "split-left-container");
@@ -181,8 +181,8 @@ export default class ExplorationStage extends Stage
                         intro.setOptions({
                             steps: [
                                 {
-                                    intro: "Welcome to DROP! This tour will guide you step-by-step through the application. " +
-                                        "<br><br>The user interface is divided into 'panels', each serving a specific " +
+                                    intro: "<b>Welcome to DROP!</b> This tour will guide you through this application step by step. " +
+                                        "<br><br>The user interface is divided into panels, each serving a specific " +
                                         "purpose. Settings can be accessed by clicking the cogwheel in the top right " +
                                         "corner of a panel."
                                 },
@@ -228,20 +228,13 @@ export default class ExplorationStage extends Stage
                                         ._panels["Parameter Space"]
                                         ._charts["n_components:runtime"]
                                         ._target,
-                                    intro: "This is a 'Scattered Scree Plot' (SSP) visualizing the relationship between a " +
-                                        "hyperparameter and an objective. The underlying idea here is to show how an " +
-                                        "embedding changes w.r.t. one objective when only one hyperparameter (HP) is " +
-                                        "manipulated. This is achieved by: " +
-                                        "<ol>" +
-                                            "<li> Define values to be sampled for each HP. Generate all resulting HP configurations.</li>" +
-                                            "<li> Compute the low-dimensional embeddings for these HP configurations.</li>" +
-                                            "<li> When showing hyperparameter <i>H</i> and objective <i>O</i>: Group " +
-                                            "together those configurations where all HPs are equal except for <i>H</i>.</li>" +
-                                            "<li> Plot the values for <i>O</i> for each group as a line. Each line represents " +
-                                            "the behaviour of one HP configuration with changing values for  <i>H</i>.</li>" +
-                                        "</ol>" +
-                                        "Additionally, the bar on the right shows the correlation between <i>H</i> and" +
-                                        "<i>O</i> in percent."
+                                    intro: "This is a 'Scattered Scree Plot' visualizing the relationship between a " +
+                                        "hyperparameter and an objective. It reflects how objectives change for an embedding " +
+                                        "(represented by one line) if we change one hyperparameter and leave all others " +
+                                        "fixed. <br>The bar on the right shows the correlation between hyperparameter and " +
+                                        "objective in percent. If the correlation is too low, a plot's opacity is lowered," +
+                                        " since the relationship between this hyperparameter and objective is likely not" +
+                                        " very interesting."
                                 },
                                 {
                                     element: "#" + scope
@@ -250,7 +243,7 @@ export default class ExplorationStage extends Stage
                                         ._charts["runtime:r_nx"]
                                         ._target,
                                     intro: "The relationship two objectives are shown as honeycomb plots. The color " +
-                                        "saturation indicates how many HP configurations are placed in corresponding bin."
+                                        "saturation indicates how many embeddings are placed in corresponding bin."
                                 },
                                 {
                                     element: "#embeddings-ratings-box",
@@ -276,10 +269,16 @@ export default class ExplorationStage extends Stage
                                             ._divStructure
                                             .chartContainerID} > svg`
                                     )[0],
-                                    intro: "The influence of hyperparameters on objectives in the selected subset of " +
-                                        "embeddings is shown in this heatmap. Note that it is computed by comparing the " +
-                                        "selected sub- to the entire set of embeddings - as long no selection has taken" +
-                                        " place, no effects are visible here."
+                                    intro: "The influence of hyperparameters on objectives embeddings is shown in this " +
+                                        "heatmap. Note that it is computed by comparing the selected subset to the " +
+                                        "entire set of embeddings - as long no selection has taken place, no effects are" +
+                                        " visible here."
+                                },
+                                {
+                                    intro: "Thanks for taking the tour! If you want to check out and/or rate individual " +
+                                        "embeddings, drag open the pane to the right and double-click a row in the table to " +
+                                        "the bottom left."
+
                                 }
                             ],
                             showStepNumbers: false,
