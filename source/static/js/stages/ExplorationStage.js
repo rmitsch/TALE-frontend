@@ -275,13 +275,12 @@ export default class ExplorationStage extends Stage
                                     intro: "The influence of hyperparameters on objectives embeddings is shown in this " +
                                         "heatmap. Note that it is computed by comparing the selected subset to the " +
                                         "entire set of embeddings - as long no selection has taken place, no effects are" +
-                                        " visible here."
+                                        " visible here.",
                                 },
                                 {
                                     intro: "Thanks for taking the tour! If you want to check out and/or rate individual " +
                                         "embeddings, drag open the pane to the right and double-click a row in the table to " +
-                                        "the bottom left."
-
+                                        "the bottom left.",
                                 }
                             ],
                             showStepNumbers: false,
@@ -292,7 +291,15 @@ export default class ExplorationStage extends Stage
                             showProgress: true,
                             exitOnEsc: true
                         });
-                        intro.start();
+
+                        // Extend detail view after tour is over.
+                        intro.onbeforechange(() => {
+                            try {
+                                if (intro._currentStep === 10)
+                                    this._detailSplitPane.setSizes([50, 50]);
+                            }
+                            catch(error) {}
+                        }).start();
                     });
 
                   const now = new Date();
