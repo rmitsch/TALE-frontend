@@ -285,3 +285,41 @@ svg rect {
 .introjs-tooltip {
     min-width: 300px;
 }
+
+.model-detail-flipk {
+  overflow: hidden;
+}
+
+.model-detail-flip {
+    position: absolute;
+    top: calc(50% - 50px);
+    width: 30px;
+    height: 100px;
+    border-bottom: 0;
+    background-color: #3d4a57;
+    z-index: 10;
+}
+
+#model-detail-flip-todetail {
+    right: 0;
+    border-bottom-left-radius: 100px;
+    border-top-left-radius: 100px;
+}
+
+#model-detail-flip-toglobal {
+    left: 0;
+    border-bottom-right-radius: 100px;
+    border-top-right-radius: 100px;
+}
+
+#model-detail-flip-todetail-arrow {
+    position: relative;
+    top: 40px;
+    left: 8px;
+}
+
+#model-detail-flip-toglobal-arrow {
+    position: relative;
+    top: 40px;
+    right: -4px;
+}

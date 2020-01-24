@@ -209,6 +209,7 @@ span.embedding-rating {
     position: relative;
     height: 100%;
     width: 100%;
+    padding: 0;
 }
 
 #model-detail-content-pane {

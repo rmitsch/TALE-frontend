@@ -20,13 +20,13 @@ export default class ExplorationStage extends Stage
     {
         super(name, target, datasets);
 
+        this._detailSplitPane   = null;
         // Store splitter instance for bottom div.
         this._bottomSplitPane   = null;
 
         // Construct operators.
         this.constructOperators();
     }
-
 
     /**
      * Construct all panels for this view.
@@ -113,7 +113,7 @@ export default class ExplorationStage extends Stage
                 // Horizontal split right.
                 $("#" + splitLeftDiv.id).addClass("split split-horizontal");
                 $("#" + splitRightDiv.id).addClass("split split-horizontal");
-                Split(
+                scope._detailSplitPane = Split(
                     ["#" + splitLeftDiv.id, "#" + splitRightDiv.id],
                     {
                         direction: "horizontal",
@@ -127,6 +127,9 @@ export default class ExplorationStage extends Stage
                         }
                     }
                 );
+
+                // Add buttons for flipping global/detail view.
+                scope._constructModelDetailViewFlipButtons(splitLeftDiv.id, splitRightDiv.id, splitBottomDiv.id, embeddingsTableTarget);
 
                 // Horizontal split left.
                 $("#" + explainerTarget).addClass("split split-horizontal");
@@ -309,6 +312,52 @@ export default class ExplorationStage extends Stage
                 if (this._operators[opKey]._name !== source)
                     this._operators[opKey].filter(embeddingIDs);
             }
+    }
+
+    /**
+     * Add buttons for flipping global/detail view.
+     * @param splitLeftDivID
+     * @param splitRightDivID
+     * @param splitBottomDiv
+     * @param embeddingsTableTarget
+     * @private
+     */
+    _constructModelDetailViewFlipButtons(splitLeftDivID, splitRightDivID, splitBottomDiv, embeddingsTableTarget)
+    {
+        // Add buttons for view flipping.
+
+        const detailViewFlipButtonToDetail = document.createElement('div');
+        detailViewFlipButtonToDetail.setAttribute("class", "model-detail-flip");
+        detailViewFlipButtonToDetail.setAttribute("id", "model-detail-flip-todetail");
+        detailViewFlipButtonToDetail.innerHTML = "" +
+            "<a id='model-detail-flip-todetail-arrow' href='#'>" +
+            "    <img src='./static/img/icon_detailflip_todetail.png' alt='Flip view (to detail)' width='20px'>" +
+            "</a>";
+
+        const detailViewFlipButtonToGlobal = document.createElement('div');
+        detailViewFlipButtonToGlobal.setAttribute("class", "model-detail-flip");
+        detailViewFlipButtonToGlobal.setAttribute("id", "model-detail-flip-toglobal");
+        detailViewFlipButtonToGlobal.innerHTML = "" +
+            "<a id='model-detail-flip-toglobal-arrow' href='#'>" +
+            "    <img src='./static/img/icon_detailflip_toglobal.png' alt='Flip view (to global)' width='20px'>" +
+            "</a>";
+
+        $("#" + splitLeftDivID).append(detailViewFlipButtonToDetail);
+        $("#" + splitRightDivID).append(detailViewFlipButtonToGlobal);
+
+        // Add event listener for view flipping buttons.
+        $("#model-detail-flip-todetail-arrow").click(() => {
+            this._detailSplitPane.collapse(0);
+            this._operators["ModelDetail"].resize();
+        });
+        $("#model-detail-flip-toglobal-arrow").click(() => {
+            this._detailSplitPane.collapse(1);
+            this._operators["Explainer"].resize();
+            this._operators["FilterReduce"].resize();
+            $("#" + embeddingsTableTarget + " .dataTables_scrollBody").css(
+                'height', ($("#" + splitBottomDiv.id).height() - 190) + "px"
+            );
+        });
     }
 
     get shiftDown()
