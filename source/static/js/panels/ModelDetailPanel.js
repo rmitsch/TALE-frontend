@@ -469,8 +469,8 @@ export default class ModelDetailPanel extends Panel
         this._charts["scatterplots"]    = {};
         const numDimensions             = this._data._allModelMetadata[this._data._modelID].n_components;
         let numPlotsInRow               = Math.max(numDimensions - 1, 1);
-        const scatterplotWidth          = chartContainerDiv.width() / numPlotsInRow - 25;
-        const scatterplotHeight         = chartContainerDiv.height() / numPlotsInRow - 10;
+        const scatterplotWidth          = chartContainerDiv.width() / numPlotsInRow - 10;
+        const scatterplotHeight         = chartContainerDiv.height() / numPlotsInRow - 0;
 
         // Generate all combinations of dimension indices.
         for (let i = 0; i < Math.max(numDimensions - 1, 1); i++) {
@@ -483,7 +483,7 @@ export default class ModelDetailPanel extends Panel
 
             // Consider that we want to draw a scatterplot with the added "fake"/zero axis if we have a dataset with a
             // one-dim. embedding.
-            for (let j = i + 1; j < Math.max(numDimensions, 2); j++) {
+            for (let j = Math.max(numDimensions, 2) - 1; j >= i + 1; j--) {
                 // Generate scatterplot.
                 let scatterplot = this._generateScatterplot(
                     [i, j],
@@ -491,7 +491,8 @@ export default class ModelDetailPanel extends Panel
                         height: scatterplotHeight,
                         width: scatterplotWidth
                     },
-                    chartRowDiv.id
+                    chartRowDiv.id,
+                    Math.max(numDimensions, 2)
                 );
 
                 // Render chart.
@@ -599,10 +600,11 @@ export default class ModelDetailPanel extends Panel
      * crossfilter dimensions and groups and to generate unique div IDs.
      * @param scatterplotSize Size of scatterplot. Has .height and .width.
      * @param parentDivID
+     * @param nDimensionsToDraw Number of dimensions to draw. Used to adjust axis labeling.
      * @returns {dc.scatterPlot} Generated scatter plt.
      * @private
      */
-    _generateScatterplot(currIndices, scatterplotSize, parentDivID)
+    _generateScatterplot(currIndices, scatterplotSize, parentDivID, nDimensionsToDraw)
     {
         const numDimensions     = this._data._allModelMetadata[this._data._modelID].n_components;
         let cf_config           = this._data.crossfilterData["low_dim_projection"];
@@ -651,7 +653,13 @@ export default class ModelDetailPanel extends Panel
             .filterOnBrushEnd(true)
             .mouseZoomable(false)
             .transitionDuration(0)
-            .margins({top: 5, right: 0, bottom: 2, left: 0});
+            .margins({top: 0, right: 0, bottom: 30, left: 18});
+
+        // Set axis labels for outermost scatterplots.
+        const axisLabelToPlot = j === i + 1;
+        scatterplot.yAxisLabel(axisLabelToPlot ? "Dimension " + (i + 1) : "");
+        scatterplot.xAxisLabel(axisLabelToPlot ? "Dimension " + (j + 1) : "");
+
 
         // Set color methods.
         scatterplot.colorAccessor(this._scatterplotColorizingMethods.colorAccessor);
@@ -660,6 +668,8 @@ export default class ModelDetailPanel extends Panel
         scatterplot.render();
         scatterplot.yAxis().ticks(5);
         scatterplot.xAxis().ticks(5);
+        scatterplot.yAxis().tickFormat(function(v) { return ""; });
+        scatterplot.xAxis().tickFormat(function(v) { return ""; });
 
         return scatterplot;
     }
