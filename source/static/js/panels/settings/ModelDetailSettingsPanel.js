@@ -35,13 +35,6 @@ export default class DissonanceSettingsPanel extends SettingsPanel
         settingsHTML += "<div class='settings-section-header'>Low-dimensionsional Scatterplots</div>"
 
         settingsHTML += "<div class='setting-option'>";
-        settingsHTML += "<span>Color coding</span>";
-        settingsHTML += "<select id='model-details-settings-scatterplots-colorcoding-select'>" +
-            "  <option value='none'>None</option>" +
-        "</select>";
-        settingsHTML += "</div>";
-
-        settingsHTML += "<div class='setting-option'>";
         settingsHTML += "<span>Use logarithm</span>";
         settingsHTML += "<input type='checkbox' class='inline checkbox' id='model-details-settings-scatterplots-colorcoding-uselog' value='false'>";
         settingsHTML += "</div>";
@@ -97,7 +90,6 @@ export default class DissonanceSettingsPanel extends SettingsPanel
     _extractOptionValues()
     {
         return {
-            scatterplotColorCoding: $("#model-details-settings-scatterplots-colorcoding-select").val(),
             scatterplotColorCodingUseLog: $("#model-details-settings-scatterplots-colorcoding-uselog").is(":checked"),
             distanceMetricShepard: $("#model-details-settings-shepard-distancemetric-select").val(),
             distanceMetricCoranking: $("#model-details-settings-coranking-distancemetric-select").val()
@@ -116,23 +108,5 @@ export default class DissonanceSettingsPanel extends SettingsPanel
     get optionValues()
     {
         return this._optionValues;
-    }
-
-    /**
-     * Sets values for colorCoding in record scatterplots.
-     * @param values Array of values to show.
-     */
-    set scatterplotColorCodingSelectValues(values)
-    {
-        if (!this._colorCodingOptionsAreSet) {
-            for (let value of values)
-                $("#model-details-settings-scatterplots-colorcoding-select")
-                    .append($("<option />")
-                    .val(value)
-                    .text(value));
-
-            this._colorCodingOptionsAreSet = true;
-        }
-
     }
 }

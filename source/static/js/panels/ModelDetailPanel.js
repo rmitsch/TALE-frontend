@@ -22,9 +22,14 @@ export default class ModelDetailPanel extends Panel
     {
         super(name, operator, parentDivID);
 
-        this._hasLoaded              = false;
-        this._adjustedStageHeight    = null;
-        this._sparklineValues        = null;
+        this._hasLoaded             = false;
+        this._adjustedStageHeight   = null;
+        this._sparklineValues       = null;
+
+        // Colorcoding-related attributes.
+        this._colorcodingSPSelectID         = 'embedding-details-scatterplots-colorcoding-select';
+        this._colorcodingSPOptionsAreSet    = false;
+
         // Store information on split positions.
         this._lastSplitPositions    = {};
         this._splits                = {};
@@ -132,7 +137,6 @@ export default class ModelDetailPanel extends Panel
         );
 
         let infoDiv             = Utils.spawnChildDiv(this._target, null, "panel-info model-detail-panel-info");
-
         $("#" + infoDiv.id).html(
             "<span class='title' id='model-detail-title'></span>" +
             "<a id='model-detail-settings-icon' href='#'>" +
@@ -172,10 +176,7 @@ export default class ModelDetailPanel extends Panel
 
         // 3. Upper-center pane - all records in scatterplot.
         let scatterplotPane = Utils.spawnChildDiv(
-            samplePane.id, null, "model-detail-pane split-vertical",
-            `<div class='model-details-block'>
-                <div class='model-details-title'>All Records</div>
-            </div>`
+            samplePane.id, null, "model-detail-pane split-vertical"
         );
 
         // 4. Bottom-center pane - detailed information to currently selected record.
@@ -461,6 +462,8 @@ export default class ModelDetailPanel extends Panel
 
         // Reset chart container.
         chartContainerDiv.empty();
+        // Reset flag for colorcoding selector.
+        this._colorcodingSPOptionsAreSet = false;
 
         // -------------------------------------------------------
         // 2. Append new chart containers, draw scatterplots.
@@ -470,7 +473,7 @@ export default class ModelDetailPanel extends Panel
         const numDimensions             = this._data._allModelMetadata[this._data._modelID].n_components;
         let numPlotsInRow               = Math.max(numDimensions - 1, 1);
         const scatterplotWidth          = chartContainerDiv.width() / numPlotsInRow - 10;
-        const scatterplotHeight         = chartContainerDiv.height() / numPlotsInRow - 0;
+        const scatterplotHeight         = chartContainerDiv.height() / numPlotsInRow + 3;
 
         // Generate all combinations of dimension indices.
         for (let i = 0; i < Math.max(numDimensions - 1, 1); i++) {
@@ -500,6 +503,38 @@ export default class ModelDetailPanel extends Panel
                 this._charts.scatterplots[i + ":" + j] = scatterplot;
                 this._lastHighlightedPositions[i + ":" + j] = null;
             }
+        }
+
+        // Add colorcoding control.
+        Utils.spawnChildDiv(
+            this._divStructure.scatterplotPaneID, "scatterplot-colorcoding-box", null,
+            "<img src='./static/img/icon-color.png' id='colorcoding-SP-icon' alt='Pick color encoding for scatterplots.' width='20px'>" +
+            "<select id='" + this._colorcodingSPSelectID + "'>" +
+            "  <option value='none'>None</option>" +
+            "</select>"
+        );
+        // Add event listener for color coding: Update scatterplot color when used.
+        $("#" + this._colorcodingSPSelectID).change(() => {
+            // Update colorization methods.
+            this._updateScatterplotColorScheme(this._optionValues);
+        });
+
+        // Update colorcoding selection values.
+        this.scatterplotColorCodingSelectValues = this._data.numericalAttributes;
+    }
+
+        /**
+     * Sets values for colorCoding in record scatterplots.
+     * @param values Array of values to show.
+     */
+    set scatterplotColorCodingSelectValues(values)
+    {
+        if (!this._colorcodingSPOptionsAreSet) {
+            let select = $("#" + this._colorcodingSPSelectID);
+            for (let value of values) {
+                select.append($("<option />").val(value).text(value));
+            }
+            this._colorcodingSPOptionsAreSet = true;
         }
     }
 
@@ -623,9 +658,6 @@ export default class ModelDetailPanel extends Panel
         );
         $("#" + scatterplotContainer.id).css('left', (i * (scatterplotSize.width + 10)) + 'px');
 
-        // Update colorization methods.
-        this._updateScatterplotColorScheme(this._optionValues);
-
         // Configure scatterplot.
         let scatterplot = dc.scatterPlot("#" + scatterplotContainer.id, this._operator._target);
         scatterplot
@@ -660,10 +692,9 @@ export default class ModelDetailPanel extends Panel
         scatterplot.yAxisLabel(axisLabelToPlot ? "Dimension " + (i + 1) : "");
         scatterplot.xAxisLabel(axisLabelToPlot ? "Dimension " + (j + 1) : "");
 
-
         // Set color methods.
-        scatterplot.colorAccessor(this._scatterplotColorizingMethods.colorAccessor);
-        scatterplot.colors(this._scatterplotColorizingMethods.colors);
+        // scatterplot.colorAccessor(this._scatterplotColorizingMethods.colorAccessor);
+        // scatterplot.colors(this._scatterplotColorizingMethods.colors);
 
         scatterplot.render();
         scatterplot.yAxis().ticks(5);
@@ -799,7 +830,7 @@ export default class ModelDetailPanel extends Panel
     {
         let instance            = this;
         const defaultFillColor  = "#1f77b4";
-        const attr              = optionValues.scatterplotColorCoding;
+        const attr              = $("#" + this._colorcodingSPSelectID).val();
 
         if (attr !== "none") {
             const extrema   = this._data._cf_extrema[attr];
@@ -878,8 +909,6 @@ export default class ModelDetailPanel extends Panel
 
         // Set click listener.
         this._settingsPanel.setClickListener("model-detail-settings-icon");
-        // Update settings values.
-        this._settingsPanel.scatterplotColorCodingSelectValues = this._data.numericalAttributes;
 
         // Update data availability indicator.
         this._hasLoaded = true;

@@ -36,7 +36,8 @@ export default class Utils
         let div         = document.createElement('div');
         // If no child div ID specified: Generate random ID.
         div.id         = (typeof childDivID == "undefined") || (childDivID == null) ? Utils.uuidv4() : childDivID;
-        div.className  = childDivCSSClasses;
+        if (childDivCSSClasses != null && typeof childDivCSSClasses != "undefined")
+            div.className  = childDivCSSClasses;
         if (text != null && typeof text != "undefined")
             div.innerHTML = text;
         $("#" + parentDivID).append(div);
