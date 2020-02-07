@@ -84,6 +84,17 @@ export default class DRMetaDataset extends Dataset
         this._data[this._dataIndicesByID[embeddingID]].rating = rating;
         this._updateCrossfilterData(embeddingID);
 
+        // Notify server of updated rating.
+        $.ajax({
+            url: '/update_embedding_ratings',
+            data: {id: embeddingID, rating: rating},
+            type: 'GET',
+            success: response => {
+                if (response.success !== true)
+                    console.log("Failed in updating embedding ratings.")
+            }
+        });
+        
         for (let listenerName in this._ratingChangelisteners)
             if (listenerName !== sourceName)
                 this._ratingChangelisteners[listenerName].callback(

@@ -523,7 +523,7 @@ export default class ModelDetailPanel extends Panel
         this.scatterplotColorCodingSelectValues = this._data.numericalAttributes;
     }
 
-        /**
+    /**
      * Sets values for colorCoding in record scatterplots.
      * @param values Array of values to show.
      */
