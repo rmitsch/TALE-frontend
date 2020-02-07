@@ -16,7 +16,7 @@ $(document).ready(function() {
     }
 
     let now = new Date();
-    console.log("*** DROP *** Starting construction at " + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds() + ".");
+    console.log("*** TALE *** Starting construction at " + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds() + ".");
     $("#logField").text("Starting construction at " + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds() + ".");
 
     // -----------------------------------------------------

@@ -184,7 +184,7 @@ export default class ExplorationStage extends Stage
                         intro.setOptions({
                             steps: [
                                 {
-                                    intro: "<b>Welcome to DROP!</b> This tour will guide you through this application step by step. " +
+                                    intro: "<b>Welcome to TALE!</b> This tour will guide you through this application step by step. " +
                                         "<br><br>The user interface is divided into panels, each serving a specific " +
                                         "purpose. Settings can be accessed by clicking the cogwheel in the top right " +
                                         "corner of a panel."
@@ -303,7 +303,7 @@ export default class ExplorationStage extends Stage
                     });
 
                   const now = new Date();
-                  console.log("*** DROP *** Finished construction at " + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds() + ".");
+                  console.log("*** TALE *** Finished construction at " + now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds() + ".");
             });
     }
 

@@ -57,7 +57,7 @@ export default class DRMetaDataset extends Dataset
         this.computeCorrelationStrengths();
 
         // Create series mapping.
-        // Since for the intended use case (i. e. DROP) it is to be expected to need series variant w.r.t. each possible
+        // Since for the intended use case (i. e. TALE) it is to be expected to need series variant w.r.t. each possible
         // hyperparameter, in makes sense to calculate all of them beforehand.
         this._seriesMappingByHyperparameter = this._generateSeriesMappingForHyperparameters();
     }
