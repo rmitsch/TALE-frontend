@@ -1,4 +1,4 @@
-## DROP - Dimensionality Reduction with multiple Objectives utilizing visual Parameter space analysis
+## TALE - Tool for annotating Low-dimensional Embeddings
 
 ##### Goal
 
