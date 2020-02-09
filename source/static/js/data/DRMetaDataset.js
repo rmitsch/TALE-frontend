@@ -309,7 +309,7 @@ export default class DRMetaDataset extends Dataset
             "r_nx": useHTMLFormatting ? "R<sub>nx</sub>" : "R_nx",
             "b_nx": useHTMLFormatting ? "B<sub>nx</sub>" : "B_nx",
             "stress": "Stress",
-            "classification_accuracy": "RDP",
+            "target_domain_performance": "RDP",
             "separability_metric": "Silhouette",
             "runtime": "Runtime"
         }
