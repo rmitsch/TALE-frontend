@@ -33,7 +33,7 @@ export default class ExplainerOperator extends Operator
     constructPanels()
     {
         // Construct panel for explainer heatmap.
-        const explainerPanelName            = "Hyperparameter Influence";
+        const explainerPanelName            = "Subset Hyperparameter Influence";
         this._panels[explainerPanelName]    = new ExplainerPanel(explainerPanelName, this);
     }
 
@@ -54,6 +54,6 @@ export default class ExplainerOperator extends Operator
     filter(embeddingIDs)
     {
         this._dataset._cf_dimensions["embeddingID"].filter(id => embeddingIDs.has(id));
-        this._panels["Hyperparameter Influence"].render();
+        this._panels["Subset Hyperparameter Influence"].render();
     }
 }

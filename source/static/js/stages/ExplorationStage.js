@@ -268,7 +268,7 @@ export default class ExplorationStage extends Stage
                                     element: $(
                                         `#${scope
                                             ._operators["Explainer"]
-                                            ._panels["Hyperparameter Influence"]
+                                            ._panels["Subset Hyperparameter Influence"]
                                             ._divStructure
                                             .chartContainerID} > svg`
                                     )[0],

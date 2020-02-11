@@ -296,7 +296,7 @@ export default class ModelDetailPanel extends Panel
                     },
                     {
                         element: "#" + scope._divStructure.explainerPaneID,
-                        intro: "Similar to the 'Hyperparameter Influence' view, this visualizes the effect of " +
+                        intro: "Similar to the 'Subset Hyperparameter Influence' view, this visualizes the effect of " +
                             "hyperparameters on objectives for the selected embedding.",
                         position: "right"
                     },
