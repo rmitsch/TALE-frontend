@@ -927,7 +927,6 @@ export default class ModelDetailPanel extends Panel
 
     resize()
     {
-        console.log("resize", this._data)
         if (!this._hasLoaded)
             return;
 

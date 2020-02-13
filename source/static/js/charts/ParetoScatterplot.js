@@ -171,7 +171,6 @@ export default class ParetoScatterplot extends Scatterplot
         // todo Mouseover for SVG how?
         this._cf_chart.selectAll('circle').on('mouseover', function() {
             d3.select(this).attr('fill', '#00c');
-            console.log("mouseover")
         }).on('mouseout', function() {
             d3.select(this).attr('fill', 'orange')
         });
