@@ -83,7 +83,7 @@ export default class ModelDetailHeatmap extends Chart
      * Redraws chart after change in set of filtered IDs.
      * For compatibility with dc.js interface.
      */
-    redraw(distanceMetricName)
+    redraw()
     {
         throw new TypeError("ModelDetailHeatmap.redraw(): Abstract method must not be called.");
     }

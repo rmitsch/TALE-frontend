@@ -156,7 +156,6 @@ export default class CorankingMatrix extends ModelDetailHeatmap
     {
         this._reset();
         this._filteredRecordIDs.external = this._panel._operator._dataset.getCurrentlyFilteredPairwiseDisplacmentRecordIDs(
-            this._panel.currentCorankingMatrixDistanceMetric,
             null
         );
         this.constructCFChart();

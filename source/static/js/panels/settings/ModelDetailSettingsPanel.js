@@ -41,24 +41,7 @@ export default class DissonanceSettingsPanel extends SettingsPanel
 
         settingsHTML += "<div class='settings-section-header'>Shepard Diagram</div>"
 
-        // Add <select> for selection of sorting order.
-        settingsHTML += "<div class='setting-option'>";
-        settingsHTML += "<span>Distance metric</span>";
-        settingsHTML += "<select id='model-details-settings-shepard-distancemetric-select'>" +
-            "  <option value='cosine'>Cosine</option>" +
-            "  <option value='euclidean' selected>Euclidean</option>" +
-        "</select>";
-        settingsHTML += "</div>";
-
         settingsHTML += "<div class='settings-section-header'>Co-ranking Matrix</div>"
-
-        settingsHTML += "<div class='setting-option'>";
-        settingsHTML += "<span>Distance metric</span>";
-        settingsHTML += "<select id='model-details-settings-coranking-distancemetric-select'>" +
-            "  <option value='cosine'>Cosine</option>" +
-            "  <option value='euclidean' selected>Euclidean</option>" +
-        "</select>";
-        settingsHTML += "</div>";
 
         // -----------------------------------
         // 2. Create title and options container.
@@ -84,15 +67,13 @@ export default class DissonanceSettingsPanel extends SettingsPanel
 
     /**
      * Extracts option values from UI elements.
-     * @returns {{scatterplotColorCoding: *, distanceMetricCoranking: *, distanceMetricShepard: *}}
+     * @returns {{scatterplotColorCoding: *}}
      * @private
      */
     _extractOptionValues()
     {
         return {
             scatterplotColorCodingUseLog: $("#model-details-settings-scatterplots-colorcoding-uselog").is(":checked"),
-            distanceMetricShepard: $("#model-details-settings-shepard-distancemetric-select").val(),
-            distanceMetricCoranking: $("#model-details-settings-coranking-distancemetric-select").val()
         }
     }
 
@@ -103,7 +84,7 @@ export default class DissonanceSettingsPanel extends SettingsPanel
 
     /**
      * Returns current values for supported options.
-     * @returns {{distanceMetricCoranking: *, distanceMetricShepard: *}}
+     * @returns {{scatterplotColorCoding: *}}
      */
     get optionValues()
     {

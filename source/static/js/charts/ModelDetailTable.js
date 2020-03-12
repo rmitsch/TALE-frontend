@@ -120,16 +120,16 @@ export default class ModelDetailTable extends Chart
         // -------------------------------------
 
         const attributeDataTypes = this._dataset._attributeDataTypes;
-
         for (let i = 0; i < this._attributes.length; i++) {
             const columnTitle = this._attributes[i];
+
             // Only numerical histograms supported for now.
-            if (attributeDataTypes[this._attributes[i]]["supertype"] !== "categorical") {
+            if (columnTitle !== "id" && attributeDataTypes[this._attributes[i]]["supertype"] !== "categorical") {
                 // Generate div.
                 let divStructure = instance._divStructure;
                 divStructure.histogramChartsDivIDs[columnTitle] = Utils.spawnChildDiv(
                     "model-detail-histogram-container",
-                    "model-detail-table-histogram-" + columnTitle,
+                    "model-detail-table-histogram-" + columnTitle.replace(/\s/g, '_'),
                     "model-detail-table-histogram"
                 ).id;
 
@@ -156,7 +156,7 @@ export default class ModelDetailTable extends Chart
         // Append all hyperparameter to table.
         for (let i = 0; i < this._attributes.length; i++) {
             const attr = this._attributes[i];
-            tableHeader += "<th id='model-detail-table-header-" + this._attributes[i] + "'>" + attr + "</th>";
+            tableHeader += "<th id='model-detail-table-header-" + this._attributes[i].replace(/\s/g, '_') + "'>" + attr + "</th>";
         }
         tableHeader += "</tr></thead>";
         $("#" + table.id).append(tableHeader);
@@ -242,10 +242,10 @@ export default class ModelDetailTable extends Chart
 
         for (let i = 0; i < this._attributes.length; i++) {
             const columnTitle   = this._attributes[i];
-            const colWidth      = $("#model-detail-table-header-" + columnTitle).width() + 36;
+            const colWidth      = $("#model-detail-table-header-" + columnTitle.replace(/\s/g, '_')).width() + 36;
 
             if (attributeDataTypes[this._attributes[i]]["supertype"] !== "categorical") {
-                let histogramDiv = $("#model-detail-table-histogram-" + columnTitle);
+                let histogramDiv = $("#model-detail-table-histogram-" + columnTitle.replace(/\s/g, '_'));
 
                 histogramDiv.width(colWidth);
                 histogramDiv.css({left: currX});
@@ -272,7 +272,7 @@ export default class ModelDetailTable extends Chart
                 const columnTitle = this._attributes[i];
 
                 if (attributeDataTypes[this._attributes[i]]["supertype"] !== "categorical") {
-                    let histogramDiv = $("#model-detail-table-histogram-" + columnTitle);
+                    let histogramDiv = $("#model-detail-table-histogram-" + columnTitle.replace(/\s/g, '_'));
                     histogramDiv.css({left: this._preScrollHistogramPositions[columnTitle] - scrollLeft});
                 }
             }

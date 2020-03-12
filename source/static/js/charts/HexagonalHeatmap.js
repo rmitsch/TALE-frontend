@@ -58,7 +58,6 @@ export default class HexagonalHeatmap extends ModelDetailHeatmap
     {
         this._reset();
         this._filteredRecordIDs.external = this._panel._operator._dataset.getCurrentlyFilteredPairwiseDisplacmentRecordIDs(
-            this._panel.currentShepardDiagramDistanceMetric,
             null
         );
         this.constructCFChart();

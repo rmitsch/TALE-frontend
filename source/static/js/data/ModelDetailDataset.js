@@ -25,6 +25,7 @@ export default class ModelDetailDataset extends Dataset
         this._binCount                      = drMetaDataset._binCount;
         this._low_dim_projection            = modelDataJSON.original_dataset;
         this._dataset_for_table             = JSON.parse(modelDataJSON.original_dataset_for_table);
+        this._dataset_for_table_cols        = modelDataJSON.cols_for_original_dataset_for_table;
         this._allModelMetadata              = modelDataJSON.model_metadata;
         this._explanations                  = modelDataJSON.explanations;
         this._preprocessedExplanationData   = ModelDetailDataset._preprocessExplainerData(
@@ -35,9 +36,6 @@ export default class ModelDetailDataset extends Dataset
 
         // Gather attributes available for original record.
         this._attributeDataTypes        = modelDataJSON.attribute_data_types;
-        this._originalRecordAttributes  = Object.keys(modelDataJSON.original_dataset[0]).filter(
-            key => isNaN(key) && key in this._attributeDataTypes
-        );
 
         //--------------------------------------
         // Initialize crossfilter datasets.
@@ -350,11 +348,10 @@ export default class ModelDetailDataset extends Dataset
 
     /**
      * Returns IDs of currently filtered records as set.
-     * @param distanceMetric
      * @param filteredIDs
      * @returns {*} List of currently filtered pairwise displacement records.
      */
-    getCurrentlyFilteredPairwiseDisplacmentRecordIDs(distanceMetric, filteredIDs)
+    getCurrentlyFilteredPairwiseDisplacmentRecordIDs(filteredIDs)
     {
         if (filteredIDs === null)
             filteredIDs = this.currentlyFilteredIDs;
@@ -366,9 +363,7 @@ export default class ModelDetailDataset extends Dataset
                         // Make sure that dataset to be drawn includes only...
                         // ...filtered IDs.
                         filteredIDs.has(record.source) &&
-                        filteredIDs.has(record.neighbour) &&
-                        // ...pairings with the chosen distance metric.
-                        record.metric === distanceMetric
+                        filteredIDs.has(record.neighbour)
                 )
                 .flatMap(record => [record.source, record.neighbour])
         );
@@ -392,5 +387,14 @@ export default class ModelDetailDataset extends Dataset
     get dataset_for_table()
     {
         return this._dataset_for_table;
+    }
+
+    /**
+     * Fetches columns in dataset prepared for detail panel table.
+     * @returns {any}
+     */
+    get dataset_for_table_cols()
+    {
+        return this._dataset_for_table_cols;
     }
 }

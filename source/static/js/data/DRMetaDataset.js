@@ -299,8 +299,6 @@ export default class DRMetaDataset extends Dataset
             "learning_rate": "Learning rate",
             "n_iter": "Iterations",
             "angle": "Angle",
-            "metric": "Dist. metric",
-            "metric*": "Dist. metric",
             "n_neighbors": "Neighbors",
             "min_dist": "Min. Distance",
             "local_connectivity": "Local Conn.",

@@ -29,15 +29,12 @@ $(document).ready(function() {
     // 2. Initialize dataset loading button.
     // -----------------------------------------------------
 
-    $("#load-dataset-link").click(function() {
+    $("#load-dataset-link").click(() => {
         let baseURL = location.protocol + '//' + location.hostname + (location.port ? ':'+location.port: '');
         // Get content of dropdowns, preprocess for backend.
         let datasetNameTranslation = {
-            Wine: "wine",
-            MNIST: "mnist",
-            "Swiss Roll": "swiss_roll",
-            "VIS Papers": "vis",
-            Happiness: "happiness"
+            Happiness: "happiness",
+            Movies: "movie"
         };
         let drkTranslation = {"t-SNE": "tsne", UMAP: "umap", SVD: "svd"};
         // Load new page.
@@ -123,7 +120,7 @@ function processGETParameters()
 
     // Update displayed value of dropdown based on current URL parameters.
     const datasetNameTranslation = {
-        wine: "Wine", mnist: "MNIST", swiss_roll: "Swiss Roll", vis: "VIS Papers", happiness: "Happiness"
+        movie: "Movies", happiness: "Happiness"
     };
     const drkTranslation = {tsne: "t-SNE", umap: "UMAP", svd: "SVD"};
     $("#datasetLink").html(datasetNameTranslation[datasetName]);

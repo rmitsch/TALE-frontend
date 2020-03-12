@@ -444,7 +444,7 @@ export default class ModelDetailPanel extends Panel
         this._charts["table"] = new ModelDetailTable(
             "ModelDetailTable",
             this,
-            this._data._originalRecordAttributes,
+            this._data._dataset_for_table_cols,
             this._data,
             null,
             this._divStructure.recordPane.tableID
@@ -560,11 +560,8 @@ export default class ModelDetailPanel extends Panel
             "Co-ranking matrix",
             this,
             ["high_dim_neighbour_bin", "low_dim_neighbour_bin"],
-            this._operator._dataset._corankingMatrixData.filter(
-                record => record.metric === this.currentCorankingMatrixDistanceMetric
-            ),
+            this._operator._dataset._corankingMatrixData,
             this._operator._dataset.getCurrentlyFilteredPairwiseDisplacmentRecordIDs(
-                this.currentCorankingMatrixDistanceMetric,
                 this._filteredRecordIDs
             ),
             {},
@@ -597,11 +594,8 @@ export default class ModelDetailPanel extends Panel
             "Shepard Diagram",
             this,
             ["high_dim_distance", "low_dim_distance"],
-            this._operator._dataset._pairwiseDisplacementData.filter(
-                record => record.metric === this.currentShepardDiagramDistanceMetric
-            ),
+            this._operator._dataset._pairwiseDisplacementData,
             this._operator._dataset.getCurrentlyFilteredPairwiseDisplacmentRecordIDs(
-                this.currentShepardDiagramDistanceMetric,
                 this._filteredRecordIDs
             ),
             {},
@@ -609,24 +603,6 @@ export default class ModelDetailPanel extends Panel
             this._operator._target,
             this._operator._dataset._crossfilterData.low_dim_projection.dimensions.idShepardDiagram
         );
-    }
-
-    /**
-     * Gets currently selected distance metric for Shepard diagram.
-     * @returns {*}
-     */
-    get currentShepardDiagramDistanceMetric()
-    {
-        return this._settingsPanel.optionValues.distanceMetricShepard;
-    }
-
-    /**
-     * Gets currently selected distance metric for co-ranking matrix.
-     * @returns {*}
-     */
-    get currentCorankingMatrixDistanceMetric()
-    {
-        return this._settingsPanel.optionValues.distanceMetricCoranking;
     }
 
     /**
@@ -799,14 +775,6 @@ export default class ModelDetailPanel extends Panel
     {
         $("html").css("cursor", "wait");
         this._filteredRecordIDs = this._data.currentlyFilteredIDs;
-
-        // Distance metric for Shepard diagram changed - redraw.
-        if (optionValues.distanceMetricShepard !== this._optionValues.distanceMetricShepard)
-            this._redrawShepardDiagram();
-
-        // Distance metric for co-ranking matrix changed - redraw.
-        if (optionValues.distanceMetricCoranking !== this._optionValues.distanceMetricCoranking)
-            this._redrawCorankingmatrix();
 
         // Attribute to color-code scatterplots changed - update color scale for all scatterplots.
         if (

@@ -110,6 +110,10 @@ ul.pure-menu-children li {
     background-color: #3d4a57;
 }
 
+ul.pure-menu-children li:hover {
+    z-index: 12;
+}
+
 #datasetLink, #drkernelLink {
     font-weight: bold;
 }
