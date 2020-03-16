@@ -274,6 +274,7 @@ export default class ModelDetailPanel extends Panel
     {
         if (!this._hasLoaded)
             return;
+        let scope = this;
 
         // Fade out placeholder screen and show tour after first load.
         const placeholderScreen = $("#model-detail-not-loaded-indicator");
@@ -285,13 +286,18 @@ export default class ModelDetailPanel extends Panel
             intro.setOptions({
                 steps: [
                     {
+                        element: "#" + scope._target,
+                        intro: "This tour will guide you through the <b>embedding detail view</b>. It offers several " +
+                            "components designed to help you assess an embedding's quality."
+                    },
+                    {
                         element: $(".embedding-rating")[0],
                         intro: "The current rating of the embedding is shown here. Assign a rating based on your " +
                             "subjective impression of this embedding's quality by clicking one of the stars."
                     },
                     {
                         element: "#" + scope._divStructure.attributePane.id,
-                        intro: "The selected embedding's Hyperparameter & objective values are shown here.",
+                        intro: "The selected embedding's hyperparameter & objective values are shown here.",
                         position: "right"
                     },
                     {
@@ -302,33 +308,37 @@ export default class ModelDetailPanel extends Panel
                     },
                     {
                         element: "#" + scope._divStructure.scatterplotPaneID,
-                        intro: "The low-dimensional, embedded representation of the records in the embedded dataset. " +
+                        intro: "The low-dimensional/embedded representation of the records in the embedded dataset. " +
                             "If there are more than two dimensions, a scatterplot matrix is shown: First vs. second " +
-                            "dimension, first vs. third, second vs. third etc." +
-                            "<br>One point represents one record.",
+                            "dimension, first vs. third, second vs. third etc. <br>One point represents one record in the " +
+                            "original, high-dimensional dataset. <br><br>The dropdown at the bottom left allows to color " +
+                            "records by their attributes.",
                         position: "bottom"
                     },
                     {
                         element: "#" + scope._divStructure.recordPane.tableID,
                         intro: "This table shows all records in the dataset. Records are highlighted in the scatterplots " +
-                            "above when hovered over.",
+                            "above when hovered over. Records can be filtered by the histograms located at the table " +
+                            "header.",
                         position: "top"
                     },
                     {
                         element: "#shepard-diagram",
-                        intro: "The Shepard diagram shows the correlation between the distances between pairs of " +
-                            "records in the high- and the low-dimensional space. An ideal correlation in this " +
-                            "respect result in a straight line of 45 degrees from the bottom left to the top right " +
-                            "(i. e. the proportion of distance between records in the low- is identical to that in the" +
-                            " high-dimensional space.",
+                        intro: "The Shepard diagram shows how well the distances between points have been maintained " +
+                            "during the dimensionality reduction. An ideal preservation results in a straight line of 45 " +
+                            "degrees from the bottom left to the top right.",
                         position: "left"
                     },
                     {
                         element: "#coranking-matrix",
                         intro: "The co-ranking matrix is the rankwise equivalent to the Shepard diagram. A perfect " +
-                            "embedding would have full cells along the diagonale from the top left to the bottom right " +
+                            "embedding has full cells along the diagonale from the top left to the bottom right " +
                             "and empty cells everywhere else.",
                         position: "left"
+                    },
+                    {
+                        element: "#" + scope._target,
+                        intro: "Thanks for taking the tour! Please start selecting and rating interesting embeddings now."
                     }
                 ],
                 showStepNumbers: false,

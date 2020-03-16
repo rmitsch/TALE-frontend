@@ -184,29 +184,36 @@ export default class ExplorationStage extends Stage
                         intro.setOptions({
                             steps: [
                                 {
-                                    intro: "<b>Welcome to TALE!</b> This tour will guide you through this application step by step. " +
-                                        "<br><br>The user interface is divided into panels, each serving a specific " +
-                                        "purpose. Settings can be accessed by clicking the cogwheel in the top right " +
-                                        "corner of a panel."
+                                    intro: "<b>Welcome to TALE!</b> This tour will guide you through this application " +
+                                        "step by step. " +
+                                        "<br><br>The user interface consists of two views - the global and the detail " +
+                                        "view. The former visualizes all generated embeddings and their positions in " +
+                                        "the parameter space, the latter show a single embedding with all of its details." +
+                                        "<br><br>Each view is divided into resizable panels that surve a specific purpose. " +
+                                        "Settings for each can be accessed by clicking the cogwheel in the top right " +
+                                        "corner."
                                 },
                                 {
                                     element: "#datasetLink",
-                                    intro: "Multiple datasets are offered. Select the dataset you want to investigate " +
-                                        "here.",
+                                    intro: "Select a dataset here.",
                                     position: "left"
                                 },
                                 {
                                     element: "#drkernelLink",
-                                    intro: "Multiple algorithms for dimensionality reduction are offered. Select the " +
-                                        "dimensionality reduction method you want to investigate here.",
+                                    intro: "Select a dimensionality reduction method here.",
+                                    position: "left"
+                                },
+                                {
+                                    element: "#load-dataset-link",
+                                    intro: "Click here to load the data for the selected dataset and DR kernel.",
                                     position: "left"
                                 },
                                 {
                                     element: "#" + scope
                                         ._operators["FilterReduce"]
                                         ._target,
-                                    intro: "The 'Parameter Space' panel explores the effect of different hyperparameters " +
-                                        "on the faithfulness of embeddings measured by various objectives. Specifically," +
+                                    intro: "This panel explores the effect of different hyperparameters " +
+                                        "on the faithfulness of embeddings. Specifically," +
                                         " it shows: " +
                                         "<ul>" +
                                             "<li>The distributions of hyperparameters and objectives in the each column's top" +
@@ -222,8 +229,8 @@ export default class ExplorationStage extends Stage
                                         ._operators["FilterReduce"]
                                         ._panels["Parameter Space"]
                                         ._histogramDivIDs["n_components"],
-                                    intro: "Charts in the top row show the distribution of a hyperparameter or objective " +
-                                        "(here: number of dimensions in the low-dimensional space)."
+                                    intro: "A row's topmost charts shows the distribution of a hyperparameter or " +
+                                        "objective (here: number of dimensions in the low-dimensional space)."
                                 },
                                 {
                                     element: "#" + scope
@@ -231,10 +238,10 @@ export default class ExplorationStage extends Stage
                                         ._panels["Parameter Space"]
                                         ._charts["n_components:runtime"]
                                         ._target,
-                                    intro: "This is a 'Scattered Scree Plot' visualizing the relationship between a " +
-                                        "hyperparameter and an objective. It reflects how objectives change for an embedding " +
-                                        "(represented by one line) if we change one hyperparameter and leave all others " +
-                                        "fixed. <br>The bar on the right shows the correlation between hyperparameter and " +
+                                    intro: "This type of plot visualizes the relationship between a " +
+                                        "hyperparameter and an objective. It reflects how objectives change for any embedding " +
+                                        "(represented by one line) if we change this hyperparameter and leave all others " +
+                                        "fixed. <br><br>The bar on the right shows the correlation between hyperparameter and " +
                                         "objective in percent. If the correlation is too low, a plot's opacity is lowered," +
                                         " since the relationship between this hyperparameter and objective is likely not" +
                                         " very interesting."
@@ -279,8 +286,9 @@ export default class ExplorationStage extends Stage
                                 },
                                 {
                                     intro: "Thanks for taking the tour! If you want to check out and/or rate individual " +
-                                        "embeddings, drag open the pane to the right and double-click a row in the table to " +
-                                        "the bottom left.",
+                                        "embeddings, extend the 'embedding detail' pane to the very right and " +
+                                        "double-click a row in the table to the bottom left. " +
+                                        "A second tour will guide you through this view.",
                                 }
                             ],
                             showStepNumbers: false,
