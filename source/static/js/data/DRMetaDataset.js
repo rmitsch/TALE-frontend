@@ -35,7 +35,7 @@ export default class DRMetaDataset extends Dataset
         this._categoricalHyperparameterSet = this._extractCategoricalHyperparameters();
 
         // Set up containers for crossfilter data.
-        this._initEmbeddingsRatingsData();
+        // this._initEmbeddingsRatingsData();
         this._crossfilter = crossfilter(this._data);
 
         // Update record metadata before further preprocessing.
@@ -650,24 +650,6 @@ export default class DRMetaDataset extends Dataset
             idString += embedding.id + ",";
 
         return idString.substring(0, idString.length - 1);
-    }
-
-    /**
-     * Restores object from instance string using cryo.js.
-     * @param instanceString
-     */
-    static restoreFromString(instanceString)
-    {
-        let instance = Cryo.parse(window.name);
-        Object.setPrototypeOf(instance, DRMetaDataset.prototype);
-        Object.setPrototypeOf(instance._crossfilter, crossfilter.prototype);
-
-        for (let groupname in instance._cf_groups) {
-
-            console.log(instance._cf_groups[groupname].all());
-        }
-
-        return instance;
     }
 
     get seriesMappingByHyperparameter()

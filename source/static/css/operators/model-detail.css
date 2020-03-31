@@ -214,6 +214,7 @@ table.attributeTable tr:nth-child(even) {
 }
 
 span.embedding-rating {
+    display: inline-block;
     position: relative;
     top: 3px;
 }

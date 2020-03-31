@@ -23,7 +23,6 @@ export default class ModelDetailPanel extends Panel
         super(name, operator, parentDivID);
 
         this._hasLoaded             = false;
-        this._adjustedStageHeight   = null;
         this._sparklineValues       = null;
 
         // Colorcoding-related attributes.
@@ -102,6 +101,20 @@ export default class ModelDetailPanel extends Panel
     }
 
     /**
+     * Returns content structure for info div.
+     * @return string Info div structure for info div.
+     * @private
+     */
+    _generateInfoDivContent()
+    {
+        return "<span class='title' id='model-detail-title'></span>" +
+            "<a id='model-detail-settings-icon' href='#'>" +
+            "    <img src='./static/img/icon_settings.png' class='info-icon' alt='Settings' width='20px'>" +
+            "</a> " +
+            "<span class='embedding-rating' data-rateit-mode='font'></span>";
+    }
+
+    /**
      * Extracts dictionary {hyperparameter -> {objective -> rule}} from loaded dataset.
      * Stores result in this._explanationRuleLookup.
      * @private
@@ -137,13 +150,7 @@ export default class ModelDetailPanel extends Panel
         );
 
         let infoDiv             = Utils.spawnChildDiv(this._target, null, "panel-info model-detail-panel-info");
-        $("#" + infoDiv.id).html(
-            "<span class='title' id='model-detail-title'></span>" +
-            "<a id='model-detail-settings-icon' href='#'>" +
-            "    <img src='./static/img/icon_settings.png' class='info-icon' alt='Settings' width='20px'>" +
-            "</a> " +
-            "<span class='embedding-rating' data-rateit-mode='font'></span>",
-        );
+        $("#" + infoDiv.id).html(this._generateInfoDivContent());
 
         let contentPane         = Utils.spawnChildDiv(this._target, "model-detail-content-pane");
 
@@ -251,6 +258,7 @@ export default class ModelDetailPanel extends Panel
 
         // Return all panes' IDs.
         return {
+            infoDivID: infoDiv.id,
             parameterPaneID: parameterPane.id,
             samplePaneID: samplePane.id,
             dimRedAnalyticsPaneID: dimRedAnalyticsPane.id,
@@ -287,8 +295,8 @@ export default class ModelDetailPanel extends Panel
                 steps: [
                     {
                         element: "#" + scope._target,
-                        intro: "This tour will guide you through the <b>embedding detail view</b>. It offers several " +
-                            "components designed to help you assess an embedding's quality."
+                        intro: "This tour will guide you through the <b>embedding detail view</b>. It offers " +
+                            "elements designed to help you assess an embedding's quality."
                     },
                     {
                         element: $(".embedding-rating")[0],
@@ -338,7 +346,7 @@ export default class ModelDetailPanel extends Panel
                     },
                     {
                         element: "#" + scope._target,
-                        intro: "Thanks for taking the tour! Please start selecting and rating interesting embeddings now."
+                        intro: "Thanks for taking the tour! You may start selecting and rating interesting embeddings now."
                     }
                 ],
                 showStepNumbers: false,
@@ -856,14 +864,7 @@ export default class ModelDetailPanel extends Panel
     {
         let scope       = this;
         this._data      = this._operator._dataset;
-
         let data        = this._data;
-        let stageDiv    = $("#" + this._operator._stage._target);
-
-        // Workaround: Set height of modal depending on whether this is the first time showing it,
-        // since for whatever reason the modal height changes after the first call despite having the same
-        // height.
-        this._adjustedStageHeight = stageDiv.height() + (this._adjustedStageHeight === null ? 5 : 12.5);
 
         // Get initial data points.
         this._filteredRecordIDs = this._data.currentlyFilteredIDs;
@@ -871,9 +872,11 @@ export default class ModelDetailPanel extends Panel
         // Update explainer rule lookup.
         this._updateExplanationRuleLookup();
 
-        // Update title.
+        // Update header.
+        $("#" + this._divStructure.infoDivID).html(this._generateInfoDivContent());
         $("#model-detail-title").text("Embedding Details for Embedding #" + data._modelID);
-        // Update star rating.
+
+        // Initialize star rating.
         $("span.embedding-rating").starRating({
             starSize: 20,
             disableAfterRate: false,
