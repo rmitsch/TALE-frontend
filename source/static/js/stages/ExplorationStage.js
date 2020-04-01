@@ -156,7 +156,7 @@ export default class ExplorationStage extends Stage
                     {
                         direction: "vertical",
                         sizes: [52, 48],
-                        minSize: [0.45 * $(document).height(), 10],
+                        minSize: 0,
                         onDragEnd: function() {
                             scope._operators["FilterReduce"].resize();
                             scope._operators["Explainer"].resize();
