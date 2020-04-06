@@ -526,8 +526,8 @@ export default class ModelDetailPanel extends Panel
         // Add colorcoding control.
         Utils.spawnChildDiv(
             this._divStructure.scatterplotPaneID, "scatterplot-colorcoding-box", null,
-            "<img src='./static/img/icon-color.png' id='colorcoding-SP-icon' alt='Pick color encoding for scatterplots.' width='20px'>" +
-            "<select id='" + this._colorcodingSPSelectID + "'>" +
+            "<img src='./static/img/icon-color.png' id='colorcoding-SP-icon' alt='Pick color encoding for scatterplots.' width='20px'>Color by" +
+            "<select class='colorcoding-select' id='" + this._colorcodingSPSelectID + "'>" +
             "  <option value='none'>None</option>" +
             "</select>"
         );
@@ -712,12 +712,14 @@ export default class ModelDetailPanel extends Panel
         let metadataStructure   = drMetaDataset._metadata;
 
         // Fetch divs containing attribute sparklines.
-        let hyperparameterContentDiv    = $("#" + this._divStructure.attributePane.hyperparameterContentID);
-        let objectiveContentDiv         = $("#" + this._divStructure.attributePane.objectiveContentID);
+        let contentDivs = {
+            hyperparameters: $("#" + this._divStructure.attributePane.hyperparameterContentID),
+            objectives: $("#" + this._divStructure.attributePane.objectiveContentID)
+        };
 
         // Reset sparkline container div.
-        hyperparameterContentDiv.html("");
-        objectiveContentDiv.html("");
+        contentDivs.hyperparameters.html("");
+        contentDivs.objectives.html("");
 
         // -------------------------------------------------------
         // 1. Gather/transform data.
@@ -731,18 +733,17 @@ export default class ModelDetailPanel extends Panel
         // 2. Draw charts.
         // -------------------------------------------------------
 
-        let attributeTable = "" +
-            "<table style='width:100%' class='attributeTable'>" +
-            "<tr>" +
-                "<th>Name</th>" +
-                "<th>Type </th>" +
-                "<th>Value</th>" +
-                "<th>Histogram</th>" +
-            "</tr>";
-
         // Generate table for attribute charts.
         let chartDivIDs = {};
         for (const valueType in this._sparklineValues) {
+            let attributeTable = "" +
+                "<table style='width:100%' class='attributeTable'>" +
+                "<tr>" +
+                    "<th>Name</th>" +
+                    "<th>Value</th>" +
+                    "<th>Histogram</th>" +
+                "</tr>";
+
             for (const attribute of metadataStructure[valueType]) {
                 const key           = valueType === "hyperparameters" ? attribute.name : attribute;
                 const value         = dataset._allModelMetadata[dataset._modelID][key];
@@ -750,13 +751,14 @@ export default class ModelDetailPanel extends Panel
 
                 attributeTable += "<tr>";
                 attributeTable +=   "<td>" + DRMetaDataset.translateAttributeNames()[key] + "</td>";
-                attributeTable +=   "<td>" + (valueType === "hyperparameters" ? "HP" : "O") + "</td>";
                 attributeTable +=   "<td>" + (isNaN(value) ? value : Math.round(value * 1000) / 1000) + "</td>";
                 attributeTable +=   "<td id='" + chartDivIDs[key] + "'></td>";
                 attributeTable += "</tr>";
             }
+
+            contentDivs[valueType].html(attributeTable + "</table>");
         }
-        hyperparameterContentDiv.html(attributeTable + "</table>");
+
 
         // Draw hyperparameter charts.
         for (const valueType in this._sparklineValues) {

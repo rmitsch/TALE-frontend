@@ -126,7 +126,8 @@ export default class ModelOverviewTable extends Chart
             scrollX: true,
             scrollY: Math.floor($("#" + this._panel._target).height()) + "px",
             fixedColumns: false,
-            columns: columns
+            columns: columns,
+            pageLength: 15
         });
 
         let instance    = this;

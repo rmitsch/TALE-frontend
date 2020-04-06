@@ -155,8 +155,8 @@ export default class ExplorationStage extends Stage
                     ["#" + splitTopDiv.id, "#" + splitBottomDiv.id],
                     {
                         direction: "vertical",
-                        sizes: [52, 48],
-                        minSize: 0,
+                        sizes: [32, 68],
+                        minSize: [0.32 * $(document).height(), 10],
                         onDragEnd: function() {
                             scope._operators["FilterReduce"].resize();
                             scope._operators["Explainer"].resize();
@@ -236,7 +236,7 @@ export default class ExplorationStage extends Stage
                                     element: "#" + scope
                                         ._operators["FilterReduce"]
                                         ._panels["Parameter Space"]
-                                        ._charts["n_components:runtime"]
+                                        ._charts["n_components:r_nx"]
                                         ._target,
                                     intro: "This type of plot visualizes the relationship between a " +
                                         "hyperparameter and an objective. It reflects how objectives change for any embedding " +
@@ -250,7 +250,7 @@ export default class ExplorationStage extends Stage
                                     element: "#" + scope
                                         ._operators["FilterReduce"]
                                         ._panels["Parameter Space"]
-                                        ._charts["runtime:r_nx"]
+                                        ._charts["r_nx:stress"]
                                         ._target,
                                     intro: "The relationship two objectives are shown as honeycomb plots. The color " +
                                         "saturation indicates how many embeddings are placed in corresponding bin."

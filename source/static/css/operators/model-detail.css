@@ -264,10 +264,10 @@ span.embedding-rating {
 
 #scatterplot-colorcoding-box {
     position: absolute;
-    bottom: 0px;
+    bottom: 0;
     left: 10px;
-    background-color: #fff;
-    width: 200px;
+    background-color: transparent;
+    width: 265px;
     height: 30px;
 }
 
@@ -275,4 +275,12 @@ span.embedding-rating {
     position: relative;
     top: 4px;
     margin-right: 5px;
+}
+
+.colorcoding-select {
+    margin-left: 5px;
+}
+
+.model-details-block-hyperparameter-content {
+    margin-bottom: 10px;
 }
