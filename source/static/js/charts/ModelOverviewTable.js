@@ -150,11 +150,18 @@ export default class ModelOverviewTable extends Chart
         table.on('dblclick', 'td', function (e) {
             // Instruct model detail operator to load data for the selected model.
             $("html").css("cursor", "wait");
+            // Open detail view.
+            instance.panel.operator.stage._detailSplitPane.collapse(0);
+
+            // Update detail view.
             stage._operators["ModelDetail"].loadData(
                 // Fetch model ID from first field in selected table row.
                 instance._cf_chart.row(this).data()[0],
                 // Reset cursor after data has been loaded.
-                () => $("html").css("cursor", "default")
+                () => {
+                    // Reset cursor.
+                    $("html").css("cursor", "default")
+                }
             );
         });
 

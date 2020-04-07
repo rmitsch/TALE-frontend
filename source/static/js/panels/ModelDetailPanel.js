@@ -887,7 +887,12 @@ export default class ModelDetailPanel extends Panel
             activeColor: "gold",
             useFullStars: true,
             initialRating: data._drMetaDataset.getDataByID(data._modelID).rating,
-            callback: (currentRating, $el) => data._drMetaDataset.updateRating(data._modelID, currentRating, scope._name)
+            callback: (currentRating, $el) => {
+                // Update rating.
+                data._drMetaDataset.updateRating(data._modelID, currentRating, scope._name);
+                // Switch back to global view.
+                scope.operator.stage._detailSplitPane.collapse(1);
+            }
         });
 
         // Set click listener.
