@@ -35,14 +35,20 @@ export default class FilterReduceChartsPanel extends Panel
         // Storage for current width and height.
         this._lastTargetWidth   = 0;
         this._lastTargetHeight  = 0;
+        this._lastHPTargetWidth = 0;
+        this._lastHPTargetWidth = 0;
+        this._lastObjsTargetWidth  = 0;
+        this._lastOTargetHeight = 0;
 
         // Create div structure for child nodes.
-        let divStructure        = this._createDivStructure();
-        this._containerDivIDs   = divStructure.containerDivIDs;
-        this._histogramDivIDs   = divStructure.histogramDivIDs;
-        this._ratingsDivID      = divStructure.ratingsDivID;
+        this._paramSpaceAttributeSplitPane  = null;
+        this._divStructure                  = this._createDivStructure();
+        this._containerDivIDs               = this._divStructure.containerDivIDs;
+        this._histogramDivIDs               = this._divStructure.histogramDivIDs;
+        this._ratingsDivID                  = this._divStructure.ratingsDivID;
 
         // Generate charts.
+        this._chartsPerAttrType     = {hyperparameters: [], objectives: []};
         this._correlationStrengths  = null;
         this._ratingsHistogram      = null;
         this._generateCharts();
@@ -121,7 +127,7 @@ export default class FilterReduceChartsPanel extends Panel
         // Create ratings box.
         // -----------------------------------
 
-        histogramStyle.height           = 100;
+        histogramStyle.height           = 50;
         histogramStyle.width            = 200;
         histogramStyle.showAxisLabels   = true;
         histogramStyle.numberOfTicks = {
@@ -206,6 +212,9 @@ export default class FilterReduceChartsPanel extends Panel
             }
 
             this._charts[histogram.name] = histogram;
+            // Add chart type reference.
+            this._chartsPerAttrType[i < hyperparameters.length ? "hyperparameters" : "objectives"].push(histogram.name);
+
             histogram.render();
         }
     }
@@ -268,6 +277,9 @@ export default class FilterReduceChartsPanel extends Panel
                 );
 
                 this._charts[scatterplot.name] = scatterplot;
+                // Add chart type reference.
+                this._chartsPerAttrType["hyperparameters"].push(scatterplot.name);
+
                 if (render)
                     scatterplot.render();
 
@@ -314,6 +326,9 @@ export default class FilterReduceChartsPanel extends Panel
 
                 // Render.
                 this._charts[scatterplot.name] = scatterplot;
+                // Add chart type reference.
+                this._chartsPerAttrType["objectives"].push(scatterplot.name);
+
                 // Render scatterplot.
                 if (render)
                     scatterplot.render();
@@ -372,11 +387,41 @@ export default class FilterReduceChartsPanel extends Panel
         // Unfold names of hyperparamater objects in list.
         let hyperparameters = Utils.unfoldHyperparameterObjectList(dataset.metadata.hyperparameters);
 
-        // Iterate over all attributes.
+        // Create container divs for chart groups/columns.
+        let attributeChartsContainer = Utils.spawnChildDiv(
+            this._target,
+            "filter-reduce-charts-attribute-container"
+        );
+        let hpChartsContainer = Utils.spawnChildDiv(
+            attributeChartsContainer.id,
+            "filter-reduce-charts-hps-container",
+            "filter-reduce-charts-subcontainer split split-horizontal"
+        );
+        let objsChartsContainer = Utils.spawnChildDiv(
+            attributeChartsContainer.id,
+            "filter-reduce-charts-objs-container",
+            "filter-reduce-charts-subcontainer split split-horizontal"
+        );
+
+        // Wrap hpChartsContainer and objsChartsContainer in split panes.
+        this._paramSpaceAttributeSplitPane = Split(
+            ["#" + hpChartsContainer.id, "#" + objsChartsContainer.id],
+            {
+                direction: "horizontal",
+                sizes: [60, 40],
+                minSize: [0, 0],
+                snapOffset: 0,
+                onDragEnd: () => { scope.resize(); }
+            }
+        );
+
+        // Iterate over all attributes, create column-wise div structure.
         let i = 0;
         for (let attribute of hyperparameters.concat(dataset.metadata.objectives)) {
+            const parentDivID = hyperparameters.includes(attribute) ? hpChartsContainer.id : objsChartsContainer.id;
+
             let div = Utils.spawnChildDiv(
-                this._target, null, "filter-reduce-charts-container"
+                parentDivID, null, "filter-reduce-charts-container"
             );
             containerDivIDs[attribute] = div.id;
 
@@ -421,6 +466,9 @@ export default class FilterReduceChartsPanel extends Panel
         return {
             containerDivIDs: containerDivIDs,
             histogramDivIDs: histogramDivIDs,
+            attributeChartsContainer: attributeChartsContainer.id,
+            hpChartsContainer: hpChartsContainer.id,
+            objsChartsContainer: objsChartsContainer.id,
             ratingsDivID: "embeddings-ratings-box-chart"
         };
     }
@@ -428,30 +476,54 @@ export default class FilterReduceChartsPanel extends Panel
     resize()
     {
         // Note: Case of height and width adjustment at the same time should not occur.
-        let target          = $("#" + this._target);
-        const targetWidth   = target.width();
-        const targetHeight  = target.height();
-        let metadata        = this._operator.dataset.metadata;
+        let metadata            = this._operator.dataset.metadata;
+        let target              = $("#" + this._target);
+        const hpTarget          = $("#" + this._divStructure.hpChartsContainer);
+        const objsTarget        = $("#" + this._divStructure.objsChartsContainer);
+        const targetHeight      = target.height();
+        const hpTargetWidth     = hpTarget.width();
+        const objsTargetWidth   = objsTarget.width();
 
-        // Adjust width, if necessary.
-        if (targetWidth !== this._lastTargetWidth) {
-            const targetChartWidth = ((targetWidth - 75) / (metadata.objectives.length + metadata.hyperparameters.length));
+        // --------------------------------------------
+        // Width adjustments.
+        // --------------------------------------------
 
-            // Resize container divs' width.
-            $(".filter-reduce-charts-container").css("width", targetChartWidth + "px")
-
-            // Resize placeholders.
-            $(".chart-placeholder").css("width", targetChartWidth + "px");
-
+        // Adjust charts in hyperparameter panel.
+        if (hpTargetWidth !== this._lastHPTargetWidth) {
             // Resize charts' width.
-            for (let chartName in this._charts) {
-                this._charts[chartName].resize(-1, targetChartWidth);
-            }
+            const targetChartWidth = hpTargetWidth / hpTarget[0].children.length - 5;
 
-            this._lastTargetWidth = targetWidth;
+            if (targetChartWidth > 0) {
+                hpTarget.find(".filter-reduce-charts-container").css("width", targetChartWidth + "px");
+                for (let chartName of this._chartsPerAttrType["hyperparameters"]) {
+                    this._charts[chartName].resize(-1, targetChartWidth);
+                }
+            }
+            // Update last width for later comparison.
+            this._lastHPTargetWidth = hpTargetWidth;
         }
 
-        // Adjust height, if necessary.
+        // Adjust charts in objectives panel.
+        if (objsTargetWidth !== this._lastObjsTargetWidth) {
+            // Resize charts' width.
+            const targetChartWidth = objsTargetWidth / objsTarget[0].children.length - 5;
+
+            if (targetChartWidth > 0) {
+                objsTarget.find(".filter-reduce-charts-container").css("width", targetChartWidth + "px");
+                objsTarget.find(".chart-placeholder").css("width", targetChartWidth + "px");
+                for (let chartName of this._chartsPerAttrType["objectives"]) {
+                    this._charts[chartName].resize(-1, targetChartWidth);
+                }
+            }
+            // Update last width for later comparison.
+            this._lastObjsTargetWidth = objsTargetWidth;
+        }
+
+        // --------------------------------------------
+        // Height adjustments.
+        // --------------------------------------------
+
+        // Adjust total height, if necessary.
         if (targetHeight !== this._lastTargetHeight) {
             const chartContainerHeight  = $("#" + this._containerDivIDs[Object.keys(this._containerDivIDs)[0]]).height();
             let chartHeight             = Math.floor(
@@ -609,3 +681,4 @@ export default class FilterReduceChartsPanel extends Panel
         }
     }
 }
+1
