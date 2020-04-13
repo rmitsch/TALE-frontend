@@ -350,8 +350,8 @@ export default class DissonanceChart extends Chart
         // console.log(dimensions[key].top(Infinity));
         // dimensions[key].top(Infinity).forEach(record => embeddingIDs.add(record.id));
         // console.log(embeddingIDs);
-        // if (!(Utils.compareSets(embeddingIDs, operator._filteredIDs))) {
-        //     operator._filteredIDs = embeddingIDs;
+        // if (!(Utils.compareSets(embeddingIDs, operator._filteredIDsGlobal))) {
+        //     operator._filteredIDsGlobal = embeddingIDs;
         //     operator._stage.filter(operator._name, embeddingIDs);
         // }
 

@@ -174,6 +174,7 @@ export default class ModelDetailDataset extends Dataset
         // in this case HD and LD distances. This would require information on which value ranges a bin contains though,
         // so in this case it's easier to reflect the state of selection in the Shepard diagram via a duplicate ID
         // dimension.
+        config.dimensions["idTable"]            = cf.dimension(d => d.id);
         config.dimensions["idShepardDiagram"]   = cf.dimension(d => d.id);
         config.dimensions["idCorankingMatrix"]  = cf.dimension(d => d.id);
     }

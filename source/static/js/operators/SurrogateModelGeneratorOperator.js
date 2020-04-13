@@ -21,7 +21,7 @@ export default class SurrogateModelGeneratorOperator extends Operator {
         // Update involved CSS classes.
         $("#" + this._target).addClass("surrogate-model-generator-operator");
 
-        // Initialize _filteredIDs with all available IDs.
+        // Initialize _filteredIDsGlobal with all available IDs.
         for (let record of this._embeddingsMetadata._data)
             this._filteredIDs.add(record.id);
 

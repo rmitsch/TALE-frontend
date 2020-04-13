@@ -38,10 +38,13 @@ export default class ModelDetailTable extends Chart
         this._tableScrollPosition           = 0;
 
         // Select dimension of ID to use for later look-ups.
-        this._dimension = this._dataset.crossfilterData["low_dim_projection"].dimensions["id"];
+        this._dimension = this._dataset.crossfilterData["low_dim_projection"].dimensions["idTable"];
 
+        // Store current search term.
+        this._currentSearch     = "";
         // Create storage for filtered IDs.
-        this._filteredIDs       = null;
+        this._filteredIDsGlobal = null;
+        this._filteredIDsLocal  = null;
         // Defines whether filter has already been added to jQuery's DataTable.
         this._filterHasBeenSet  = false;
 
@@ -72,6 +75,32 @@ export default class ModelDetailTable extends Chart
     {
         this._cf_chart.rows.add(this._dataset.dataset_for_table);
         this._cf_chart.draw();
+    }
+
+    /**
+     * Searches records with specified search term. Returns IDs of records in which search term was found.
+     * @param searchTerm
+     * @private
+     * @return Set of IDs of records in which search term was found.
+     */
+    _searchRecords(searchTerm)
+    {
+        // Get data of all current rows in table.
+        let filteredIDData = this._cf_chart.rows({filter : 'applied'}).data().map(row => row[0]);
+
+        // Find numeric keys - these represent actual column data.
+        const validFilteredIDKeys = new Set([...Array(filteredIDData.length).keys()]);
+
+        // Extract IDs to filter.
+        this._filteredIDsLocal = new Set(
+            Object.entries(
+                filteredIDData
+            ).filter(
+                entry => validFilteredIDKeys.has(parseInt(entry[0]))
+            ).map(
+                entry => entry[1]
+            )
+        )
     }
 
     /**
@@ -116,13 +145,16 @@ export default class ModelDetailTable extends Chart
         });
 
         this._cf_chart.on('search.dt', (e, settings) => {
-            if (this._cf_chart.search() !== "") {
+            this._currentSearch = this._cf_chart.search();
+
+            if (this._currentSearch !== "") {
                 // Get row data.
                 let filteredIDData = this._cf_chart.rows({filter : 'applied'}).data().map(row => row[0]);
                 // Find numeric keys - these represent actual column data.
                 const validFilteredIDKeys = new Set([...Array(filteredIDData.length).keys()]);
-                // Filter extracted row IDs.
-                this._dimension.filter(id => new Set(
+
+                // Extract IDs to filter.
+                this._filteredIDsLocal = new Set(
                     Object.entries(
                         filteredIDData
                     ).filter(
@@ -130,16 +162,18 @@ export default class ModelDetailTable extends Chart
                     ).map(
                         entry => entry[1]
                     )
-                ).has(id));
+                )
+
+                // Filter extracted row IDs.
+                this._dimension.filter(id => this._filteredIDsLocal.has(id));
             }
 
-            else {
-                // todo: => true should be replace by filter function that considers selection in scatterplots. how to
-                //  reconcile this? need to retrieve ids selected in scatterplot - or store them at first, if not
-                //  possible.
+            else
                 this._dimension.filter(id => true);
-            }
 
+            // Re-render histograms.
+            for (const chartName in instance._charts)
+                instance._charts[chartName].render();
             // Re-render other charts.
             this._panel.refreshChartsAfterTableFiltering();
         });
@@ -211,13 +245,12 @@ export default class ModelDetailTable extends Chart
         this._cf_chart.render       = function() {
             // Redraw chart.
             instance._cf_chart.draw();
-            console.log("render")
         };
 
         this._cf_chart.redraw       = function() {
             // Update filtered IDs.
-            console.log("redraw")
-            instance._filteredIDs   = new Set(instance._dimension.top(Infinity).map(record => record.id));
+            instance._dimension.filter(id => true);
+            instance._filteredIDsGlobal = new Set(instance._dimension.top(Infinity).map(record => record.id));
 
             // Filter table data using an ugly hack 'cause DataTable.js can't do obvious things.
             // Add filter only if it doesn't exist yet.
@@ -229,7 +262,7 @@ export default class ModelDetailTable extends Chart
                         // Check oSettings to see if ew have to apply this filter. Otherwise ignore (i. e. return true
                         // for all elements).
                         return oSettings.sTableId === instance._tableID ?
-                            instance._filteredIDs.has(+aData[0]) :
+                            instance._filteredIDsGlobal.has(+aData[0]) :
                             true;
                     }
                 );
@@ -238,6 +271,8 @@ export default class ModelDetailTable extends Chart
             instance._cf_chart.draw();
             for (const chartName in instance._charts)
                 instance._charts[chartName].render();
+
+            // instance._panel.refreshChartsAfterTableFiltering();
         };
 
         this._cf_chart.filterAll    = function() {
