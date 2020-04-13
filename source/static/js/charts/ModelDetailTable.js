@@ -115,6 +115,35 @@ export default class ModelDetailTable extends Chart
             instance._panel.highlight(null, instance._name, false);
         });
 
+        this._cf_chart.on('search.dt', (e, settings) => {
+            if (this._cf_chart.search() !== "") {
+                // Get row data.
+                let filteredIDData = this._cf_chart.rows({filter : 'applied'}).data().map(row => row[0]);
+                // Find numeric keys - these represent actual column data.
+                const validFilteredIDKeys = new Set([...Array(filteredIDData.length).keys()]);
+                // Filter extracted row IDs.
+                this._dimension.filter(id => new Set(
+                    Object.entries(
+                        filteredIDData
+                    ).filter(
+                        entry => validFilteredIDKeys.has(parseInt(entry[0]))
+                    ).map(
+                        entry => entry[1]
+                    )
+                ).has(id));
+            }
+
+            else {
+                // todo: => true should be replace by filter function that considers selection in scatterplots. how to
+                //  reconcile this? need to retrieve ids selected in scatterplot - or store them at first, if not
+                //  possible.
+                this._dimension.filter(id => true);
+            }
+
+            // Re-render other charts.
+            this._panel.refreshChartsAfterTableFiltering();
+        });
+
         // -------------------------------------
         // Add divs for column histograms.
         // -------------------------------------
@@ -182,10 +211,12 @@ export default class ModelDetailTable extends Chart
         this._cf_chart.render       = function() {
             // Redraw chart.
             instance._cf_chart.draw();
+            console.log("render")
         };
 
         this._cf_chart.redraw       = function() {
             // Update filtered IDs.
+            console.log("redraw")
             instance._filteredIDs   = new Set(instance._dimension.top(Infinity).map(record => record.id));
 
             // Filter table data using an ugly hack 'cause DataTable.js can't do obvious things.

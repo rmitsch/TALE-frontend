@@ -1051,4 +1051,13 @@ export default class ModelDetailPanel extends Panel
             this._charts.scatterplots[scatterplotID].render();
         }
     }
+
+    refreshChartsAfterTableFiltering()
+    {
+        for (let chartID in this._charts["scatterplots"])
+            this._charts["scatterplots"][chartID].render();
+
+        this._charts["shepardDiagram"].redraw();
+        this._charts["corankingMatrix"].redraw();
+    }
 }
