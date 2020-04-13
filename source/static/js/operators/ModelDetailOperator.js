@@ -88,7 +88,6 @@ export default class ModelDetailOperator extends Operator
 
     filter(embeddingIDs)
     {
-        console.log("filtering")
         // Note: Filtering on global level has no impact on MDO.
     }
 
