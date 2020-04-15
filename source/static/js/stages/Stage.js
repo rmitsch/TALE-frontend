@@ -93,7 +93,7 @@ export default class Stage
                 const hoverInfo = $("#hovermode-info");
                 hoverInfo.stop(true);
                 hoverInfo.html((scope._extendedSelectionEnabled ? "Enabled" : "Disabled") + " extended selection mode.")
-                hoverInfo.fadeIn(1000).delay(4000).fadeOut(1000);
+                hoverInfo.fadeIn(1000).delay(4000).fadeOut(2000);
             }
 
             for (let listener of scope._keyEventCallbacks)

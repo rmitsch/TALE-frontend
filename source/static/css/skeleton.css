@@ -150,7 +150,7 @@ ul.pure-menu-children li:hover {
 #hovermode-info {
     position: absolute;
     width: 310px;
-    height: 20px;
+    height: 30px;
     right: 28px;
     padding: 8px;
     top: 95px;
@@ -159,6 +159,7 @@ ul.pure-menu-children li:hover {
     display: none;
     text-align: center;
     border-radius: 5px;
+    z-index: 10;
 }
 
 svg rect {
