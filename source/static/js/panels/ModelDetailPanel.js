@@ -221,7 +221,8 @@ export default class ModelDetailPanel extends Panel
         this._splits["all"] = Split(["#" + parameterPane.id, "#" + samplePane.id, "#" + dimRedAnalyticsPane.id], {
             direction: "horizontal",
             sizes: this._lastSplitPositions["all"],
-            onDragEnd: function() {
+            minSize: 0,
+            onDragEnd: () => {
                 instance.resize();
             }
         });
@@ -231,7 +232,8 @@ export default class ModelDetailPanel extends Panel
         this._splits["left"] = Split(["#" + attributePane.id, "#" + explainerPane.id], {
             direction: "vertical",
             sizes: this._lastSplitPositions["left"],
-            onDragEnd: function() {
+            minSize: 0,
+            onDragEnd: () => {
                 instance.resize();
             }
         });
@@ -241,7 +243,8 @@ export default class ModelDetailPanel extends Panel
         this._splits["middle"] = Split(["#" + scatterplotPane.id, "#" + recordPane.id], {
             direction: "vertical",
             sizes: this._lastSplitPositions["middle"],
-            onDragEnd: function() {
+            minSize: 0,
+            onDragEnd: () => {
                 instance.resize();
             }
         });
@@ -251,7 +254,8 @@ export default class ModelDetailPanel extends Panel
         this._splits["right"] = Split(["#" + shepardPane.id, "#" + corankingPane.id], {
             direction: "vertical",
             sizes: this._lastSplitPositions["right"],
-            onDragEnd: function() {
+            minSize: 0,
+            onDragEnd: () => {
                 instance.resize();
             }
         });
@@ -549,7 +553,8 @@ export default class ModelDetailPanel extends Panel
     {
         if (!this._colorcodingSPOptionsAreSet) {
             let select = $("#" + this._colorcodingSPSelectID);
-            for (let value of values) {
+
+            for (let value of values.sort((a, b) => a.localeCompare(b))) {
                 select.append($("<option />").val(value).text(value));
             }
             this._colorcodingSPOptionsAreSet = true;
