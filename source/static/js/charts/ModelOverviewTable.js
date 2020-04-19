@@ -98,29 +98,6 @@ export default class ModelOverviewTable extends Chart
     {
         let columns = [{title: "ID"}, {title: "Rating"}];
         columns.push.apply(columns, this._attributes.map(attr => {return {title: attr};}));
-        columns.push({
-            title: "Objective/record",
-            sortable: false,
-            "render": function(data, type, row, meta) {
-                return $(
-                    "<div></div>", {"class": "objective-record-distribution-barchart"}
-                ).append(
-                    () => {
-                        let bars = [];
-                        for(let i = 0; i < 10; i++) {
-                            bars.push($("<div></div>", {"class": "objective-record-distribution-bar"})
-                                .css({
-                                    "display": "inline-block",
-                                    "background-color": "#1f77b4",
-                                    "height": (row[row.length - 1][i]) * 100 + "%"
-                                })
-                            );
-                        }
-                        return bars;
-                    }
-                ).prop("outerHTML")
-            }
-        });
 
         this._cf_chart = $("#" + tableID).DataTable({
             scrollX: true,

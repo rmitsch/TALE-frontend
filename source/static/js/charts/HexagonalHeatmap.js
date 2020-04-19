@@ -147,7 +147,9 @@ export default class HexagonalHeatmap extends ModelDetailHeatmap
         // 5. Draw axes.
         // --------------------------------------
 
-        // const axesScales = this._drawAxes(targetElem, attrs, extrema, axesDiv);
-        const axesScales = this._drawAxes(targetElem, attrs, extrema, axesDiv, 25, 20, "shepard-diagram");
+        const axesScales = this._drawAxes(targetElem, attrs, extrema, axesDiv, 25, 20, "shepard-diagram", 0, 0);
+
+        // Generate axis labels.
+        this._generateAxisLabels(axesDiv.id);
     }
 }

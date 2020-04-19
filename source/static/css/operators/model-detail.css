@@ -284,3 +284,52 @@ span.embedding-rating {
 .model-details-block-hyperparameter-content {
     margin-bottom: 10px;
 }
+
+.model-detail-heatmap-x-label {
+    display: block;
+    position: absolute;
+    width: 100%;
+    left: 0;
+    bottom: 16px;
+    font-size: 15px;
+}
+
+.model-detail-heatmap-x-label-min {
+    position: absolute;
+    left: 25px;
+}
+
+.model-detail-heatmap-x-label-max {
+    position: absolute;
+    right: 0;
+}
+
+.model-detail-heatmap-y-label {
+    display: block;
+    position: absolute;
+    left: -5px;
+    width: calc(30px);
+    height: calc(100% - 20px);
+    top: 0;
+    font-size: 15px;
+}
+
+.model-detail-heatmap-y-label-min {
+    position: absolute;
+    width: 116px;
+    left: -49px;
+    top: 50px;
+    transform: rotate(270deg);
+}
+
+.model-detail-heatmap-y-label-max {
+    position: absolute;
+    width: 133px;
+    left: -55px;
+    bottom: 70px;
+    transform: rotate(270deg);
+}
+
+#model-details-block-hyperparameter-content {
+    margin-bottom: 10px;
+}

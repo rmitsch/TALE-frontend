@@ -125,7 +125,9 @@ export default class CorankingMatrix extends ModelDetailHeatmap
             axesDiv,
             25,
             20,
-            "coranking-matrix"
+            "coranking-matrix",
+            0,
+            0
         );
 
         // Define color range.
@@ -150,6 +152,9 @@ export default class CorankingMatrix extends ModelDetailHeatmap
             .attr("width", x.bandwidth())
             .attr("height", y.bandwidth())
             .style("fill", d => this._computeColorForBin(this._colors, d.paths, 0, 1));
+
+        // Generate axis labels.
+        this._generateAxisLabels(axesDiv.id);
     }
 
     redraw()

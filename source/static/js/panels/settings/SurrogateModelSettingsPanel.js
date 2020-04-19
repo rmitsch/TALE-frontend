@@ -35,7 +35,7 @@ export default class SurrogateModelSettingsPanel extends SettingsPanel
             "  <option value='r_nx'>R<sub>nx</sub></option>" +
             "  <option value='runtime'>Runtime</option>" +
             "  <option value='stress'>Stress</option>" +
-            "  <option value='target_domain_performance'>Target domain performance</option>" +
+            "  <option value='rdp'>Target domain performance</option>" +
             "  <option value='separability_metric'>Separability</option>" +
         "</select>";
         settingsHTML += "</div>";

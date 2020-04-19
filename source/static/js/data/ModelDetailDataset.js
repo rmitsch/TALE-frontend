@@ -301,7 +301,7 @@ export default class ModelDetailDataset extends Dataset
                             this._allModelMetadata[currModelID][key] === bin.nextKey &&
                             bin.nextKey === values[valueType][key].extrema.max
                         )
-                    ) ? "red" : "#1f77b4" :
+                    ) ? "#3d4a57" : "#b8b2b2" :
                     // If attribute is categorical: Check if bin key/title is equal to current model's attribute value.
                     (bin.key === this._allModelMetadata[currModelID][key] ? "red" : "#1f77b4")
                 );

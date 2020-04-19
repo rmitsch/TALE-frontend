@@ -1,4 +1,5 @@
 import Chart from "./Chart.js";
+import Utils from "../Utils.js";
 
 /**
  * Auxiliary base class for complementary, not dc.js-based heatmap charts used in ModelDetailView.
@@ -174,7 +175,17 @@ export default class ModelDetailHeatmap extends Chart
      * @returns {{xAxisScale: *, yAxisScale: *}}
      * @private
      */
-    _drawAxes(targetElem, attrs, extrema, axesDiv, offsetX, offsetY, cssClassPrefix, nTicksX = 3, nTicksY = 3)
+    _drawAxes(
+        targetElem,
+        attrs,
+        extrema,
+        axesDiv,
+        offsetX,
+        offsetY,
+        cssClassPrefix,
+        nTicksX = 3,
+        nTicksY = 3
+    )
     {
         const targetDivHeight   = targetElem.height();
         const targetDivWidth    = targetElem.width();
@@ -218,6 +229,7 @@ export default class ModelDetailHeatmap extends Chart
             .attr("transform", "translate(" + offsetX + ", " + (targetDivHeight - offsetY) + ")")
             .style(axisStyle)
             .call(xAxis);
+
         svgAxes
             .append("g")
             .attr("class", cssClassPrefix + "coranking-matrix-y-axis")
@@ -257,6 +269,20 @@ export default class ModelDetailHeatmap extends Chart
             .style("stroke", "none");
 
         return svg;
+    }
+
+    /**
+     * Generate axis labels.
+     * @param containerDivID
+     */
+    _generateAxisLabels(containerDivID)
+    {
+        let xLabelDiv = Utils.spawnChildDiv(containerDivID, null, "model-detail-heatmap-x-label");
+        Utils.spawnChildDiv(xLabelDiv.id, null, "model-detail-heatmap-x-label-min", "Close in LD space");
+        Utils.spawnChildDiv(xLabelDiv.id, null, "model-detail-heatmap-x-label-max", "Far in LD space");
+        let yLabelDiv = Utils.spawnChildDiv(containerDivID, null, "model-detail-heatmap-y-label");
+        Utils.spawnChildDiv(yLabelDiv.id, null, "model-detail-heatmap-y-label-min", "Far in HD space");
+        Utils.spawnChildDiv(yLabelDiv.id, null, "model-detail-heatmap-y-label-max", "Close in HD space");
     }
 
     resize()

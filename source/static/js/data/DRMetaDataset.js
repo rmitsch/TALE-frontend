@@ -293,7 +293,7 @@ export default class DRMetaDataset extends Dataset
     {
         return {
             // Hyperparameters.
-            "n_components": "Dimensions",
+            "n_components": "Components",
             "perplexity": "Perplexity",
             "early_exaggeration": "Early exagg.",
             "learning_rate": "Learning rate",
@@ -307,8 +307,8 @@ export default class DRMetaDataset extends Dataset
             "r_nx": useHTMLFormatting ? "R<sub>nx</sub>" : "R_nx",
             "b_nx": useHTMLFormatting ? "B<sub>nx</sub>" : "B_nx",
             "stress": "Stress",
-            "target_domain_performance": "RDP",
-            "separability_metric": "Silhouette",
+            "rdp": "RDP",
+            "separability": "Separability",
             "runtime": "Runtime"
         }
     }
