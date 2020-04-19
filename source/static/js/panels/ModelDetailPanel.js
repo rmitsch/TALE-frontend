@@ -782,7 +782,7 @@ export default class ModelDetailPanel extends Panel
                     record.data,
                     {
                         type: "bar",
-                        barWidth: Math.min(Math.max(10, chartContainer.width() / (record.data.length * 2)), 30),
+                        barWidth: Math.min(Math.max(10, chartContainer.width() / (record.data.length * 1.25)), 30),
                         barSpacing: 1,
                         chartRangeMin: 0,
                         height: 20,

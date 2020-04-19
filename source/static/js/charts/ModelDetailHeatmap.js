@@ -281,8 +281,8 @@ export default class ModelDetailHeatmap extends Chart
         Utils.spawnChildDiv(xLabelDiv.id, null, "model-detail-heatmap-x-label-min", "Close in LD space");
         Utils.spawnChildDiv(xLabelDiv.id, null, "model-detail-heatmap-x-label-max", "Far in LD space");
         let yLabelDiv = Utils.spawnChildDiv(containerDivID, null, "model-detail-heatmap-y-label");
-        Utils.spawnChildDiv(yLabelDiv.id, null, "model-detail-heatmap-y-label-min", "Far in HD space");
-        Utils.spawnChildDiv(yLabelDiv.id, null, "model-detail-heatmap-y-label-max", "Close in HD space");
+        Utils.spawnChildDiv(yLabelDiv.id, null, "model-detail-heatmap-y-label-min", "Close in HD space");
+        Utils.spawnChildDiv(yLabelDiv.id, null, "model-detail-heatmap-y-label-max", "Far in HD space");
     }
 
     resize()

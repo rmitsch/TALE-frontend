@@ -316,17 +316,17 @@ span.embedding-rating {
 
 .model-detail-heatmap-y-label-min {
     position: absolute;
-    width: 116px;
-    left: -49px;
-    top: 50px;
+    width: 133px;
+    left: -55px;
+    top: 59px;
     transform: rotate(270deg);
 }
 
 .model-detail-heatmap-y-label-max {
     position: absolute;
-    width: 133px;
-    left: -55px;
-    bottom: 70px;
+    width: 116px;
+    left: -47px;
+    bottom: 60px;
     transform: rotate(270deg);
 }
 
