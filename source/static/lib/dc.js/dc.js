@@ -9946,6 +9946,7 @@ dc.heatMap = function (parent, chartGroup) {
     var _colScale = d3.scale.ordinal();
     var _rowScale = d3.scale.ordinal();
 
+
     var _xBorderRadius = DEFAULT_BORDER_RADIUS;
     var _yBorderRadius = DEFAULT_BORDER_RADIUS;
 
@@ -9958,6 +9959,17 @@ dc.heatMap = function (parent, chartGroup) {
     };
     var _rowsLabel = function (d) {
         return d;
+    };
+    var _cellSizeModifier = function (d) {
+        return d;
+    };
+
+    _chart.cellSizeModifier = function (cellSizeModifierFunction) {
+        if (!arguments.length) {
+            return _cellSizeModifier;
+        }
+        _cellSizeModifier = cellSizeModifierFunction;
+        return _chart;
     };
 
     /**
@@ -10118,6 +10130,8 @@ dc.heatMap = function (parent, chartGroup) {
         rows = _rowScale.domain(rows);
         cols = _colScale.domain(cols);
 
+        // todo cont here
+        // use smth like var _valueAccessor = dc.pluck('value'); to create a new accessor -> cell size modifier?
         var rowCount = rows.domain().length,
             colCount = cols.domain().length,
             boxWidth = Math.floor(_chart.effectiveWidth() / colCount),
@@ -10143,13 +10157,17 @@ dc.heatMap = function (parent, chartGroup) {
         }
 
         dc.transition(boxes.select('rect'), _chart.transitionDuration(), _chart.transitionDelay())
-            .attr('x', function (d, i) { return cols(_chart.keyAccessor()(d, i)); })
-            .attr('y', function (d, i) { return rows(_chart.valueAccessor()(d, i)); })
+            .attr('x', (d, i) => {
+                return cols(_chart.keyAccessor()(d, i)) + boxWidth * (1 - _chart.cellSizeModifier()(d, i)) / 2;
+            })
+            .attr('y', (d, i) => {
+                return rows(_chart.valueAccessor()(d, i)) + boxHeight * (1 - _chart.cellSizeModifier()(d, i)) / 2;
+            })
             .attr('rx', _xBorderRadius)
             .attr('ry', _yBorderRadius)
             .attr('fill', _chart.getColor)
-            .attr('width', boxWidth)
-            .attr('height', boxHeight);
+            .attr('width', (d, i) => { return boxWidth * _chart.cellSizeModifier()(d, i); })
+            .attr('height', (d, i) => { return boxHeight * _chart.cellSizeModifier()(d, i); });
 
         boxes.exit().remove();
 

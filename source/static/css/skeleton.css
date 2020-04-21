@@ -163,7 +163,7 @@ ul.pure-menu-children li:hover {
 }
 
 svg rect {
-  stroke-width: 0.2;
+  stroke-width: 1.5px;
   stroke: grey;
 }
 

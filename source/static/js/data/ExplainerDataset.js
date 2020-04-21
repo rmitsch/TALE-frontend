@@ -10,7 +10,8 @@ export default class ExplainerDataset extends Dataset {
     constructor(name, data) {
         super(name, data);
 
-        this._crossfilter       = crossfilter(this._data);
+        this._crossfilter       = crossfilter(this._data.data);
+        this._max_abs_contribution = this._data.max_abs_contribution;
 
         // Initialize crossfilter data.
         this._initBinaryDimensionsAndGroups();
@@ -28,18 +29,22 @@ export default class ExplainerDataset extends Dataset {
         this._cf_groups["objective:hyperparameter"] = dim.group().reduce(
             (data, item) => {
                 data.sum    += item.value;
+                data.abssum += Math.abs(item.value);
                 data.n      += 1;
                 data.avg    = data.sum / data.n;
+                data.absavg = data.abssum / data.n;
                 return data;
             },
             (data, item) => {
                 data.sum    -= item.value;
+                data.abssum -= Math.abs(item.value);
                 data.n      -= 1;
                 data.avg    = data.sum / data.n;
+                data.absavg = data.abssum / data.n;
                 return data;
             },
             (data, item) => {
-                return { n: 0, avg: 0, sum: 0 };
+                return { n: 0, avg: 0, sum: 0, abssum: 0, absavg: 0 };
             }
         );
 
@@ -47,6 +52,11 @@ export default class ExplainerDataset extends Dataset {
         let extremaInfo             = this._calculateSingularExtremaByDimension(dim, "value");
         this._cf_extrema["value"]   = extremaInfo.extrema;
         this._cf_intervals["value"] = extremaInfo.interval;
+    }
+
+    get max_abs_contribution()
+    {
+        return this._max_abs_contribution;
     }
 
     get crossfilter()

@@ -436,6 +436,7 @@ export default class ModelDetailPanel extends Panel
             )
             .keyAccessor(d => d.key[0])
             .valueAccessor(d => d.key[1])
+            .cellSizeModifier(d => Math.abs(d.value))
             .title(d => scope._explanationRuleLookup[d.key[1]][d.key[0]])
             .colsLabel(d => DRMetaDataset.translateAttributeNames(false)[d])
             .rowsLabel(d => DRMetaDataset.translateAttributeNames(false)[d])

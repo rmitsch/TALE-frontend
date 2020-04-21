@@ -91,9 +91,11 @@ export default class ExplainerPanel extends Panel
             // .title(d => scope._explanationRuleLookup[d.key[1]][d.key[0]])
             .colsLabel(d => DRMetaDataset.translateAttributeNames(false)[d])
             .rowsLabel(d => DRMetaDataset.translateAttributeNames(false)[d])
+            .cellSizeModifier(d => d.value.absavg / dataset.max_abs_contribution)
             .margins({top: 0, right: 20, bottom: 48, left: 60})
             .transitionDuration(0)
             .xBorderRadius(0)
+            .yBorderRadius(0)
             // Rotate labels.
             .on('pretransition', function(chart) {
                 chart

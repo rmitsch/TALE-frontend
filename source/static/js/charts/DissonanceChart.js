@@ -214,6 +214,7 @@ export default class DissonanceChart extends Chart
             .colors(d => scope._computeColorsForCell(d))
             .keyAccessor(function(d)    { return d.key[0];  })
             .valueAccessor(function(d)  { return d.key[1]; })
+            .cellSizeModifier(d => Math.random())
             .title(function(d)          { return ""; })
             // Supress column/row label output.
             .colsLabel(function(d)      { return ""; })
