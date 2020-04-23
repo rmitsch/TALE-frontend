@@ -218,3 +218,8 @@ span.filter-reduce-row-label-text {
     position: relative;
     left: -25px;
 }
+
+.filter-reduce-table .dataTables_wrapper {
+    margin-left: auto;
+    margin-right: auto;
+}

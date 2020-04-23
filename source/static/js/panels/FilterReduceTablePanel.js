@@ -36,6 +36,11 @@ export default class FilterReduceTablePanel extends Panel
             this._target
         );
         this._charts[table.name] = table;
+
+        // Set maximal table width so that columns and headers don't lose their alignment.
+        // Note: Automatic column resizing would be better, but didn't work when tried.
+        $("#" + this._target + " .dataTables_wrapper").css(
+            "maxWidth", $("#" + this._target + " .dataTables_scrollHeadInner").width() + 15 + "px")
     }
 
     get table()

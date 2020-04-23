@@ -10130,8 +10130,6 @@ dc.heatMap = function (parent, chartGroup) {
         rows = _rowScale.domain(rows);
         cols = _colScale.domain(cols);
 
-        // todo cont here
-        // use smth like var _valueAccessor = dc.pluck('value'); to create a new accessor -> cell size modifier?
         var rowCount = rows.domain().length,
             colCount = cols.domain().length,
             boxWidth = Math.floor(_chart.effectiveWidth() / colCount),
