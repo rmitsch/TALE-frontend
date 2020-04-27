@@ -167,7 +167,7 @@ export default class ModelDetailPanel extends Panel
             `<div class='model-details-block'>
                 <div class='model-details-title'>Hyperparameters</div>
                 <div id="model-details-block-hyperparameter-content"></div>
-                <div class='model-details-title'>Objectives</div>
+                <div class='model-details-title'>Metrics</div>
                 <div id="model-details-block-objective-content"></div>
             </div>`
         );
