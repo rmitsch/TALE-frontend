@@ -198,7 +198,7 @@ export default class ModelDetailPanel extends Panel
         let shepardPane = Utils.spawnChildDiv(
             dimRedAnalyticsPane.id, null, "model-detail-pane split-vertical",
             `<div class='model-details-block' id='model-details-block-shepard-diagram'>
-                <div class='model-details-title'>Shepard Diagram</div>
+                <div class='model-details-title'>Distance Divergence</div>
                 <div id="shepard-diagram"></div>
             </div>`
         );
@@ -207,7 +207,7 @@ export default class ModelDetailPanel extends Panel
         let corankingPane = Utils.spawnChildDiv(
             dimRedAnalyticsPane.id, null, "model-detail-pane split-vertical",
             `<div class='model-details-block' id='model-details-block-coranking-matrix'>
-                <div class='model-details-title'>Co-ranking Matrix</div>
+                <div class='model-details-title'>Neighbourhood Divergence</div>
                 <div id="coranking-matrix"></div>
             </div>`
         );
@@ -615,7 +615,7 @@ export default class ModelDetailPanel extends Panel
         // -------------------------------------------------------
 
         this._charts["shepardDiagram"]  = new HexagonalHeatmap(
-            "Shepard Diagram",
+            "Shepard diagram",
             this,
             ["high_dim_distance", "low_dim_distance"],
             this._operator._dataset._pairwiseDisplacementData,
