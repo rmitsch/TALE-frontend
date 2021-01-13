@@ -679,6 +679,7 @@ export default class ModelDetailPanel extends Panel
             .valueAccessor(d => d.key[1])
             .existenceAccessor(d => d.value.count > 0)
             .excludedSize(3)
+            .title(d => d.value.items.map(record => record["record_name"]).join(";"))
             .excludedOpacity(0.7)
             .excludedColor("#ccc")
             .symbolSize(4)
@@ -691,6 +692,13 @@ export default class ModelDetailPanel extends Panel
         const axisLabelToPlot = j === i + 1;
         scatterplot.yAxisLabel(axisLabelToPlot ? "Dimension " + (i + 1) : "");
         scatterplot.xAxisLabel(axisLabelToPlot ? "Dimension " + (j + 1) : "");
+
+        // Workaround: Move brush selection behind first chart layer so we can have both brush selection and a popup on
+        // hover. Source:
+        // https://stackoverflow.com/questions/57922917/mouseover-or-onclick-event-not-working-on-scatterplot-in-dc-js.
+        scatterplot.on("renderlet.chart", function(chart) {
+            chart.g().node().insertBefore(chart.select('g.brush').node(), chart.select('g.chart-body').node());
+        });
 
         // Set color methods.
         // scatterplot.colorAccessor(this._scatterplotColorizingMethods.colorAccessor);
